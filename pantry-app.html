@@ -1,0 +1,1969 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Pantry.">
+<meta name="theme-color" content="#1D9E75">
+<title>Pantry.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --green: #1D9E75;
+  --green-dark: #0F6E56;
+  --green-light: #E1F5EE;
+  --red: #E24B4A;
+  --amber: #EF9F27;
+  --amber-light: #FAEEDA;
+  --blue: #185FA5;
+  --blue-light: #E6F1FB;
+  --coral: #993C1D;
+  --coral-light: #FAECE7;
+  --purple: #534AB7;
+  --purple-light: #EEEDFE;
+  --gray-100: #f8f8f6;
+  --gray-200: #f0f0ec;
+  --gray-300: #e0e0d8;
+  --gray-400: #b0b0a8;
+  --gray-600: #6a6a62;
+  --gray-900: #1a1a18;
+  --text-primary: #1a1a18;
+  --text-secondary: #6a6a62;
+  --text-tertiary: #a0a098;
+  --border: rgba(0,0,0,0.08);
+  --border-strong: rgba(0,0,0,0.14);
+  --bg: #ffffff;
+  --bg-secondary: #f8f8f6;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --nav-height: 72px;
+  --font: 'DM Sans', system-ui, sans-serif;
+  --font-mono: 'DM Mono', monospace;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── APP SHELL ── */
+#app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-width: 430px;
+  margin: 0 auto;
+  position: relative;
+  background: var(--bg);
+  box-shadow: 0 0 40px rgba(0,0,0,0.08);
+}
+
+.screen {
+  display: none;
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: calc(var(--nav-height) + 16px);
+}
+.screen.active { display: block; }
+
+/* ── BOTTOM NAV ── */
+.bottom-nav {
+  display: flex;
+  height: var(--nav-height);
+  border-top: 0.5px solid var(--border);
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  flex-shrink: 0;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.nav-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+  color: var(--text-tertiary);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  transition: color 0.15s;
+  border: none;
+  background: none;
+  padding: 8px 0;
+}
+.nav-btn.active { color: var(--green); }
+.nav-btn svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ── TOPBAR ── */
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px 8px;
+  position: sticky;
+  top: 0;
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(12px);
+  z-index: 10;
+}
+.topbar-title { font-size: 17px; font-weight: 600; color: var(--text-primary); }
+.topbar-icons { display: flex; gap: 14px; }
+.icon-btn { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; border: none; background: none; cursor: pointer; color: var(--text-secondary); }
+.icon-btn:hover { background: var(--bg-secondary); }
+.icon-btn svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ── CARDS & SECTIONS ── */
+.card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+.section { margin-top: 20px; }
+.section-header { display: flex; justify-content: space-between; align-items: center; padding: 0 20px 10px; }
+.section-title { font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.08em; }
+.section-link { font-size: 13px; color: var(--green); cursor: pointer; font-weight: 500; }
+
+/* ── HOME SCREEN ── */
+.home-greeting { padding: 20px 20px 0; }
+.home-greeting-sub { font-size: 13px; color: var(--text-tertiary); }
+.home-greeting-title { font-size: 26px; font-weight: 600; letter-spacing: -0.5px; margin-top: 2px; }
+
+.budget-hero {
+  margin: 14px 16px 0;
+  background: var(--green);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  color: white;
+}
+.budget-hero-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+.budget-hero-label { font-size: 12px; opacity: 0.8; margin-bottom: 4px; }
+.budget-hero-amount { font-size: 36px; font-weight: 600; letter-spacing: -1.5px; line-height: 1; }
+.budget-hero-sub { font-size: 12px; opacity: 0.7; margin-top: 4px; }
+.budget-hero-right { text-align: right; }
+.budget-hero-pct { font-size: 26px; font-weight: 600; }
+.budget-hero-pct-label { font-size: 11px; opacity: 0.75; margin-top: 1px; }
+.budget-bar-track { height: 4px; background: rgba(255,255,255,0.25); border-radius: 99px; overflow: hidden; }
+.budget-bar-fill { height: 100%; border-radius: 99px; background: white; }
+.budget-bar-labels { display: flex; justify-content: space-between; margin-top: 6px; font-size: 11px; opacity: 0.7; }
+
+.quick-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 12px 16px 0; }
+.quick-card {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px; background: var(--bg);
+  border: 0.5px solid var(--border); border-radius: var(--radius-lg);
+  cursor: pointer; transition: background 0.15s;
+}
+.quick-card:hover { background: var(--bg-secondary); }
+.quick-card-icon { width: 36px; height: 36px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.quick-card-icon svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.quick-card-label { font-size: 13px; font-weight: 500; }
+.quick-card-sub { font-size: 11px; color: var(--text-tertiary); margin-top: 1px; }
+
+.recent-haul-card { margin: 0 16px; }
+.haul-head { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-bottom: 0.5px solid var(--border); cursor: pointer; }
+.store-avatar { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
+.store-avatar svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.haul-store { font-size: 15px; font-weight: 500; }
+.haul-date { font-size: 12px; color: var(--text-tertiary); margin-top: 1px; }
+.haul-amount { margin-left: auto; text-align: right; }
+.haul-total { font-size: 16px; font-weight: 600; }
+.haul-items-count { font-size: 11px; color: var(--text-tertiary); margin-top: 1px; }
+.haul-preview { padding: 10px 16px; }
+.haul-item-row { display: flex; justify-content: space-between; font-size: 13px; padding: 3px 0; color: var(--text-secondary); }
+.haul-item-row span:last-child { color: var(--text-primary); font-variant-numeric: tabular-nums; }
+.haul-more { font-size: 12px; color: var(--text-tertiary); padding: 4px 16px 12px; }
+
+.nudge-card-home {
+  margin: 0 16px;
+  border-left: 3px solid var(--coral);
+  display: flex; gap: 12px; align-items: flex-start;
+  padding: 14px 16px;
+}
+.nudge-icon-wrap { width: 36px; height: 36px; border-radius: 50%; background: var(--coral-light); color: var(--coral); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.nudge-icon-wrap svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.nudge-title { font-size: 14px; font-weight: 500; margin-bottom: 3px; }
+.nudge-text { font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
+.nudge-btns { display: flex; gap: 8px; margin-top: 10px; }
+.nudge-btn { font-size: 12px; padding: 5px 14px; border-radius: 99px; border: 0.5px solid var(--border-strong); color: var(--text-secondary); cursor: pointer; background: none; font-family: var(--font); transition: background 0.15s; }
+.nudge-btn:hover { background: var(--bg-secondary); }
+.nudge-btn.primary { background: var(--green); border-color: var(--green); color: white; }
+.nudge-btn.primary:hover { opacity: 0.9; }
+
+.snap-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin: 0 16px; }
+.snap-card { background: var(--bg-secondary); border-radius: var(--radius-sm); padding: 12px; text-align: center; }
+.snap-val { font-size: 18px; font-weight: 600; }
+.snap-label { font-size: 11px; color: var(--text-tertiary); margin-top: 2px; }
+
+/* ── PERSPECTIVE ── */
+.col-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-tertiary); padding: 0 20px 6px; }
+.haul-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 20px; border-top: 0.5px solid var(--border);
+  cursor: pointer; transition: background 0.1s;
+}
+.haul-row:hover { background: var(--bg-secondary); }
+.haul-row-right { text-align: right; }
+.haul-row-spent { font-size: 15px; font-weight: 500; }
+.haul-row-count { font-size: 11px; color: var(--text-tertiary); margin-top: 1px; }
+.divider-label { padding: 10px 20px 4px; font-size: 12px; color: var(--text-tertiary); border-top: 0.5px solid var(--border); }
+
+.summary-block { margin: 0 16px; background: var(--bg-secondary); border-radius: var(--radius-md); padding: 4px 16px; }
+.summary-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 0.5px solid var(--border); }
+.summary-row:last-child { border-bottom: none; }
+.summary-label { font-size: 14px; color: var(--text-secondary); }
+.summary-value { font-size: 14px; font-weight: 500; }
+
+.store-bar-block { margin: 0 16px; background: var(--bg-secondary); border-radius: var(--radius-md); padding: 4px 16px; }
+.store-bar-row { display: flex; align-items: center; padding: 10px 0; border-bottom: 0.5px solid var(--border); gap: 10px; }
+.store-bar-row:last-child { border-bottom: none; }
+.store-bar-name { font-size: 14px; min-width: 76px; }
+.store-bar-track { flex: 1; height: 4px; background: var(--border); border-radius: 99px; overflow: hidden; }
+.store-bar-fill { height: 100%; border-radius: 99px; }
+.store-bar-amt { font-size: 13px; color: var(--text-secondary); min-width: 50px; text-align: right; font-variant-numeric: tabular-nums; }
+
+/* ── CART ── */
+.cart-banner { margin: 8px 16px 0; background: var(--bg-secondary); border-radius: var(--radius-lg); padding: 16px; display: flex; justify-content: space-between; align-items: center; }
+.cart-count { font-size: 22px; font-weight: 600; }
+.cart-sub { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+.cart-est { font-size: 22px; font-weight: 600; text-align: right; }
+.cart-est-label { font-size: 12px; color: var(--text-secondary); margin-top: 2px; text-align: right; }
+
+.progress-wrap { margin: 10px 16px 0; }
+.progress-track { height: 4px; background: var(--border); border-radius: 99px; overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 99px; background: var(--green); transition: width 0.3s ease; }
+.progress-label { font-size: 11px; color: var(--text-tertiary); margin-top: 5px; }
+
+.cat-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 20px 4px; }
+.cat-title { font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; }
+.cat-count-label { font-size: 11px; color: var(--text-tertiary); }
+
+.cart-item-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 20px; border-top: 0.5px solid var(--border);
+  cursor: pointer; transition: background 0.1s;
+}
+.cart-item-row:hover { background: var(--bg-secondary); }
+.cart-item-row.checked { opacity: 0.45; }
+
+.checkbox {
+  width: 24px; height: 24px; border-radius: 50%;
+  border: 1.5px solid var(--border-strong);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: all 0.15s; cursor: pointer;
+}
+.checkbox.done { background: var(--green); border-color: var(--green); }
+.checkbox svg { width: 13px; height: 13px; stroke: white; fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; opacity: 0; transition: opacity 0.15s; }
+.checkbox.done svg { opacity: 1; }
+
+.cart-item-info { flex: 1; }
+.cart-item-name { font-size: 15px; transition: text-decoration 0.15s; }
+.cart-item-name.struck { text-decoration: line-through; }
+.cart-item-meta { font-size: 12px; color: var(--text-tertiary); margin-top: 1px; }
+.cart-item-price { font-size: 15px; font-variant-numeric: tabular-nums; }
+
+.add-item-row { display: flex; align-items: center; gap: 12px; padding: 12px 20px; border-top: 0.5px solid var(--border); cursor: pointer; color: var(--text-tertiary); }
+.add-item-row:hover { background: var(--bg-secondary); color: var(--text-secondary); }
+.add-item-row svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+
+.big-btn {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  margin: 16px; padding: 15px; border-radius: var(--radius-lg);
+  font-size: 16px; font-weight: 500; cursor: pointer; border: none;
+  font-family: var(--font); transition: opacity 0.15s;
+}
+.big-btn.green { background: var(--green); color: white; }
+.big-btn.green:hover { opacity: 0.9; }
+.big-btn.outline { background: none; color: var(--text-secondary); border: 0.5px solid var(--border-strong); }
+.big-btn.outline:hover { background: var(--bg-secondary); }
+.big-btn svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.big-btn-sub { text-align: center; font-size: 12px; color: var(--text-tertiary); margin-top: -8px; margin-bottom: 8px; }
+
+/* ── SHELF ── */
+.search-wrap { margin: 8px 16px 0; }
+.search-box { display: flex; align-items: center; gap: 10px; background: var(--bg-secondary); border-radius: var(--radius-sm); padding: 10px 14px; border: 0.5px solid var(--border); }
+.search-box svg { width: 18px; height: 18px; stroke: var(--text-tertiary); fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+.search-box input { border: none; background: transparent; font-size: 15px; color: var(--text-primary); outline: none; flex: 1; font-family: var(--font); }
+.search-box input::placeholder { color: var(--text-tertiary); }
+
+.filter-row { display: flex; gap: 8px; padding: 10px 16px 0; overflow-x: auto; scrollbar-width: none; }
+.filter-row::-webkit-scrollbar { display: none; }
+.filter-chip { flex-shrink: 0; font-size: 12px; font-weight: 500; padding: 6px 14px; border-radius: 99px; border: 0.5px solid var(--border-strong); color: var(--text-secondary); cursor: pointer; transition: all 0.15s; white-space: nowrap; font-family: var(--font); background: none; }
+.filter-chip.active { background: var(--green); border-color: var(--green); color: white; }
+
+.stats-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin: 12px 16px 0; }
+.stat-card { background: var(--bg-secondary); border-radius: var(--radius-sm); padding: 12px; text-align: center; }
+.stat-val { font-size: 20px; font-weight: 600; }
+.stat-label { font-size: 11px; color: var(--text-tertiary); margin-top: 2px; }
+
+.swipe-wrap { position: relative; overflow: hidden; border-top: 0.5px solid var(--border); }
+.swipe-action {
+  position: absolute; right: 0; top: 0; bottom: 0;
+  width: 100px; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 3px;
+  font-size: 12px; font-weight: 500; cursor: pointer;
+}
+.swipe-action.off { background: var(--amber); color: white; }
+.swipe-action.on { background: var(--green); color: white; }
+.swipe-action svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+
+.shelf-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 20px; background: var(--bg);
+  transform: translateX(0); transition: transform 0.25s ease;
+  position: relative; z-index: 1; user-select: none;
+}
+.shelf-icon { width: 36px; height: 36px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.shelf-icon svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.shelf-info { flex: 1; min-width: 0; cursor: pointer; }
+.shelf-name-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.shelf-name { font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.shelf-meta { font-size: 12px; color: var(--text-tertiary); margin-top: 2px; }
+.shelf-right { text-align: right; flex-shrink: 0; cursor: pointer; }
+.shelf-price { font-size: 15px; font-variant-numeric: tabular-nums; }
+.shelf-trend { font-size: 11px; margin-top: 2px; }
+.shelf-trend.up { color: var(--red); }
+.shelf-trend.down { color: var(--green); }
+.shelf-trend.flat { color: var(--text-tertiary); }
+
+.badge-staple { font-size: 10px; font-weight: 500; background: var(--amber-light); color: #633806; border-radius: 99px; padding: 2px 8px; white-space: nowrap; }
+.badge-sale { display: inline-flex; align-items: center; gap: 3px; font-size: 10px; font-weight: 500; background: #D85A30; color: white; border-radius: 99px; padding: 2px 8px; }
+
+/* ── PLAN ── */
+.plan-budget-bar { margin: 8px 16px 0; background: var(--bg-secondary); border-radius: var(--radius-lg); padding: 16px; }
+.plan-budget-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; }
+.plan-budget-label { font-size: 13px; color: var(--text-secondary); }
+.plan-budget-remaining { font-size: 24px; font-weight: 600; color: var(--green); }
+.plan-budget-of { font-size: 12px; color: var(--text-tertiary); margin-top: 2px; }
+
+.plan-nudge-card {
+  margin: 0 16px 10px; padding: 14px 16px;
+  display: flex; gap: 12px; align-items: flex-start;
+}
+.plan-nudge-card.protein { border-left: 3px solid var(--coral); }
+.plan-nudge-card.produce { border-left: 3px solid var(--green-dark); }
+.plan-nudge-card.staple { border-left: 3px solid var(--blue); }
+.plan-nudge-card.deal { border-left: 3px solid var(--amber); }
+
+.predicted-wrap { margin: 0 16px; }
+.predicted-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-top: 0.5px solid var(--border); }
+.predicted-left { display: flex; align-items: center; gap: 10px; }
+.predicted-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.predicted-dot.due { background: var(--red); }
+.predicted-dot.soon { background: var(--amber); }
+.predicted-dot.ok { background: var(--green); }
+.predicted-name { font-size: 14px; }
+.predicted-days { font-size: 11px; color: var(--text-tertiary); margin-top: 1px; }
+.predicted-price { font-size: 14px; color: var(--text-secondary); font-variant-numeric: tabular-nums; }
+.predicted-total { display: flex; justify-content: space-between; padding: 12px 0 0; border-top: 0.5px solid var(--border-strong); margin-top: 2px; }
+.predicted-total-label { font-size: 14px; font-weight: 500; }
+.predicted-total-amt { font-size: 16px; font-weight: 600; }
+
+.budget-edit-row { display: flex; align-items: center; justify-content: space-between; margin: 10px 16px 0; padding: 12px 16px; background: var(--bg-secondary); border-radius: var(--radius-sm); }
+.budget-edit-label { font-size: 13px; color: var(--text-secondary); }
+.budget-edit-right { display: flex; align-items: center; gap: 10px; }
+.budget-edit-val { font-size: 15px; font-weight: 500; }
+.budget-edit-btn { font-size: 12px; padding: 4px 12px; border-radius: 99px; border: 0.5px solid var(--border-strong); color: var(--text-secondary); cursor: pointer; background: none; font-family: var(--font); }
+
+/* ── API KEY SETUP SCREEN ── */
+.setup-screen {
+  position: fixed; inset: 0; background: var(--bg); z-index: 200;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 32px 24px; text-align: center;
+}
+.setup-screen.hidden { display: none; }
+.setup-logo { font-size: 42px; font-weight: 600; letter-spacing: -1.5px; margin-bottom: 8px; }
+.setup-tagline { font-size: 15px; color: var(--text-secondary); margin-bottom: 40px; }
+.setup-card { width: 100%; max-width: 340px; background: var(--bg-secondary); border-radius: var(--radius-lg); padding: 24px; text-align: left; }
+.setup-card-title { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+.setup-card-sub { font-size: 13px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 20px; }
+.setup-steps { margin-bottom: 20px; }
+.setup-step { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 12px; font-size: 13px; color: var(--text-secondary); line-height: 1.4; }
+.setup-step-num { width: 20px; height: 20px; border-radius: 50%; background: var(--green); color: white; font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+.setup-input-wrap { position: relative; margin-bottom: 12px; }
+.setup-input { width: 100%; padding: 12px 44px 12px 14px; border: 1px solid var(--border-strong); border-radius: var(--radius-sm); font-size: 14px; font-family: var(--font-mono); background: var(--bg); color: var(--text-primary); outline: none; }
+.setup-input:focus { border-color: var(--green); }
+.setup-toggle-vis { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; color: var(--text-tertiary); background: none; border: none; padding: 0; }
+.setup-toggle-vis svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.setup-save-btn { width: 100%; padding: 13px; background: var(--green); color: white; border: none; border-radius: var(--radius-sm); font-size: 15px; font-weight: 500; font-family: var(--font); cursor: pointer; }
+.setup-save-btn:hover { opacity: 0.9; }
+.setup-skip { font-size: 12px; color: var(--text-tertiary); text-align: center; margin-top: 12px; cursor: pointer; }
+.setup-skip:hover { color: var(--text-secondary); }
+
+/* ── RECEIPT SCANNER MODAL ── */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+  z-index: 100; display: none; align-items: flex-end;
+}
+.modal-overlay.open { display: flex; }
+.modal-sheet {
+  width: 100%; max-width: 430px; margin: 0 auto;
+  background: var(--bg); border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  padding: 20px 20px calc(20px + env(safe-area-inset-bottom));
+  max-height: 85vh; overflow-y: auto;
+}
+.modal-handle { width: 36px; height: 4px; background: var(--border-strong); border-radius: 99px; margin: 0 auto 20px; }
+.modal-title { font-size: 18px; font-weight: 600; margin-bottom: 6px; }
+.modal-sub { font-size: 14px; color: var(--text-secondary); margin-bottom: 20px; line-height: 1.5; }
+
+.upload-zone {
+  border: 1.5px dashed var(--border-strong); border-radius: var(--radius-lg);
+  padding: 32px 20px; text-align: center; cursor: pointer;
+  transition: background 0.15s; margin-bottom: 16px;
+}
+.upload-zone:hover { background: var(--bg-secondary); }
+.upload-zone svg { width: 36px; height: 36px; stroke: var(--text-tertiary); fill: none; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; margin-bottom: 10px; }
+.upload-zone-label { font-size: 15px; font-weight: 500; margin-bottom: 4px; }
+.upload-zone-sub { font-size: 13px; color: var(--text-tertiary); }
+#receipt-input { display: none; }
+
+.scan-result { display: none; }
+.scan-result.visible { display: block; }
+.scan-item-row { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; border-top: 0.5px solid var(--border); font-size: 14px; }
+.scan-item-name { flex: 1; color: var(--text-primary); }
+.scan-item-price { color: var(--text-secondary); font-variant-numeric: tabular-nums; }
+.scan-item-remove { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-tertiary); margin-left: 8px; flex-shrink: 0; }
+.scan-item-remove svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.scan-total { display: flex; justify-content: space-between; padding: 12px 0; border-top: 0.5px solid var(--border-strong); font-weight: 600; font-size: 15px; margin-top: 2px; }
+
+.scanning-indicator { text-align: center; padding: 24px; display: none; }
+.scanning-indicator.visible { display: block; }
+.scanning-dots { display: flex; justify-content: center; gap: 6px; margin-bottom: 12px; }
+.scanning-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); animation: pulse 1.2s ease-in-out infinite; }
+.scanning-dot:nth-child(2) { animation-delay: 0.2s; }
+.scanning-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes pulse { 0%,80%,100%{transform:scale(0.6);opacity:0.4} 40%{transform:scale(1);opacity:1} }
+.scanning-text { font-size: 14px; color: var(--text-secondary); }
+
+/* ── HAUL DETAIL MODAL ── */
+.haul-detail-modal { position: fixed; inset: 0; background: var(--bg); z-index: 50; display: none; overflow-y: auto; }
+.haul-detail-modal.open { display: block; }
+.haul-detail-topbar { display: flex; align-items: center; gap: 12px; padding: 16px 20px; border-bottom: 0.5px solid var(--border); position: sticky; top: 0; background: rgba(255,255,255,0.95); backdrop-filter: blur(12px); }
+.back-btn { display: flex; align-items: center; gap: 4px; font-size: 15px; color: var(--green); cursor: pointer; border: none; background: none; font-family: var(--font); }
+.back-btn svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ── UTILITIES ── */
+.px-16 { padding-left: 16px; padding-right: 16px; }
+.mt-8 { margin-top: 8px; }
+.mt-16 { margin-top: 16px; }
+.color-green { color: var(--green); }
+.color-red { color: var(--red); }
+.fw-500 { font-weight: 500; }
+.fw-600 { font-weight: 600; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ═══════════════════════════════════════
+       HOME SCREEN
+  ════════════════════════════════════════ -->
+  <div id="screen-home" class="screen active">
+    <div style="padding:20px 20px 0;">
+      <div style="font-size:13px;color:var(--text-tertiary);" id="greeting">Good morning</div>
+      <div style="font-size:26px;font-weight:600;letter-spacing:-0.5px;margin-top:2px;">Pantry.</div>
+    </div>
+
+    <div class="budget-hero">
+      <div class="budget-hero-top">
+        <div>
+          <div class="budget-hero-label">Remaining in May</div>
+          <div class="budget-hero-amount">$66.53</div>
+          <div class="budget-hero-sub">$783.47 of $850.00 spent</div>
+        </div>
+        <div class="budget-hero-right">
+          <div style="font-size:11px;opacity:0.75;">May 2026</div>
+          <div class="budget-hero-pct">92%</div>
+          <div class="budget-hero-pct-label">spent</div>
+        </div>
+      </div>
+      <div class="budget-bar-track"><div class="budget-bar-fill" style="width:92%;"></div></div>
+      <div class="budget-bar-labels"><span>$0</span><span>6 hauls · 7 days left</span><span>$850</span></div>
+    </div>
+
+    <div class="quick-grid">
+      <div class="quick-card" onclick="switchTab('cart')">
+        <div class="quick-card-icon" style="background:var(--green-light);color:var(--green-dark);">
+          <svg viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        </div>
+        <div>
+          <div class="quick-card-label">Open cart</div>
+          <div class="quick-card-sub">12 items ready</div>
+        </div>
+      </div>
+      <div class="quick-card" onclick="openScanner()">
+        <div class="quick-card-icon" style="background:var(--blue-light);color:var(--blue);">
+          <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        </div>
+        <div>
+          <div class="quick-card-label">Scan receipt</div>
+          <div class="quick-card-sub">Log a haul</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <span class="section-title">Most recent haul</span>
+        <span class="section-link" onclick="switchTab('perspective')">See all</span>
+      </div>
+      <div class="card recent-haul-card" onclick="openHaulDetail('aldi-may22')">
+        <div class="haul-head">
+          <div class="store-avatar" style="background:var(--purple-light);color:var(--purple);">
+            <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          </div>
+          <div>
+            <div class="haul-store">ALDI</div>
+            <div class="haul-date">May 22 · 2 days ago</div>
+          </div>
+          <div class="haul-amount">
+            <div class="haul-total">$15.57</div>
+            <div class="haul-items-count">3 items</div>
+          </div>
+        </div>
+        <div class="haul-preview">
+          <div class="haul-item-row"><span>Org baby arugula</span><span>$2.59</span></div>
+          <div class="haul-item-row"><span>Organic spring mix</span><span>$4.99</span></div>
+          <div class="haul-item-row"><span>Supreme deli pizza</span><span>$7.99</span></div>
+        </div>
+        <div class="haul-more">Tap to see full haul →</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <span class="section-title">AI nudge</span>
+        <span class="section-link" onclick="switchTab('plan')">See all</span>
+      </div>
+      <div class="card nudge-card-home">
+        <div class="nudge-icon-wrap">
+          <svg viewBox="0 0 24 24"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+        </div>
+        <div class="nudge-body">
+          <div class="nudge-title">You're low on protein</div>
+          <div class="nudge-text">Salmon and chicken were bought 6 days ago. No new protein in your cart yet.</div>
+          <div class="nudge-btns">
+            <button class="nudge-btn primary" onclick="switchTab('cart')">Add to cart</button>
+            <button class="nudge-btn" onclick="switchTab('plan')">See all nudges</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-title">May at a glance</span></div>
+      <div class="snap-grid">
+        <div class="snap-card"><div class="snap-val">6</div><div class="snap-label">Hauls</div></div>
+        <div class="snap-card"><div class="snap-val color-green">$51.50</div><div class="snap-label">Saved</div></div>
+        <div class="snap-card"><div class="snap-val">$130</div><div class="snap-label">Avg haul</div></div>
+      </div>
+    </div>
+    <div style="height:8px;"></div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       PERSPECTIVE SCREEN
+  ════════════════════════════════════════ -->
+  <div id="screen-perspective" class="screen">
+    <div class="topbar">
+      <div style="font-size:16px;font-weight:600;">May 2026</div>
+      <div class="topbar-icons">
+        <button class="icon-btn"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></button>
+      </div>
+    </div>
+
+    <div class="budget-hero" style="margin:0 16px;">
+      <div class="budget-hero-top">
+        <div>
+          <div class="budget-hero-label">Remaining in May</div>
+          <div class="budget-hero-amount">$66.53</div>
+          <div class="budget-hero-sub">$783.47 of $850.00 spent</div>
+        </div>
+        <div class="budget-hero-right">
+          <div style="font-size:11px;opacity:0.75;">May 2026</div>
+          <div class="budget-hero-pct">92%</div>
+          <div class="budget-hero-pct-label">spent</div>
+        </div>
+      </div>
+      <div class="budget-bar-track"><div class="budget-bar-fill" style="width:92%;"></div></div>
+      <div class="budget-bar-labels"><span>$0</span><span>6 hauls · 7 days left</span><span>$850</span></div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-title">Perspective</span></div>
+      <div class="col-labels"><span>Haul</span><span>Spent</span></div>
+
+      <div class="haul-row" onclick="openHaulDetail('costco-may3')">
+        <div class="store-avatar" style="background:var(--blue-light);color:var(--blue);width:36px;height:36px;"><svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg></div>
+        <div style="flex:1;"><div style="font-size:15px;font-weight:500;">Costco</div><div style="font-size:12px;color:var(--text-tertiary);margin-top:1px;">May 3</div></div>
+        <div class="haul-row-right"><div class="haul-row-spent">$209.48</div><div class="haul-row-count">22 items</div></div>
+      </div>
+      <div class="haul-row" onclick="openHaulDetail('detwilers-may4')">
+        <div class="store-avatar" style="background:#EAF3DE;color:#3B6D11;width:36px;height:36px;"><svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;"><path d="M12 22V12M12 12C12 7 7 3 2 5M12 12C12 7 17 3 22 5"/></svg></div>
+        <div style="flex:1;"><div style="font-size:15px;font-weight:500;">Detwiler's</div><div style="font-size:12px;color:var(--text-tertiary);margin-top:1px;">May 4</div></div>
+        <div class="haul-row-right"><div class="haul-row-spent">$34.67</div><div class="haul-row-count">7 items</div></div>
+      </div>
+      <div class="haul-row" onclick="openHaulDetail('costco-may11')">
+        <div class="store-avatar" style="background:var(--blue-light);color:var(--blue);width:36px;height:36px;"><svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg></div>
+        <div style="flex:1;"><div style="font-size:15px;font-weight:500;">Costco</div><div style="font-size:12px;color:var(--text-tertiary);margin-top:1px;">May 11</div></div>
+        <div class="haul-row-right"><div class="haul-row-spent">$233.18</div><div class="haul-row-count">17 items</div></div>
+      </div>
+      <div class="haul-row" onclick="openHaulDetail('publix-may16')">
+        <div class="store-avatar" style="background:var(--green-light);color:var(--green-dark);width:36px;height:36px;"><svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+        <div style="flex:1;"><div style="font-size:15px;font-weight:500;">Publix</div><div style="font-size:12px;color:var(--text-tertiary);margin-top:1px;">May 16</div></div>
+        <div class="haul-row-right"><div class="haul-row-spent">$15.97</div><div class="haul-row-count">3 items</div></div>
+      </div>
+      <div class="haul-row" onclick="openHaulDetail('costco-may18')">
+        <div class="store-avatar" style="background:var(--blue-light);color:var(--blue);width:36px;height:36px;"><svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg></div>
+        <div style="flex:1;"><div style="font-size:15px;font-weight:500;">Costco</div><div style="font-size:12px;color:var(--text-tertiary);margin-top:1px;">May 18</div></div>
+        <div class="haul-row-right"><div class="haul-row-spent">$274.60</div><div class="haul-row-count">23 items</div></div>
+      </div>
+      <div class="haul-row" onclick="openHaulDetail('aldi-may22')">
+        <div class="store-avatar" style="background:var(--purple-light);color:var(--purple);width:36px;height:36px;"><svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+        <div style="flex:1;"><div style="font-size:15px;font-weight:500;">ALDI</div><div style="font-size:12px;color:var(--text-tertiary);margin-top:1px;">May 22</div></div>
+        <div class="haul-row-right"><div class="haul-row-spent">$15.57</div><div class="haul-row-count">3 items</div></div>
+      </div>
+
+      <div class="divider-label">Upcoming</div>
+      <div class="haul-row">
+        <div class="store-avatar" style="background:var(--bg-secondary);color:var(--text-tertiary);width:36px;height:36px;"><svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+        <div style="flex:1;"><div style="font-size:15px;color:var(--text-secondary);">Next run</div><div style="font-size:12px;color:var(--text-tertiary);margin-top:1px;">AI predicted · ~May 25</div></div>
+        <div class="haul-row-right"><div class="haul-row-spent" style="color:var(--text-tertiary);">~$66</div><div class="haul-row-count">est.</div></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-title">May summary</span></div>
+      <div class="summary-block">
+        <div class="summary-row"><span class="summary-label">Budget</span><span class="summary-value">$850.00</span></div>
+        <div class="summary-row"><span class="summary-label">Total spent</span><span class="summary-value">$783.47</span></div>
+        <div class="summary-row"><span class="summary-label">Remaining</span><span class="summary-value color-green">$66.53</span></div>
+        <div class="summary-row"><span class="summary-label">Hauls</span><span class="summary-value">6</span></div>
+        <div class="summary-row"><span class="summary-label">Avg per haul</span><span class="summary-value">$130.58</span></div>
+        <div class="summary-row"><span class="summary-label">Coupons & savings</span><span class="summary-value color-green">$51.50</span></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-title">By store</span></div>
+      <div class="store-bar-block">
+        <div class="store-bar-row"><span class="store-bar-name">Costco</span><div class="store-bar-track"><div class="store-bar-fill" style="width:92%;background:var(--blue);"></div></div><span class="store-bar-amt">$717.26</span></div>
+        <div class="store-bar-row"><span class="store-bar-name">Detwiler's</span><div class="store-bar-track"><div class="store-bar-fill" style="width:24%;background:#3B6D11;"></div></div><span class="store-bar-amt">$34.67</span></div>
+        <div class="store-bar-row"><span class="store-bar-name">Publix</span><div class="store-bar-track"><div class="store-bar-fill" style="width:11%;background:var(--green);"></div></div><span class="store-bar-amt">$15.97</span></div>
+        <div class="store-bar-row"><span class="store-bar-name">ALDI</span><div class="store-bar-track"><div class="store-bar-fill" style="width:11%;background:var(--purple);"></div></div><span class="store-bar-amt">$15.57</span></div>
+      </div>
+    </div>
+
+    <button class="big-btn green" style="margin-top:16px;" onclick="openScanner()">
+      <svg viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+      Log a haul
+    </button>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       CART SCREEN
+  ════════════════════════════════════════ -->
+  <div id="screen-cart" class="screen">
+    <div class="topbar">
+      <button class="icon-btn"><svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></button>
+      <span class="topbar-title">Cart</span>
+      <button class="icon-btn" id="clear-cart-btn"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>
+    </div>
+
+    <div class="cart-banner">
+      <div>
+        <div class="cart-count" id="cart-item-count">12 items</div>
+        <div class="cart-sub" id="cart-checked-count">0 in the cart</div>
+      </div>
+      <div>
+        <div class="cart-est">~$196</div>
+        <div class="cart-est-label">estimated total</div>
+      </div>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress-track"><div class="progress-fill" id="cart-progress" style="width:0%;"></div></div>
+      <div class="progress-label" id="cart-progress-label">0 of 12 items grabbed</div>
+    </div>
+
+    <div id="cart-list"></div>
+
+    <div class="add-item-row" onclick="promptAddItem()">
+      <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      <span style="font-size:15px;">Toss something in</span>
+    </div>
+
+    <button class="big-btn outline" style="margin-top:8px;" onclick="buildAIList()">
+      <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      Build with AI
+    </button>
+    <button class="big-btn green" onclick="checkoutCart()">
+      <svg viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+      That's in the bag
+    </button>
+    <div class="big-btn-sub">Moves all items to your Shelf & Perspective</div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       SHELF SCREEN
+  ════════════════════════════════════════ -->
+  <div id="screen-shelf" class="screen">
+    <div class="topbar">
+      <button class="icon-btn"><svg viewBox="0 0 24 24"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg></button>
+      <span class="topbar-title">Shelf</span>
+      <button class="icon-btn"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></button>
+    </div>
+
+    <div class="search-wrap">
+      <div class="search-box">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" placeholder="Search your shelf..." id="shelf-search" oninput="filterShelf(this.value)">
+      </div>
+    </div>
+
+    <div class="filter-row" id="shelf-filters">
+      <button class="filter-chip active" onclick="setShelfFilter('All',this)">All</button>
+      <button class="filter-chip" onclick="setShelfFilter('Fresh Produce',this)">Produce</button>
+      <button class="filter-chip" onclick="setShelfFilter('Dairy & Eggs',this)">Dairy & Eggs</button>
+      <button class="filter-chip" onclick="setShelfFilter('Meat & Protein',this)">Meat</button>
+      <button class="filter-chip" onclick="setShelfFilter('Pantry Staples',this)">Pantry</button>
+      <button class="filter-chip" onclick="setShelfFilter('Beverages',this)">Beverages</button>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-val">47</div><div class="stat-label">Items tracked</div></div>
+      <div class="stat-card"><div class="stat-val" id="staple-count">4</div><div class="stat-label">Staples</div></div>
+      <div class="stat-card"><div class="stat-val color-green">$117</div><div class="stat-label">Saved to date</div></div>
+    </div>
+
+    <div id="shelf-list" style="margin-top:8px;"></div>
+
+    <button class="big-btn outline" style="margin-top:8px;">
+      <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Stock the shelf
+    </button>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       PLAN SCREEN
+  ════════════════════════════════════════ -->
+  <div id="screen-plan" class="screen">
+    <div class="topbar">
+      <button class="icon-btn"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></button>
+      <span class="topbar-title">Plan</span>
+      <button class="icon-btn"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></button>
+    </div>
+
+    <div class="plan-budget-bar">
+      <div class="plan-budget-row">
+        <div>
+          <div class="plan-budget-label" style="font-size:12px;color:var(--text-secondary);margin-bottom:4px;">May 2026 · remaining</div>
+          <div class="plan-budget-remaining">$66.53</div>
+          <div class="plan-budget-of">$783.47 of $850.00 spent</div>
+        </div>
+      </div>
+      <div class="budget-bar-track" style="background:var(--border);"><div class="budget-bar-fill" style="width:92%;background:var(--green);"></div></div>
+    </div>
+
+    <div class="budget-edit-row">
+      <span class="budget-edit-label">Monthly budget</span>
+      <div class="budget-edit-right">
+        <span class="budget-edit-val">$850.00</span>
+        <button class="budget-edit-btn" onclick="editBudget()">Edit</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <span class="section-title">AI nudges</span>
+        <span class="section-link" onclick="refreshNudges()" id="nudge-refresh-btn">Refresh</span>
+      </div>
+
+      <div id="nudges-loading" style="display:none;text-align:center;padding:32px 20px;">
+        <div class="scanning-dots" style="justify-content:center;margin-bottom:12px;">
+          <div class="scanning-dot"></div>
+          <div class="scanning-dot"></div>
+          <div class="scanning-dot"></div>
+        </div>
+        <div style="font-size:13px;color:var(--text-secondary);">Analyzing your grocery history...</div>
+      </div>
+
+      <div id="nudges-container">
+        <!-- AI nudges rendered here -->
+        <div class="card plan-nudge-card protein" id="nudge-protein">
+          <div class="nudge-icon-wrap" style="background:var(--coral-light);color:var(--coral);">
+            <svg viewBox="0 0 24 24"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+          </div>
+          <div class="nudge-body">
+            <div class="nudge-title">You're low on protein</div>
+            <div class="nudge-text">Salmon and organic fryers bought May 18 — 6 days ago. No new protein in your cart yet this run.</div>
+            <div class="nudge-btns">
+              <button class="nudge-btn primary" onclick="switchTab('cart')">Add to cart</button>
+              <button class="nudge-btn" onclick="dismissNudge('nudge-protein')">Dismiss</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card plan-nudge-card produce" id="nudge-bananas">
+          <div class="nudge-icon-wrap" style="background:var(--green-light);color:var(--green-dark);">
+            <svg viewBox="0 0 24 24"><path d="M12 22V12M12 12C12 7 7 3 2 5M12 12C12 7 17 3 22 5"/></svg>
+          </div>
+          <div class="nudge-body">
+            <div class="nudge-title">Bananas are due</div>
+            <div class="nudge-text">Last picked up at Detwiler's on May 4 — 20 days ago. You usually grab these every 2 weeks.</div>
+            <div class="nudge-btns">
+              <button class="nudge-btn primary" onclick="switchTab('cart')">Add to cart</button>
+              <button class="nudge-btn" onclick="dismissNudge('nudge-bananas')">Dismiss</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card plan-nudge-card staple" id="nudge-eggs">
+          <div class="nudge-icon-wrap" style="background:var(--blue-light);color:var(--blue);">
+            <svg viewBox="0 0 24 24"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/></svg>
+          </div>
+          <div class="nudge-body">
+            <div class="nudge-title">Eggs are running low</div>
+            <div class="nudge-text">Bought 2 dozen on May 18. Based on your history you go through these in about 10–14 days.</div>
+            <div class="nudge-btns">
+              <button class="nudge-btn primary" onclick="switchTab('cart')">Add to cart</button>
+              <button class="nudge-btn" onclick="dismissNudge('nudge-eggs')">Dismiss</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card plan-nudge-card deal" id="nudge-orgain">
+          <div class="nudge-icon-wrap" style="background:var(--amber-light);color:#854F0B;">
+            <svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+          </div>
+          <div class="nudge-body">
+            <div class="nudge-title">Orgain coupon is back</div>
+            <div class="nudge-text">You've caught the Costco $8 coupon on Orgain twice now. Worth stocking up if you see it.</div>
+            <div class="nudge-btns">
+              <button class="nudge-btn primary" onclick="switchTab('cart')">Add to cart</button>
+              <button class="nudge-btn" onclick="dismissNudge('nudge-orgain')">Dismiss</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <span class="section-title">Predicted next run</span>
+        <span style="font-size:12px;color:var(--text-tertiary);">~May 25 · Costco</span>
+      </div>
+      <div class="predicted-wrap">
+        <div class="predicted-item"><div class="predicted-left"><div class="predicted-dot due"></div><div><div class="predicted-name">Organic eggs</div><div class="predicted-days">Due now · last bought 6 days ago</div></div></div><div class="predicted-price">~$7.69</div></div>
+        <div class="predicted-item"><div class="predicted-left"><div class="predicted-dot due"></div><div><div class="predicted-name">Bananas</div><div class="predicted-days">Due now · last bought 20 days ago</div></div></div><div class="predicted-price">~$1.22</div></div>
+        <div class="predicted-item"><div class="predicted-left"><div class="predicted-dot soon"></div><div><div class="predicted-name">Lolli peppers</div><div class="predicted-days">Due soon · last bought 21 days ago</div></div></div><div class="predicted-price">~$5.49</div></div>
+        <div class="predicted-item"><div class="predicted-left"><div class="predicted-dot soon"></div><div><div class="predicted-name">Avocados</div><div class="predicted-days">Due soon · last bought 6 days ago</div></div></div><div class="predicted-price">~$4.89</div></div>
+        <div class="predicted-item"><div class="predicted-left"><div class="predicted-dot soon"></div><div><div class="predicted-name">KS sparkling water</div><div class="predicted-days">Due soon · last bought 13 days ago</div></div></div><div class="predicted-price">~$17.59</div></div>
+        <div class="predicted-item"><div class="predicted-left"><div class="predicted-dot ok"></div><div><div class="predicted-name">KS sharp cheddar</div><div class="predicted-days">Coming up · last bought 21 days ago</div></div></div><div class="predicted-price">~$5.39</div></div>
+        <div class="predicted-item"><div class="predicted-left"><div class="predicted-dot ok"></div><div><div class="predicted-name">EVOO hummus</div><div class="predicted-days">Coming up · last bought 6 days ago</div></div></div><div class="predicted-price">~$7.49</div></div>
+        <div class="predicted-total"><span class="predicted-total-label">Estimated total</span><span class="predicted-total-amt">~$49.76</span></div>
+      </div>
+      <button class="big-btn green" onclick="buildAIList()">
+        <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        Build my cart from this
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       BOTTOM NAV
+  ════════════════════════════════════════ -->
+  <nav class="bottom-nav">
+    <button class="nav-btn active" onclick="switchTab('home')" id="nav-home">
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Home
+    </button>
+    <button class="nav-btn" onclick="switchTab('perspective')" id="nav-perspective">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Perspective
+    </button>
+    <button class="nav-btn" onclick="switchTab('cart')" id="nav-cart">
+      <svg viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+      Cart
+    </button>
+    <button class="nav-btn" onclick="switchTab('shelf')" id="nav-shelf">
+      <svg viewBox="0 0 24 24"><line x1="4" y1="21" x2="4" y2="3"/><line x1="9" y1="21" x2="9" y2="13"/><line x1="14" y1="21" x2="14" y2="8"/><line x1="19" y1="21" x2="19" y2="17"/><line x1="2" y1="21" x2="22" y2="21"/></svg>
+      Shelf
+    </button>
+    <button class="nav-btn" onclick="switchTab('plan')" id="nav-plan">
+      <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+      Plan
+    </button>
+  </nav>
+</div>
+
+<!-- ═══════════════════════════════════════
+     API KEY SETUP SCREEN
+════════════════════════════════════════ -->
+<div class="setup-screen" id="setup-screen">
+  <div class="setup-logo">Pantry.</div>
+  <div class="setup-tagline">Your smart grocery tracker</div>
+  <div class="setup-card">
+    <div class="setup-card-title">Set up receipt scanning</div>
+    <div class="setup-card-sub">Pantry. uses Claude AI to read your receipts. Add your Anthropic API key to get started.</div>
+    <div class="setup-steps">
+      <div class="setup-step"><span class="setup-step-num">1</span><span>Go to <strong>console.anthropic.com</strong></span></div>
+      <div class="setup-step"><span class="setup-step-num">2</span><span>Click <strong>"API Keys"</strong> → <strong>"Create Key"</strong></span></div>
+      <div class="setup-step"><span class="setup-step-num">3</span><span>Copy the key and paste it below</span></div>
+    </div>
+    <div class="setup-input-wrap">
+      <input type="text" class="setup-input" id="api-key-input" placeholder="sk-ant-..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" onkeydown="if(event.key==='Enter'){saveApiKey();}">
+    </div>
+    <button class="setup-save-btn" id="setup-save-btn" onclick="saveApiKey()" type="button">Save &amp; open Pantry.</button>
+    <div class="setup-skip" onclick="skipSetup()">Skip for now — I'll add it later</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     RECEIPT SCANNER MODAL
+════════════════════════════════════════ -->
+<div class="modal-overlay" id="scanner-modal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Scan a receipt</div>
+    <div class="modal-sub">Take a photo or upload a receipt and Pantry. will extract all the items automatically.</div>
+
+    <div class="upload-zone" onclick="document.getElementById('receipt-input').click()">
+      <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+      <div class="upload-zone-label">Take photo or choose from library</div>
+      <div class="upload-zone-sub">iPhone will ask which option you prefer</div>
+    </div>
+    <input type="file" id="receipt-input" accept="image/*" onchange="handleReceiptUpload(this)">
+
+    <div class="scanning-indicator" id="scanning-indicator">
+      <div class="scanning-dots">
+        <div class="scanning-dot"></div>
+        <div class="scanning-dot"></div>
+        <div class="scanning-dot"></div>
+      </div>
+      <div class="scanning-text" id="scanning-text">Reading your receipt...</div>
+    </div>
+
+    <div class="scan-result" id="scan-result">
+      <div style="font-size:14px;font-weight:600;margin-bottom:4px;" id="scan-store-name">Store</div>
+      <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:12px;" id="scan-date"></div>
+      <div id="scan-items-list"></div>
+      <div class="scan-total"><span>Total</span><span id="scan-total-amt"></span></div>
+      <button class="big-btn green" style="margin-top:12px;" onclick="addScanToCart()">
+        <svg viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        Add all to cart
+      </button>
+      <button class="big-btn outline" onclick="closeScanner()">Cancel</button>
+    <div style="text-align:center;margin-top:4px;font-size:12px;color:var(--text-tertiary);cursor:pointer;" onclick="closeScanner();document.getElementById('setup-screen').classList.remove('hidden');">⚙️ Update API key</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     HAUL DETAIL MODAL
+════════════════════════════════════════ -->
+<div class="haul-detail-modal" id="haul-detail-modal">
+  <div class="haul-detail-topbar">
+    <button class="back-btn" onclick="closeHaulDetail()">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+      Back
+    </button>
+    <span style="font-size:16px;font-weight:600;margin-left:4px;" id="haul-detail-title"></span>
+  </div>
+  <div id="haul-detail-content"></div>
+</div>
+
+<script>
+// ═══════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════
+const HAULS = {
+  'costco-may3': {
+    store:'Costco', date:'May 3, 2026', total:209.48, saved:14.00,
+    items:[
+      {cat:'Dairy & Eggs', name:'Organic eggs', price:7.69},
+      {cat:'Dairy & Eggs', name:'Organic eggs', price:7.69},
+      {cat:'Dairy & Eggs', name:'Greek yogurt', price:6.99},
+      {cat:'Dairy & Eggs', name:'Crumbled feta', price:6.89},
+      {cat:'Dairy & Eggs', name:'KS sharp cheddar', price:5.39},
+      {cat:'Meat & Protein', name:'Frizzle chicken', price:13.99},
+      {cat:'Meat & Protein', name:'Spicy strips', price:14.99},
+      {cat:'Meat & Protein', name:'KS steak strips', price:11.99},
+      {cat:'Pantry Staples', name:'Orgain chocolate', price:33.99},
+      {cat:'Pantry Staples', name:'Coupon · Orgain', price:-8.00, coupon:true},
+      {cat:'Pantry Staples', name:'Vital Proteins', price:29.99},
+      {cat:'Pantry Staples', name:'Coupon · Vital Proteins', price:-6.00, coupon:true},
+      {cat:'Pantry Staples', name:'Cocoa cereal', price:9.59},
+      {cat:'Pantry Staples', name:'Naan bread', price:6.99},
+      {cat:'Fresh Produce', name:'Red onions', price:5.39},
+      {cat:'Fresh Produce', name:'Organic cucumber', price:4.99},
+      {cat:'Fresh Produce', name:'Vidalia onion', price:4.39},
+      {cat:'Fresh Produce', name:'Lolli peppers', price:5.49},
+      {cat:'Fresh Produce', name:'Avocados', price:4.69},
+      {cat:'Fresh Produce', name:'Cantaloupe', price:5.89},
+      {cat:'Fresh Produce', name:'RR tomatoes', price:6.99},
+      {cat:'Fresh Produce', name:'Sweet kale duo', price:6.99},
+      {cat:'Supplements', name:'KS Organic A2 Protein', price:11.79},
+    ]
+  },
+  'detwilers-may4': {
+    store:"Detwiler's", date:'May 4, 2026', total:34.67, saved:1.00,
+    items:[
+      {cat:'Meat & Protein', name:'Petr Bev Lightning Mushroom', price:5.99},
+      {cat:'Condiments', name:'PM Drs Creamy Ranch', price:9.99},
+      {cat:'Condiments', name:'M Drs Italian', price:9.99},
+      {cat:'Condiments', name:'San-J Tamari', price:3.99},
+      {cat:'Fresh Produce', name:'Bananas', price:1.22},
+      {cat:'Fresh Produce', name:'Herb dill', price:1.99},
+      {cat:'Fresh Produce', name:'Lemons (3)', price:1.50},
+    ]
+  },
+  'costco-may11': {
+    store:'Costco', date:'May 11, 2026', total:233.18, saved:7.50,
+    items:[
+      {cat:'Supplements', name:'KS Organic A2 Protein', price:12.99},
+      {cat:'Frozen', name:'Tallow fries', price:11.99},
+      {cat:'Fresh Produce', name:'Roasted veg', price:16.49},
+      {cat:'Meat & Protein', name:'Sockeye salmon', price:16.79},
+      {cat:'Snacks', name:'Beef sticks', price:17.99},
+      {cat:'Snacks', name:'Beef jerky mango', price:18.89},
+      {cat:'Fresh Produce', name:'Watermelon', price:6.99},
+      {cat:'Pantry Staples', name:'EVOO hummus', price:7.49},
+      {cat:'Fresh Produce', name:'Peaches', price:7.99},
+      {cat:'Supplements', name:'Orgncoll PR', price:29.99},
+      {cat:'Supplements', name:'Coupon · Orgncoll PR', price:-6.00, coupon:true},
+      {cat:'Fresh Produce', name:'Lolli peppers', price:5.49},
+      {cat:'Fresh Produce', name:'Avocados', price:4.69},
+      {cat:'Snacks', name:'Jcky Bikini', price:13.99, sale:true},
+      {cat:'Fresh Produce', name:'Blueberries', price:6.49},
+      {cat:'Fresh Produce', name:'Coupon · Blueberries', price:-1.50, coupon:true},
+      {cat:'Beverages', name:'KS Energy 12Z', price:16.99},
+      {cat:'Beverages', name:'KS sparkling water', price:17.59},
+      {cat:'Beverages', name:'Celsius energy', price:23.99},
+    ]
+  },
+  'publix-may16': {
+    store:'Publix', date:'May 16, 2026', total:15.97, saved:0,
+    items:[
+      {cat:'Beverages', name:'Knudsen Org Guava Dragonfruit', price:7.99},
+      {cat:'Fresh Produce', name:'Organic carrots', price:1.99},
+      {cat:'Ready-Made', name:'Popcorn chicken cup', price:5.99},
+    ]
+  },
+  'costco-may18': {
+    store:'Costco', date:'May 18, 2026', total:274.60, saved:30.50,
+    items:[
+      {cat:'Beverages', name:'LaCroix variety', price:9.99},
+      {cat:'Beverages', name:'Olipop variety', price:19.99},
+      {cat:'Beverages', name:'Coupon · Olipop', price:-5.00, coupon:true},
+      {cat:'Meat & Protein', name:'Organic fryers', price:30.98},
+      {cat:'Ready-Made', name:'Quesadilla', price:15.39},
+      {cat:'Supplements', name:'KS Organic A2 Protein', price:12.99},
+      {cat:'Snacks', name:'Tallow chips', price:7.99},
+      {cat:'Beverages', name:'Char coffee', price:22.99},
+      {cat:'Beverages', name:'Coupon · Coffee', price:-5.00, coupon:true},
+      {cat:'Dairy & Eggs', name:'Greek yogurt', price:6.99},
+      {cat:'Pantry Staples', name:'Quinoa & rice', price:11.99},
+      {cat:'Pantry Staples', name:'Coupon · Quinoa', price:-3.00, coupon:true},
+      {cat:'Snacks', name:'Truly salted', price:13.99},
+      {cat:'Snacks', name:'Coupon · Truly salted', price:-3.00, coupon:true},
+      {cat:'Pantry Staples', name:'EVOO hummus', price:7.49},
+      {cat:'Snacks', name:'Beef sticks', price:17.99},
+      {cat:'Snacks', name:'Fruitola', price:13.79},
+      {cat:'Snacks', name:'Var pack CF', price:15.99},
+      {cat:'Fresh Produce', name:'Avocados', price:4.89},
+      {cat:'Fresh Produce', name:'Limes 3lb', price:5.59},
+      {cat:'Snacks', name:'Candy snap', price:8.99},
+      {cat:'Fresh Produce', name:'Mandarins', price:4.29},
+      {cat:'Fresh Produce', name:'Org Bella mushrooms', price:4.79},
+      {cat:'Supplements', name:'Orgncoll PR', price:29.99},
+      {cat:'Supplements', name:'Coupon · Orgncoll PR', price:-6.00, coupon:true},
+      {cat:'Fresh Produce', name:'Tomato medley', price:6.69},
+      {cat:'Dairy & Eggs', name:'Organic eggs', price:7.69},
+      {cat:'Meat & Protein', name:'Sockeye salmon', price:20.98},
+    ]
+  },
+  'aldi-may22': {
+    store:'ALDI', date:'May 22, 2026', total:15.57, saved:0,
+    items:[
+      {cat:'Fresh Produce', name:'Org baby arugula', price:2.59},
+      {cat:'Fresh Produce', name:'Organic spring mix', price:4.99},
+      {cat:'Ready-Made', name:'Supreme deli pizza', price:7.99},
+    ]
+  }
+};
+
+// Item Families — general item groups with specific brands underneath
+const ITEM_FAMILIES = [
+  {
+    id:'tomatoes', general:'Tomatoes', cat:'Fresh Produce', staple:false,
+    brands:[
+      {name:'RR Tomatoes', price:6.99, prev:null, trend:'flat', last:'May 3 · Costco'},
+      {name:'Tomato Medley', price:6.69, prev:null, trend:'flat', last:'May 18 · Costco'},
+    ]
+  },
+  {
+    id:'eggs', general:'Eggs', cat:'Dairy & Eggs', staple:true,
+    brands:[
+      {name:'Organic Eggs', price:7.69, prev:7.59, trend:'up', last:'May 18 · Costco'},
+      {name:'Eggs FR 2DZ', price:4.19, prev:null, trend:'flat', last:'Apr 26 · Costco'},
+    ]
+  },
+  {
+    id:'sparkling-water', general:'Sparkling Water', cat:'Beverages', staple:true,
+    brands:[
+      {name:'KS Sparkling Water', price:17.59, prev:16.99, trend:'up', last:'May 11 · Costco'},
+      {name:'LaCroix Variety', price:9.99, prev:9.99, trend:'flat', last:'May 18 · Costco'},
+    ]
+  },
+  {
+    id:'protein-supplement', general:'Protein Supplement', cat:'Pantry Staples', staple:true,
+    brands:[
+      {name:'Vital Proteins', price:23.99, prev:23.99, trend:'flat', last:'May 3 · Costco', sale:true},
+      {name:'Orgain Chocolate', price:25.99, prev:25.99, trend:'flat', last:'May 3 · Costco', sale:true},
+      {name:'KS Organic A2 Protein', price:12.99, prev:11.79, trend:'up', last:'May 18 · Costco'},
+    ]
+  },
+  {
+    id:'fish', general:'Fish', cat:'Meat & Protein', staple:true,
+    brands:[
+      {name:'Sockeye Salmon', price:20.98, prev:16.79, trend:'up', last:'May 18 · Costco'},
+      {name:'Atlantic Cod', price:30.78, prev:null, trend:'flat', last:'Apr 8 · Costco'},
+    ]
+  },
+  {
+    id:'chicken', general:'Chicken', cat:'Meat & Protein', staple:true,
+    brands:[
+      {name:'Organic Fryers', price:30.98, prev:null, trend:'flat', last:'May 18 · Costco'},
+      {name:'Frizzle Chicken', price:13.99, prev:null, trend:'flat', last:'May 3 · Costco'},
+      {name:'Spicy Strips', price:14.99, prev:null, trend:'flat', last:'May 3 · Costco'},
+    ]
+  },
+  {
+    id:'greens', general:'Greens / Salad Mix', cat:'Fresh Produce', staple:true,
+    brands:[
+      {name:'Sweet Kale Duo', price:6.99, prev:6.99, trend:'flat', last:'May 3 · Costco'},
+      {name:'Spring Mix', price:4.49, prev:null, trend:'flat', last:'Apr 8 · Costco'},
+      {name:'Org Baby Arugula', price:2.59, prev:null, trend:'flat', last:'May 22 · ALDI'},
+      {name:'Organic Spring Mix', price:4.99, prev:null, trend:'flat', last:'May 22 · ALDI'},
+    ]
+  },
+  {
+    id:'hummus', general:'Hummus', cat:'Pantry Staples', staple:true,
+    brands:[
+      {name:'EVOO Hummus', price:7.49, prev:7.49, trend:'flat', last:'May 18 · Costco'},
+      {name:'Graza Hummus', price:7.49, prev:null, trend:'flat', last:'Apr 8 · Costco'},
+    ]
+  },
+  {
+    id:'energy-drinks', general:'Energy Drinks', cat:'Beverages', staple:false,
+    brands:[
+      {name:'Celsius Energy', price:23.99, prev:23.99, trend:'flat', last:'May 11 · Costco'},
+      {name:'KS Energy 12Z', price:16.99, prev:null, trend:'flat', last:'Apr 26 · Costco'},
+    ]
+  },
+  {
+    id:'beef-snacks', general:'Beef Snacks', cat:'Meat & Protein', staple:false,
+    brands:[
+      {name:'Beef Sticks', price:17.99, prev:17.99, trend:'flat', last:'May 18 · Costco'},
+      {name:'Beef Jerky Mango', price:18.89, prev:null, trend:'flat', last:'May 11 · Costco'},
+      {name:'KS Steak Strips', price:11.99, prev:11.99, trend:'flat', last:'May 3 · Costco'},
+    ]
+  },
+  {
+    id:'onions', general:'Onions', cat:'Fresh Produce', staple:false,
+    brands:[
+      {name:'Red Onions', price:5.39, prev:null, trend:'flat', last:'May 3 · Costco'},
+      {name:'Vidalia Onion', price:4.39, prev:null, trend:'flat', last:'May 3 · Costco'},
+    ]
+  },
+  // Single-brand items
+  {id:'avocados', general:'Avocados', cat:'Fresh Produce', staple:true, brands:[
+    {name:'Avocados', price:4.89, prev:4.69, trend:'up', last:'May 18 · Costco'}
+  ]},
+  {id:'peppers', general:'Lolli Peppers', cat:'Fresh Produce', staple:true, brands:[
+    {name:'Lolli Peppers', price:5.49, prev:5.49, trend:'flat', last:'May 3 · Costco'}
+  ]},
+  {id:'cucumber', general:'Cucumber', cat:'Fresh Produce', staple:false, brands:[
+    {name:'Organic Cucumber', price:4.99, prev:5.99, trend:'down', last:'May 3 · Costco'}
+  ]},
+  {id:'bananas', general:'Bananas', cat:'Fresh Produce', staple:true, brands:[
+    {name:'Bananas', price:1.22, prev:2.19, trend:'down', last:"May 4 · Detwiler's"}
+  ]},
+  {id:'yogurt', general:'Greek Yogurt', cat:'Dairy & Eggs', staple:false, brands:[
+    {name:'Greek Yogurt', price:6.99, prev:6.99, trend:'flat', last:'May 18 · Costco'}
+  ]},
+  {id:'cheddar', general:'Cheddar', cat:'Dairy & Eggs', staple:true, brands:[
+    {name:'KS Sharp Cheddar', price:5.39, prev:null, trend:'flat', last:'May 3 · Costco'}
+  ]},
+  {id:'feta', general:'Feta', cat:'Dairy & Eggs', staple:false, brands:[
+    {name:'Crumbled Feta', price:6.89, prev:null, trend:'flat', last:'May 3 · Costco'}
+  ]},
+];
+
+// Flatten for backwards compat
+const SHELF_ITEMS = ITEM_FAMILIES.flatMap(f => f.brands.map(b => ({
+  ...b, cat:f.cat, staple:f.staple, family:f.id
+})));
+
+let shelfItems = ITEM_FAMILIES.map(f => ({...f}));
+
+const CART_ITEMS = [
+  {cat:'Fresh Produce', name:'Avocados', qty:1, price:4.89, store:'Costco', checked:false},
+  {cat:'Fresh Produce', name:'Lolli peppers', qty:1, price:5.49, store:'Costco', checked:false},
+  {cat:'Fresh Produce', name:'Organic cucumber', qty:1, price:4.99, store:'Costco', checked:false},
+  {cat:'Fresh Produce', name:'Bananas', qty:1, price:1.22, store:"Detwiler's", checked:false},
+  {cat:'Dairy & Eggs', name:'Organic eggs', qty:2, price:7.69, store:'Costco', checked:false},
+  {cat:'Dairy & Eggs', name:'Greek yogurt', qty:1, price:6.99, store:'Costco', checked:false},
+  {cat:'Dairy & Eggs', name:'KS sharp cheddar', qty:1, price:5.39, store:'Costco', checked:false},
+  {cat:'Meat & Protein', name:'Organic fryers', qty:1, price:30.98, store:'Costco', checked:false},
+  {cat:'Meat & Protein', name:'Sockeye salmon', qty:1, price:20.98, store:'Costco', checked:false},
+  {cat:'Pantry Staples', name:'EVOO hummus', qty:1, price:7.49, store:'Costco', checked:false},
+  {cat:'Pantry Staples', name:'Orgain chocolate', qty:1, price:33.99, store:'Costco', checked:false},
+  {cat:'Pantry Staples', name:'KS Organic A2 Protein', qty:1, price:12.99, store:'Costco', checked:false},
+];
+
+let cartItems = CART_ITEMS.map((i,idx) => ({...i, id:idx}));
+let activeShelfFilter = 'All';
+let activeSwipe = null;
+
+// ═══════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════
+function switchTab(tab) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('screen-'+tab).classList.add('active');
+  document.getElementById('nav-'+tab).classList.add('active');
+  if(tab==='cart') renderCart();
+  if(tab==='shelf') renderShelf();
+  if(tab==='plan') generateAINudges();
+}
+
+// ═══════════════════════════════════════
+// GREETING
+// ═══════════════════════════════════════
+(function(){
+  const h = new Date().getHours();
+  const g = h<12?'Good morning':h<17?'Good afternoon':'Good evening';
+  document.getElementById('greeting').textContent = g;
+})();
+
+// ═══════════════════════════════════════
+// CART
+// ═══════════════════════════════════════
+function renderCart() {
+  const list = document.getElementById('cart-list');
+  const cats = [...new Set(cartItems.map(i=>i.cat))];
+  let html = '';
+  cats.forEach(cat => {
+    const items = cartItems.filter(i=>i.cat===cat);
+    html += `<div class="cat-header"><span class="cat-title">${cat}</span><span class="cat-count-label">${items.length}</span></div>`;
+    items.forEach(item => {
+      html += `
+        <div class="cart-item-row${item.checked?' checked':''}" onclick="toggleCartItem(${item.id})">
+          <div class="checkbox${item.checked?' done':''}">
+            <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div class="cart-item-info">
+            <div class="cart-item-name${item.checked?' struck':''}">${item.name}</div>
+            <div class="cart-item-meta">Qty ${item.qty} · ${item.store}</div>
+          </div>
+          <div class="cart-item-price">$${(item.price*item.qty).toFixed(2)}</div>
+        </div>`;
+    });
+  });
+  list.innerHTML = html;
+  updateCartProgress();
+}
+
+function toggleCartItem(id) {
+  const item = cartItems.find(i=>i.id===id);
+  if(item) { item.checked = !item.checked; renderCart(); }
+}
+
+function updateCartProgress() {
+  const total = cartItems.length;
+  const done = cartItems.filter(i=>i.checked).length;
+  const pct = total ? Math.round((done/total)*100) : 0;
+  document.getElementById('cart-progress').style.width = pct+'%';
+  document.getElementById('cart-progress-label').textContent = `${done} of ${total} items grabbed`;
+  document.getElementById('cart-item-count').textContent = `${total} items`;
+  document.getElementById('cart-checked-count').textContent = `${done} in the cart`;
+}
+
+function checkoutCart() {
+  if(confirm('Check out this haul? All items will move to your Shelf & Perspective.')) {
+    cartItems = [];
+    renderCart();
+    alert('That\'s in the bag! Haul logged. 🛒');
+  }
+}
+
+function buildAIList() {
+  alert('Building your AI shopping list based on your staples and purchase history...\n\nThis will use the Anthropic API in the live version!');
+}
+
+function promptAddItem() {
+  const name = prompt('What do you want to add?');
+  if(name && name.trim()) {
+    cartItems.push({id: Date.now(), cat:'Pantry Staples', name:name.trim(), qty:1, price:0, store:'', checked:false});
+    renderCart();
+  }
+}
+
+// ═══════════════════════════════════════
+// SHELF
+// ═══════════════════════════════════════
+function renderShelf() {
+  const search = ((document.getElementById('shelf-search')||{}).value||'').toLowerCase();
+  let families = shelfItems;
+
+  if(activeShelfFilter !== 'All') families = families.filter(f=>f.cat===activeShelfFilter);
+  if(search) families = families.filter(f=>
+    f.general.toLowerCase().includes(search) ||
+    f.brands.some(b=>b.name.toLowerCase().includes(search))
+  );
+
+  const cats = [...new Set(families.map(f=>f.cat))];
+  let html = '';
+
+  cats.forEach(cat => {
+    const catFamilies = families.filter(f=>f.cat===cat);
+    html += `<div class="cat-header"><span class="cat-title">${cat}</span><span class="cat-count-label">${catFamilies.length}</span></div>`;
+
+    catFamilies.forEach(family => {
+      const stapleClass = family.staple ? 'on' : 'off';
+      const stapleLabel = family.staple ? 'Remove' : 'Staple';
+      const stapleBadge = family.staple ? `<span class="badge-staple">Staple</span>` : '';
+      const hasMultiple = family.brands.length > 1;
+      const latest = family.brands[0];
+      const trendHtml = latest.trend==='up' && latest.prev
+        ? `<div class="shelf-trend up">↑ from $${latest.prev.toFixed(2)}</div>`
+        : latest.trend==='down' && latest.prev
+        ? `<div class="shelf-trend down">↓ from $${latest.prev.toFixed(2)}</div>`
+        : latest.prev ? `<div class="shelf-trend flat">— no change</div>`
+        : `<div class="shelf-trend flat">— first buy</div>`;
+
+      let brandHtml = '';
+      family.brands.forEach(brand => {
+        const saleBadge = brand.sale ? `<span class="badge-sale" style="font-size:10px;">🏷 Sale</span>` : '';
+        const bTrend = brand.trend==='up' && brand.prev ? `<span style="font-size:10px;color:var(--red);"> ↑$${brand.prev.toFixed(2)}</span>`
+          : brand.trend==='down' && brand.prev ? `<span style="font-size:10px;color:var(--green);"> ↓$${brand.prev.toFixed(2)}</span>` : '';
+        brandHtml += `<div style="display:flex;align-items:center;padding:8px 20px 8px 68px;border-top:0.5px solid var(--border);background:var(--bg-secondary);">
+          <div style="flex:1;"><div style="font-size:13px;color:var(--text-secondary);">${brand.name} ${saleBadge}</div><div style="font-size:11px;color:var(--text-tertiary);margin-top:1px;">${brand.last}</div></div>
+          <div style="text-align:right;"><div style="font-size:13px;font-variant-numeric:tabular-nums;">$${brand.price.toFixed(2)}</div>${bTrend}</div>
+        </div>`;
+      });
+
+      html += `
+        <div class="swipe-wrap" id="swrap-${family.id}">
+          <div class="swipe-action ${stapleClass}" id="saction-${family.id}" onclick="toggleStaple('${family.id}')">
+            <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <span>${stapleLabel}</span>
+          </div>
+          <div class="shelf-row" id="srow-${family.id}" onclick="${hasMultiple ? `toggleFamily('${family.id}')` : ''}">
+            <div class="shelf-icon" style="background:${catColor(cat).bg};color:${catColor(cat).fg};">${catIcon(cat)}</div>
+            <div class="shelf-info">
+              <div class="shelf-name-row">
+                <span class="shelf-name">${family.general}</span>
+                ${stapleBadge}
+                ${hasMultiple ? `<span style="font-size:10px;color:var(--text-tertiary);">${family.brands.length} brands</span>` : ''}
+              </div>
+              <div class="shelf-meta">Last: ${latest.last}</div>
+            </div>
+            <div class="shelf-right"><div class="shelf-price">$${latest.price.toFixed(2)}</div>${trendHtml}</div>
+            ${hasMultiple ? `<div style="margin-left:8px;color:var(--text-tertiary);font-size:12px;" id="chev-${family.id}">▼</div>` : ''}
+          </div>
+          <div id="brands-${family.id}" style="display:none;">${brandHtml}</div>
+        </div>`;
+    });
+  });
+
+  document.getElementById('shelf-list').innerHTML = html;
+  shelfItems.forEach(family => {
+    const row = document.getElementById('srow-'+family.id);
+    if(row) setupShelfSwipe(family.id, row);
+  });
+  updateStapleCount();
+}
+
+function toggleFamily(id) {
+  const brandsEl = document.getElementById('brands-'+id);
+  const chev = document.getElementById('chev-'+id);
+  if(!brandsEl) return;
+  const isOpen = brandsEl.style.display !== 'none';
+  brandsEl.style.display = isOpen ? 'none' : 'block';
+  if(chev) chev.textContent = isOpen ? '▼' : '▲';
+}
+
+function catColor(cat) {
+  const map = {
+    'Fresh Produce':{bg:'#EAF3DE',fg:'#3B6D11'},
+    'Dairy & Eggs':{bg:'#E6F1FB',fg:'#185FA5'},
+    'Meat & Protein':{bg:'#FAECE7',fg:'#993C1D'},
+    'Pantry Staples':{bg:'#FAEEDA',fg:'#854F0B'},
+    'Beverages':{bg:'#E1F5EE',fg:'#0F6E56'},
+    'Frozen':{bg:'#EEEDFE',fg:'#534AB7'},
+    'Supplements':{bg:'#FBEAF0',fg:'#993556'},
+  };
+  return map[cat]||{bg:'#f0f0ec',fg:'#6a6a62'};
+}
+
+function catIcon(cat) {
+  const icons = {
+    'Fresh Produce':'<svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;"><path d="M12 22V12M12 12C12 7 7 3 2 5M12 12C12 7 17 3 22 5"/></svg>',
+    'Dairy & Eggs':'<svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/></svg>',
+    'Meat & Protein':'<svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/></svg>',
+    'Pantry Staples':'<svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;"><path d="M3 2h18l-2 7H5L3 2z"/><path d="M5 9v13h14V9"/></svg>',
+    'Beverages':'<svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;"><line x1="8" y1="6" x2="8" y2="22"/><path d="M8 2h8l2 4H6L8 2z"/></svg>',
+    'Supplements':'<svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;"><circle cx="12" cy="12" r="10"/></svg>',
+  };
+  return icons[cat]||'<svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.6;"><circle cx="12" cy="12" r="10"/></svg>';
+}
+
+function toggleStaple(id) {
+  const family = shelfItems.find(f=>f.id===id);
+  if(!family) return;
+  family.staple = !family.staple;
+  const row = document.getElementById('srow-'+id);
+  if(row) row.style.transform = 'translateX(0)';
+  if(activeSwipe===id) activeSwipe=null;
+  setTimeout(()=>renderShelf(), 300);
+}
+
+function updateStapleCount() {
+  document.getElementById('staple-count').textContent = shelfItems.filter(i=>i.staple).length;
+}
+
+
+function filterShelf(val) { renderShelf(); }
+
+function setShelfFilter(cat, btn) {
+  activeShelfFilter = cat;
+  document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active'));
+  btn.classList.add('active');
+  renderShelf();
+}
+
+// ═══════════════════════════════════════
+// HAUL DETAIL
+// ═══════════════════════════════════════
+function openHaulDetail(key) {
+  const haul = HAULS[key];
+  if(!haul) return;
+  document.getElementById('haul-detail-title').textContent = `${haul.store} · ${haul.date}`;
+
+  const cats = [...new Set(haul.items.map(i=>i.cat))];
+  let html = `
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:16px;">
+      <div class="snap-card"><div class="snap-val">$${haul.total.toFixed(2)}</div><div class="snap-label">Total</div></div>
+      <div class="snap-card"><div class="snap-val">${haul.items.filter(i=>!i.coupon).length}</div><div class="snap-label">Items</div></div>
+      <div class="snap-card"><div class="snap-val color-green">$${haul.saved.toFixed(2)}</div><div class="snap-label">Saved</div></div>
+    </div>`;
+
+  cats.forEach(cat => {
+    const items = haul.items.filter(i=>i.cat===cat);
+    html += `<div class="cat-header"><span class="cat-title">${cat}</span></div>`;
+    items.forEach(item => {
+      const isNeg = item.price < 0;
+      html += `
+        <div style="display:flex;justify-content:space-between;padding:10px 20px;border-top:0.5px solid var(--border);font-size:14px;">
+          <span style="color:${item.coupon?'#854F0B':'var(--text-primary)'};">${item.name}${item.sale?' <span style="font-size:10px;background:#D85A30;color:white;border-radius:99px;padding:1px 6px;margin-left:4px;">Sale</span>':''}</span>
+          <span style="color:${isNeg?'var(--green)':'var(--text-primary)'};font-variant-numeric:tabular-nums;">${isNeg?'-':''}$${Math.abs(item.price).toFixed(2)}</span>
+        </div>`;
+    });
+  });
+
+  html += `
+    <div style="display:flex;justify-content:space-between;padding:14px 20px;border-top:0.5px solid var(--border-strong);font-weight:600;font-size:15px;">
+      <span>Total</span><span>$${haul.total.toFixed(2)}</span>
+    </div>
+    <div style="display:flex;gap:10px;padding:0 16px 24px;">
+      <button class="big-btn outline" style="flex:1;margin:0;" onclick="closeHaulDetail()">Back</button>
+      <button class="big-btn green" style="flex:1;margin:0;" onclick="reorderHaul('${key}')">Reorder</button>
+    </div>`;
+
+  document.getElementById('haul-detail-content').innerHTML = html;
+  document.getElementById('haul-detail-modal').classList.add('open');
+}
+
+function closeHaulDetail() {
+  document.getElementById('haul-detail-modal').classList.remove('open');
+}
+
+function reorderHaul(key) {
+  const haul = HAULS[key];
+  if(!haul) return;
+  haul.items.filter(i=>!i.coupon && i.price>0).forEach((item,idx) => {
+    if(!cartItems.find(c=>c.name===item.name)) {
+      cartItems.push({id:Date.now()+idx, cat:item.cat, name:item.name, qty:1, price:item.price, store:haul.store, checked:false});
+    }
+  });
+  closeHaulDetail();
+  switchTab('cart');
+}
+
+// ═══════════════════════════════════════
+// PLAN
+// ═══════════════════════════════════════
+function dismissNudge(id) {
+  const el = document.getElementById(id);
+  if(el) { el.style.opacity='0'; el.style.transition='opacity 0.3s'; setTimeout(()=>el.remove(),300); }
+}
+
+function editBudget() {
+  const val = prompt('Enter your monthly grocery budget:', '850');
+  if(val && !isNaN(parseFloat(val))) alert(`Budget updated to $${parseFloat(val).toFixed(2)}!`);
+}
+
+// ═══════════════════════════════════════
+// RECEIPT SCANNER
+// ═══════════════════════════════════════
+function openScanner() {
+  document.getElementById('scanner-modal').classList.add('open');
+  document.getElementById('scan-result').classList.remove('visible');
+  document.getElementById('scanning-indicator').classList.remove('visible');
+}
+
+function closeScanner() {
+  document.getElementById('scanner-modal').classList.remove('open');
+  document.getElementById('receipt-input').value = '';
+}
+
+// ═══════════════════════════════════════
+// API KEY — hardcoded for personal use
+// Replace YOUR_KEY_HERE with your actual key
+// ═══════════════════════════════════════
+const HARDCODED_KEY = '';
+
+function getApiKey() {
+  if(HARDCODED_KEY && HARDCODED_KEY !== 'YOUR_KEY_HERE') return HARDCODED_KEY;
+  return localStorage.getItem('pantry_anthropic_key') || '';
+}
+
+function saveApiKey() {
+  try {
+    const input = document.getElementById('api-key-input');
+    if(!input) { alert('Input not found'); return; }
+    const key = input.value.trim();
+    if(!key) { alert('Please paste your Anthropic API key first.'); return; }
+    if(!key.startsWith('sk-')) { alert('Key should start with sk-ant-'); return; }
+    localStorage.setItem('pantry_anthropic_key', key);
+    const screen = document.getElementById('setup-screen');
+    if(screen) { screen.style.display='none'; screen.classList.add('hidden'); }
+  } catch(e) { alert('Error: ' + e.message); }
+}
+
+function skipSetup() {
+  const screen = document.getElementById('setup-screen');
+  if(screen) screen.classList.add('hidden');
+}
+
+function toggleKeyVis() {
+  const input = document.getElementById('api-key-input');
+  if(input) input.type = input.type === 'password' ? 'text' : 'password';
+}
+
+function checkSetup() {
+  if(HARDCODED_KEY && HARDCODED_KEY !== 'YOUR_KEY_HERE') {
+    const screen = document.getElementById('setup-screen');
+    if(screen) { screen.style.display='none'; screen.classList.add('hidden'); }
+    return;
+  }
+  const key = getApiKey();
+  const screen = document.getElementById('setup-screen');
+  if(screen) {
+    if(!key) screen.classList.remove('hidden');
+    else { screen.style.display='none'; screen.classList.add('hidden'); }
+  }
+}
+
+// ═══════════════════════════════════════
+// RECEIPT SCANNER — GEMINI
+// ═══════════════════════════════════════
+async function handleReceiptUpload(input) {
+  if(!input.files||!input.files[0]) return;
+  const file = input.files[0];
+
+  const apiKey = getApiKey();
+  if(!apiKey) {
+    document.getElementById('setup-screen').classList.remove('hidden');
+    closeScanner();
+    return;
+  }
+
+  document.getElementById('scanning-indicator').classList.add('visible');
+  document.getElementById('scan-result').classList.remove('visible');
+
+  const texts = ['Reading your receipt...','Identifying items...','Extracting prices...','Almost done...'];
+  let ti = 0;
+  const interval = setInterval(()=>{
+    document.getElementById('scanning-text').textContent = texts[ti%texts.length];
+    ti++;
+  },1200);
+
+  try {
+    // Convert to JPEG via canvas — handles HEIC and large iPhone photos
+    const { base64, mediaType } = await imageToJpegBase64(file);
+
+    const prompt = `You are a receipt parser for a grocery tracking app. Look carefully at this receipt image and extract all grocery food and beverage items.
+
+Return ONLY a valid JSON object, nothing else, no markdown, no explanation:
+{"store":"store name","date":"date from receipt","items":[{"name":"readable item name","price":price as number,"sale":false}],"total":total as number}
+
+Rules:
+- Include all food, drink, and grocery items
+- Skip: prescriptions, personal care, cosmetics, cleaning products, flowers, paper bags
+- For coupons or instant savings, add as negative price item: {"name":"Coupon · item","price":-amount}
+- Use clean readable names not receipt codes (e.g. "Organic eggs" not "1068083 ORG FR EGGS")
+- If you cannot read parts clearly, still return your best attempt at the JSON`;
+
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-opus-4-5',
+        max_tokens: 2000,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64 } },
+            { type: 'text', text: prompt }
+          ]
+        }]
+      })
+    });
+
+    clearInterval(interval);
+
+    if(!response.ok) {
+      const err = await response.json();
+      throw new Error(err.error?.message || 'API error ' + response.status);
+    }
+
+    const data = await response.json();
+    const text = data.content?.map(c => c.text || '').join('') || '';
+    const clean = text.replace(/```json|```/g,'').trim();
+    const jsonMatch = clean.match(/\{[\s\S]*\}/);
+    if(!jsonMatch) throw new Error('No JSON in response');
+    const parsed = JSON.parse(jsonMatch[0]);
+    if(!parsed.items || parsed.items.length === 0) throw new Error('No items found');
+    showScanResult(parsed);
+
+  } catch(err) {
+    clearInterval(interval);
+    console.error('Scanner error:', err.message);
+    document.getElementById('scanning-indicator').classList.remove('visible');
+    // Show the actual error so we can debug
+    alert('Error: ' + err.message + '\n\nCheck browser console for details.');
+  }
+}
+
+// Convert any image to JPEG via canvas — handles HEIC, large iPhone photos
+function imageToJpegBase64(file) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      let w = img.width, h = img.height;
+      const max = 1600;
+      if(w > max || h > max) {
+        if(w > h) { h = Math.round(h * max / w); w = max; }
+        else { w = Math.round(w * max / h); h = max; }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
+      resolve({ base64: dataUrl.split(',')[1], mediaType: 'image/jpeg' });
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      const reader = new FileReader();
+      reader.onload = () => resolve({ base64: reader.result.split(',')[1], mediaType: 'image/jpeg' });
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    };
+    img.src = url;
+  });
+}
+
+function showScanResult(data) {
+  document.getElementById('scanning-indicator').classList.remove('visible');
+  document.getElementById('scan-store-name').textContent = data.store || 'Receipt';
+  document.getElementById('scan-date').textContent = data.date || '';
+  document.getElementById('scan-total-amt').textContent = `$${(data.total||0).toFixed(2)}`;
+
+  let html = '';
+  (data.items||[]).forEach((item,idx) => {
+    const isNeg = item.price < 0;
+    html += `
+      <div class="scan-item-row" id="scan-item-${idx}">
+        <span class="scan-item-name">${item.name}</span>
+        <span class="scan-item-price" style="color:${isNeg?'var(--green)':'var(--text-primary)'};">${isNeg?'-':''}$${Math.abs(item.price).toFixed(2)}</span>
+        <div class="scan-item-remove" onclick="removeScanItem(${idx})">
+          <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </div>
+      </div>`;
+  });
+
+  document.getElementById('scan-items-list').innerHTML = html;
+  document.getElementById('scan-items-list').dataset.items = JSON.stringify(data.items);
+  document.getElementById('scan-items-list').dataset.store = data.store||'';
+  document.getElementById('scan-result').classList.add('visible');
+}
+
+function removeScanItem(idx) {
+  const el = document.getElementById('scan-item-'+idx);
+  if(el) el.remove();
+}
+
+function addScanToCart() {
+  const list = document.getElementById('scan-items-list');
+  const items = JSON.parse(list.dataset.items||'[]');
+  const store = list.dataset.store||'';
+  const remaining = list.querySelectorAll('.scan-item-row');
+  const remainingIds = new Set([...remaining].map(r=>parseInt(r.id.split('-').pop())));
+
+  items.forEach((item,idx)=>{
+    if(remainingIds.has(idx) && item.price > 0) {
+      cartItems.push({id:Date.now()+idx, cat:'Pantry Staples', name:item.name, qty:1, price:item.price, store, checked:false});
+    }
+  });
+
+  closeScanner();
+  switchTab('cart');
+}
+
+// ═══════════════════════════════════════
+// CLOSE MODAL ON OVERLAY CLICK
+// ═══════════════════════════════════════
+document.getElementById('scanner-modal').addEventListener('click', function(e){
+  if(e.target===this) closeScanner();
+});
+
+// ═══════════════════════════════════════
+// AI NUDGES — ANTHROPIC
+// ═══════════════════════════════════════
+
+const PURCHASE_HISTORY_SUMMARY = `
+PURCHASE HISTORY (April–May 2026):
+
+PROTEIN & MEAT:
+- Sockeye Salmon: bought May 18 ($20.98) and May 11 ($16.79) at Costco. Price going UP.
+- Organic Fryers (chicken): bought May 18 ($30.98) at Costco. First time buying.
+- Frizzle Chicken: bought May 3 ($13.99) at Costco.
+- Spicy Strips (chicken): bought May 3 ($14.99) at Costco.
+- KS Steak Strips: bought May 3 and Apr 8 ($11.99) at Costco. Regular price.
+- Beef Sticks: bought May 18 and May 11 ($17.99) at Costco.
+- Beef Jerky Mango: bought May 11 ($18.89) at Costco.
+- Atlantic Cod: bought Apr 8 ($30.78) at Costco.
+- Herb Turkey: bought Apr 26 ($14.99) at Costco.
+- Pork Andouille Sausage: bought Apr 11 ($5.29) at Detwiler's.
+
+PRODUCE:
+- Avocados: bought May 18 ($4.89), May 11 ($4.69), May 3 ($4.69) at Costco. Price creeping up.
+- Lolli Peppers: bought May 3, Apr 26, Apr 8 ($5.49) at Costco. Stable price.
+- Organic Cucumber: bought May 3 ($4.99), Apr 8 ($5.99) at Costco. Price went DOWN.
+- Bananas: bought May 4 ($1.22) at Detwiler's, Apr 26 ($2.19) at Costco.
+- Tomato Medley: bought May 18 ($6.69) at Costco.
+- RR Tomatoes: bought May 3 ($6.99) at Costco.
+- Strawberries: bought Apr 26 ($4.49, on sale) at Costco.
+- Blueberries: bought May 11 ($6.49, coupon) at Costco.
+- Watermelon: bought May 11 ($6.99) at Costco.
+- Cantaloupe: bought May 3 ($5.89) at Costco.
+- Peaches: bought May 11 ($7.99) at Costco.
+- Mandarins: bought May 18 ($4.29) at Costco.
+- Organic Carrots: bought May 16 ($1.99) at Publix.
+- Arugula: bought Apr 26 ($4.99), May 22 ($2.59 at ALDI) at Costco/ALDI.
+- Spring Mix/Sweet Kale: bought May 3, Apr 8 at Costco.
+- Org Spring Mix: bought May 22 ($4.99) at ALDI.
+- Lemons: bought May 4 ($1.50) at Detwiler's.
+
+DAIRY & EGGS:
+- Organic Eggs: bought May 18 ($7.69), May 3 (x2, $7.69), Apr 26 ($7.59) at Costco. Slowly rising.
+- Greek Yogurt: bought May 18 ($6.99), May 3 ($6.99) at Costco. Stable.
+- KS Sharp Cheddar: bought May 3 ($5.39) at Costco. First buy.
+- Crumbled Feta: bought May 3 ($6.89) at Costco. First buy.
+- Irish Butter: bought Apr 8 ($16.29, coupon -$4.30) at Costco.
+- KS Organic A2 Protein (milk): bought May 18 ($12.99), May 11 ($12.99), May 3 ($11.79), Apr 26 ($11.79), Apr 8 ($11.79) at Costco. Price went UP recently.
+
+PROTEIN SUPPLEMENTS:
+- Vital Proteins: bought May 3 ($23.99 after $6 coupon) at Costco. Regular buyer.
+- Orgain Chocolate: bought May 3 ($25.99 after $8 coupon), Apr 26 ($25.99 after $8 coupon) at Costco. Always use coupon.
+- Orgain Collagen: bought May 18 ($23.99 after $6 coupon), May 11 ($23.99 after $6 coupon) at Costco.
+
+PANTRY:
+- EVOO Hummus: bought May 18 ($7.49), May 11 ($7.49), Apr 26 ($7.49) at Costco. Very regular.
+- Naan Bread: bought May 3 ($6.99) at Costco.
+- Cocoa Cereal: bought May 3 ($9.59), Apr 26 ($9.59) at Costco.
+- Sauerkraut: bought Apr 26 ($9.59) at Costco.
+- Vanilla Syrup: bought Apr 26 ($16.99) at Costco.
+- Organic Bone Broth: bought Apr 26 ($26.78) at Costco.
+- Quinoa & Rice: bought May 18 ($8.99 after $3 coupon) at Costco.
+- EVOO (olive oil): bought Apr 26 ($7.49) at Costco.
+- Kinders Rub: bought Apr 26 ($6.89) at Costco.
+- Tallow Fries: bought May 11 ($11.99) at Costco.
+- Tallow Chips: bought May 18 ($7.99) at Costco.
+- Truly Salted: bought May 18 ($10.99 after $3 coupon) at Costco.
+
+BEVERAGES:
+- KS Sparkling Water: bought May 11 ($17.59), Apr 26 ($16.99), Apr 8 ($16.99) at Costco. Price UP.
+- LaCroix Variety: bought May 18 ($9.99), May 3 ($9.99) at Costco.
+- Celsius Energy: bought May 11 ($23.99), Apr 8 ($23.99) at Costco.
+- KS Energy 12Z: bought Apr 26 ($16.99, on sale) at Costco.
+- Olipop Variety: bought May 18 ($14.99 after $5 coupon) at Costco.
+- Char Coffee: bought May 18 ($17.99 after $5 coupon) at Costco.
+
+STORES USED: Costco (primary, ~91% of spend), Detwiler's Farm Market (fresh produce), Publix (occasional), ALDI (occasional), Walmart (occasional)
+MONTHLY BUDGET: $850
+MAY SPEND SO FAR: $783.47 (92% of budget, 7 days left in month)
+`;
+
+async function generateAINudges() {
+  const apiKey = getApiKey();
+  if(!apiKey) {
+    document.getElementById('setup-screen').classList.remove('hidden');
+    return;
+  }
+
+  document.getElementById('nudges-loading').style.display = 'block';
+  document.getElementById('nudges-container').style.display = 'none';
+  document.getElementById('nudge-refresh-btn').style.opacity = '0.5';
+
+  try {
+    const today = new Date();
+    const dayOfMonth = today.getDate();
+    const daysLeft = new Date(today.getFullYear(), today.getMonth()+1, 0).getDate() - dayOfMonth;
+
+    const prompt = `You are the AI brain of Pantry., a smart grocery tracking app. Based on this family's grocery purchase history, generate 3-4 specific, actionable nudges.
+
+${PURCHASE_HISTORY_SUMMARY}
+
+TODAY: May ${dayOfMonth}, 2026. Days left in month: ${daysLeft}. Budget remaining: $66.53.
+
+Generate nudges that are:
+1. SPECIFIC — mention the exact item, price, store, and days since last bought
+2. PROTEIN-AWARE — if they need protein, suggest a SPECIFIC type (salmon, chicken, beef, pork, fish) based on what they haven't bought recently, not just "protein"
+3. PRICE-SMART — flag items that have gone up in price, or where a cheaper alternative exists
+4. BUDGET-CONSCIOUS — with only $66.53 left and ${daysLeft} days to go, factor that in
+5. VARIETY-FOCUSED — if they've bought the same protein 3 weeks in a row, suggest switching it up
+
+Return ONLY a JSON array, no markdown, no explanation:
+[
+  {
+    "type": "protein|produce|staple|deal|budget",
+    "title": "Short punchy title (5 words max)",
+    "text": "2-3 sentence specific insight with item names, prices, days since bought, and store",
+    "item": "specific item to add to cart",
+    "urgent": true or false
+  }
+]
+
+Be conversational and specific. Don't be generic. Reference actual items from their history.`;
+
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-opus-4-5',
+        max_tokens: 1000,
+        messages: [{
+          role: 'user',
+          content: prompt
+        }]
+      })
+    });
+
+    if(!response.ok) throw new Error('API error ' + response.status);
+
+    const data = await response.json();
+    const text = data.content?.map(c=>c.text||'').join('') || '';
+    const clean = text.replace(/```json|```/g,'').trim();
+    const jsonMatch = clean.match(/\[[\s\S]*\]/);
+    if(!jsonMatch) throw new Error('No JSON');
+    const nudges = JSON.parse(jsonMatch[0]);
+    renderAINudges(nudges);
+
+  } catch(err) {
+    console.error('Nudge error:', err);
+    document.getElementById('nudges-loading').style.display = 'none';
+    document.getElementById('nudges-container').style.display = 'block';
+    document.getElementById('nudge-refresh-btn').style.opacity = '1';
+  }
+}
+
+function renderAINudges(nudges) {
+  document.getElementById('nudges-loading').style.display = 'none';
+  document.getElementById('nudge-refresh-btn').style.opacity = '1';
+
+  const typeStyles = {
+    protein: { bg:'var(--coral-light)', color:'var(--coral)', border:'var(--coral)',
+      icon:'<path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/>' },
+    produce: { bg:'var(--green-light)', color:'var(--green-dark)', border:'#3B6D11',
+      icon:'<path d="M12 22V12M12 12C12 7 7 3 2 5M12 12C12 7 17 3 22 5"/>' },
+    staple: { bg:'var(--blue-light)', color:'var(--blue)', border:'var(--blue)',
+      icon:'<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>' },
+    deal: { bg:'var(--amber-light)', color:'#854F0B', border:'var(--amber)',
+      icon:'<path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/>' },
+    budget: { bg:'#FBEAF0', color:'#993556', border:'#993556',
+      icon:'<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>' },
+  };
+
+  let html = '';
+  nudges.forEach((nudge, idx) => {
+    const style = typeStyles[nudge.type] || typeStyles.staple;
+    html += `
+      <div class="card plan-nudge-card ${nudge.type}" id="ai-nudge-${idx}" style="border-left-color:${style.border};">
+        <div class="nudge-icon-wrap" style="background:${style.bg};color:${style.color};">
+          <svg viewBox="0 0 24 24">${style.icon}</svg>
+        </div>
+        <div class="nudge-body">
+          <div class="nudge-title">${nudge.title}</div>
+          <div class="nudge-text">${nudge.text}</div>
+          <div class="nudge-btns">
+            <button class="nudge-btn primary" onclick="switchTab('cart')">Add to cart</button>
+            <button class="nudge-btn" onclick="this.closest('.card').style.display='none'">Dismiss</button>
+          </div>
+        </div>
+      </div>`;
+  });
+
+  document.getElementById('nudges-container').innerHTML = html;
+  document.getElementById('nudges-container').style.display = 'block';
+}
+
+function refreshNudges() {
+  generateAINudges();
+}
+
+// ═══════════════════════════════════════
+// Initial renders
+renderCart();
+renderShelf();
+checkSetup();
+</script>
+</body>
+</html>
