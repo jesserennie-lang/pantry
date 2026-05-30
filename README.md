@@ -1,2 +1,2 @@
 # pantry
-[Open Pantry App](https://jesserennie-lang.github.io/pantry?k=test)
+[Open Pantry App](https://jesserennie-lang.github.io/pantry)
