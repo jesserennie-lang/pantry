@@ -2012,6 +2012,17 @@ function showScanResult(data) {
   document.getElementById('scan-result').classList.add('visible');
 }
 
+function guessCat(name) {
+  const n = (name||'').toLowerCase();
+  if(/salmon|cod|chicken|beef|pork|turkey|meat|fish|shrimp|steak|sausage|fryer|strip|mushroom/.test(n)) return 'Meat & Protein';
+  if(/egg|milk|cheese|yogurt|butter|cream|feta|cheddar|dairy/.test(n)) return 'Dairy & Eggs';
+  if(/apple|banana|avocado|tomato|lettuce|kale|spinach|arugula|pepper|onion|lemon|lime|berry|mango|peach|melon|grape|orange|mandarin|carrot|cucumber|fruit|produce|mix|salad|greens|herb|dill|lemons/.test(n)) return 'Fresh Produce';
+  if(/water|sparkling|lacroix|celsius|energy|coffee|tea|juice|soda|olipop|drink|lacroix/.test(n)) return 'Beverages';
+  if(/protein|orgain|vital|collagen|supplement|probiotic/.test(n)) return 'Supplements';
+  if(/frozen|fries|pizza/.test(n)) return 'Frozen';
+  return 'Pantry Staples';
+}
+
 function confirmHaul() {
   const data      = window._scanData || {};
   const matched   = window._scanMatched || [];
