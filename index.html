@@ -12,37 +12,52 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root {
-  --green: #1D9E75;
-  --green-dark: #0F6E56;
-  --green-light: #E1F5EE;
-  --red: #E24B4A;
-  --amber: #EF9F27;
-  --amber-light: #FAEEDA;
-  --blue: #185FA5;
-  --blue-light: #E6F1FB;
-  --coral: #993C1D;
-  --coral-light: #FAECE7;
-  --purple: #534AB7;
-  --purple-light: #EEEDFE;
-  --gray-100: #f8f8f6;
-  --gray-200: #f0f0ec;
-  --gray-300: #e0e0d8;
-  --gray-400: #b0b0a8;
-  --gray-600: #6a6a62;
-  --gray-900: #1a1a18;
-  --text-primary: #1a1a18;
-  --text-secondary: #6a6a62;
-  --text-tertiary: #a0a098;
-  --border: rgba(0,0,0,0.08);
-  --border-strong: rgba(0,0,0,0.14);
-  --bg: #ffffff;
-  --bg-secondary: #f8f8f6;
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --nav-height: 72px;
+  /* ── Brand greens ── */
+  --green: #22A06B;
+  --green-dark: #0E7A52;
+  --green-light: #E3F5EE;
+  --green-mid: #18896B;
+
+  /* ── Header gradient ── */
+  --grad-start: #1D9E78;
+  --grad-end:   #0E7A8A;
+
+  /* ── Semantic colours ── */
+  --red: #E5534B;
+  --amber: #F5A623;
+  --amber-light: #FEF3DC;
+  --blue: #2872D4;
+  --blue-light: #E8F1FC;
+  --coral: #C0442A;
+  --coral-light: #FCEAE6;
+  --purple: #6B5CE7;
+  --purple-light: #EEECFD;
+  --teal: #0E8A8A;
+  --teal-light: #E1F4F4;
+
+  /* ── Neutrals ── */
+  --text-primary: #1A2B28;
+  --text-secondary: #556B65;
+  --text-tertiary: #8FA89F;
+  --border: rgba(0,0,0,0.07);
+  --border-strong: rgba(0,0,0,0.13);
+  --bg: #FFFFFF;
+  --bg-secondary: #F5F8F6;
+  --bg-tertiary: #EDF2EF;
+
+  /* ── Spacing & shape ── */
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
+  --nav-height: 76px;
   --font: 'DM Sans', system-ui, sans-serif;
   --font-mono: 'DM Mono', monospace;
+
+  /* ── Shadows ── */
+  --shadow-sm: 0 1px 4px rgba(0,0,0,0.07), 0 0 1px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.09), 0 1px 4px rgba(0,0,0,0.05);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -51,9 +66,10 @@ html, body {
   height: 100%;
   overflow: hidden;
   font-family: var(--font);
-  background: var(--bg);
+  background: var(--bg-secondary);
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
 }
 
 /* ── APP SHELL ── */
@@ -80,13 +96,15 @@ html, body {
 /* ── BOTTOM NAV ── */
 .bottom-nav {
   display: flex;
+  align-items: center;
   height: var(--nav-height);
   border-top: 0.5px solid var(--border);
-  background: rgba(255,255,255,0.95);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(255,255,255,0.97);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   flex-shrink: 0;
   padding-bottom: env(safe-area-inset-bottom);
+  box-shadow: 0 -1px 0 rgba(0,0,0,0.05);
 }
 .nav-btn {
   flex: 1;
@@ -94,19 +112,48 @@ html, body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 3px;
   cursor: pointer;
   color: var(--text-tertiary);
   font-size: 10px;
   font-weight: 500;
-  letter-spacing: 0.02em;
-  transition: color 0.15s;
+  letter-spacing: 0.01em;
+  transition: color 0.15s, transform 0.1s;
   border: none;
   background: none;
-  padding: 8px 0;
+  padding: 6px 0;
+  -webkit-tap-highlight-color: transparent;
 }
+.nav-btn:active { transform: scale(0.92); }
 .nav-btn.active { color: var(--green); }
-.nav-btn svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.nav-btn svg { width: 23px; height: 23px; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+
+/* Camera scan button — hero action in nav */
+.nav-scan-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  cursor: pointer;
+  border: none;
+  background: none;
+  padding: 4px 0;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.1s;
+}
+.nav-scan-btn:active { transform: scale(0.9); }
+.nav-scan-icon {
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--grad-start), var(--grad-end));
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 14px rgba(14,122,138,0.35);
+  margin-bottom: 1px;
+}
+.nav-scan-icon svg { width: 22px; height: 22px; stroke: white; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.nav-scan-label { font-size: 10px; font-weight: 600; color: var(--green-dark); letter-spacing: 0.01em; }
 
 /* ── TOPBAR ── */
 .topbar {
@@ -127,11 +174,11 @@ html, body {
 .icon-btn svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
 
 /* ── CARDS & SECTIONS ── */
-.card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+.card { background: var(--bg); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-sm); }
 .section { margin-top: 20px; }
 .section-header { display: flex; justify-content: space-between; align-items: center; padding: 0 20px 10px; }
-.section-title { font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.08em; }
-.section-link { font-size: 13px; color: var(--green); cursor: pointer; font-weight: 500; }
+.section-title { font-size: 11px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.08em; }
+.section-link { font-size: 13px; color: var(--green); cursor: pointer; font-weight: 600; }
 
 /* ── HOME SCREEN ── */
 .home-greeting { padding: 20px 20px 0; }
@@ -511,6 +558,118 @@ html, body {
 .verify-check.green { background: var(--green-light); color: var(--green-dark); }
 .verify-check.amber { background: var(--amber-light); color: #854F0B; }
 .verify-check.red { background: #FDECEA; color: var(--red); }
+
+/* ══════════════════════════════
+   HOME SCREEN STYLES
+══════════════════════════════ */
+.home-header {
+  background: linear-gradient(135deg, var(--grad-start) 0%, var(--grad-end) 100%);
+  padding: 20px 20px 28px;
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+.home-header::after {
+  content: '';
+  position: absolute;
+  bottom: -20px; left: 0; right: 0;
+  height: 40px;
+  background: var(--bg-secondary);
+  border-radius: 50% 50% 0 0 / 20px 20px 0 0;
+}
+.home-header-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+.home-greeting { font-size: 15px; opacity: 0.85; font-weight: 500; }
+.home-month { font-size: 13px; opacity: 0.7; margin-top: 2px; }
+.home-amount { font-size: 40px; font-weight: 700; letter-spacing: -1.5px; line-height: 1; }
+.home-amount-sub { font-size: 13px; opacity: 0.75; margin-top: 6px; }
+.home-rollover { font-size: 12px; opacity: 0.8; margin-top: 4px; }
+
+/* Circular progress ring */
+.home-pct-ring { position: relative; width: 52px; height: 52px; }
+.home-pct-label {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: white;
+}
+
+/* Next month preview */
+.home-next-month {
+  margin: 16px 16px 0;
+  padding: 12px 16px;
+  background: white;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+/* Things to do card */
+.home-todo-card {
+  margin: 16px 16px 0;
+  background: white;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+.home-todo-title {
+  display: flex; align-items: center; gap: 8px;
+  padding: 14px 16px 10px;
+  font-size: 15px; font-weight: 700; color: var(--text-primary);
+  border-bottom: 0.5px solid var(--border);
+}
+.todo-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 0.5px solid var(--border);
+  cursor: pointer;
+  transition: background 0.12s;
+  -webkit-tap-highlight-color: transparent;
+}
+.todo-item:last-child { border-bottom: none; }
+.todo-item:active { background: var(--bg-secondary); }
+.todo-badge {
+  min-width: 28px; height: 28px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; flex-shrink: 0;
+}
+.todo-badge.green { background: var(--green-light); color: var(--green-dark); }
+.todo-badge.amber { background: var(--amber-light); color: #8B5E00; }
+.todo-badge.teal  { background: var(--teal-light);  color: var(--teal); }
+.todo-badge.red   { background: var(--coral-light);  color: var(--coral); }
+.todo-info { flex: 1; min-width: 0; }
+.todo-title { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+.todo-sub { font-size: 12px; color: var(--text-secondary); margin-top: 1px; }
+.todo-action {
+  font-size: 12px; font-weight: 700;
+  padding: 6px 14px; border-radius: 99px;
+  border: none; cursor: pointer;
+  white-space: nowrap; flex-shrink: 0;
+  font-family: var(--font);
+  transition: opacity 0.12s;
+}
+.todo-action:active { opacity: 0.75; }
+.todo-action.green { background: var(--green-light); color: var(--green-dark); }
+.todo-action.amber { background: var(--amber-light); color: #8B5E00; }
+.todo-action.teal  { background: var(--teal-light);  color: var(--teal); }
+.todo-action.solid { background: var(--green); color: white; }
+
+/* Stats grid */
+.home-stats-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 10px; margin: 0 16px;
+}
+.home-stat-card {
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+.home-stat-card.green  { background: var(--green-light); }
+.home-stat-card.teal   { background: var(--teal-light); }
+.home-stat-card.amber  { background: var(--amber-light); }
+.home-stat-card.purple { background: var(--purple-light); }
+.home-stat-val { font-size: 22px; font-weight: 700; color: var(--text-primary); }
+.home-stat-label { font-size: 12px; color: var(--text-secondary); margin-top: 2px; font-weight: 500; }
 </style>
 </head>
 <body>
@@ -520,106 +679,83 @@ html, body {
        HOME SCREEN
   ════════════════════════════════════════ -->
   <div id="screen-home" class="screen active">
-    <div style="padding:20px 20px 0;">
-      <div style="font-size:13px;color:var(--text-tertiary);" id="greeting">Good morning</div>
-      <div style="font-size:26px;font-weight:600;letter-spacing:-0.5px;margin-top:2px;">Pantry.</div>
-    </div>
 
-    <div class="budget-hero">
-      <div class="budget-hero-top">
+    <!-- ── Gradient header ── -->
+    <div class="home-header">
+      <div class="home-header-top">
         <div>
-          <div class="budget-hero-label">Remaining in May</div>
-          <div class="budget-hero-amount">$66.53</div>
-          <div class="budget-hero-sub">$783.47 of $850.00 spent</div>
+          <div class="home-greeting" id="greeting">Good morning</div>
+          <div class="home-month" id="home-month-label"></div>
         </div>
-        <div class="budget-hero-right">
-          <div style="font-size:11px;opacity:0.75;">May 2026</div>
-          <div class="budget-hero-pct">92%</div>
-          <div class="budget-hero-pct-label">spent</div>
+        <div class="home-header-right">
+          <div class="home-pct-ring">
+            <svg viewBox="0 0 36 36" width="52" height="52">
+              <circle cx="18" cy="18" r="15" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="3"/>
+              <circle cx="18" cy="18" r="15" fill="none" stroke="white" stroke-width="3"
+                stroke-dasharray="94.25" stroke-dashoffset="94.25"
+                id="home-pct-circle" stroke-linecap="round"
+                transform="rotate(-90 18 18)"/>
+            </svg>
+            <div class="home-pct-label" id="home-pct">0%</div>
+          </div>
         </div>
       </div>
-      <div class="budget-bar-track"><div class="budget-bar-fill" style="width:92%;"></div></div>
-      <div class="budget-bar-labels"><span>$0</span><span>6 hauls · 7 days left</span><span>$850</span></div>
+      <div class="home-amount" id="home-remaining">$0.00</div>
+      <div class="home-amount-sub" id="home-spent-of">loading...</div>
+      <div id="home-rollover-note" class="home-rollover" style="display:none;"></div>
     </div>
 
-    <div class="quick-grid">
-      <div class="quick-card" onclick="switchTab('cart')">
-        <div class="quick-card-icon" style="background:var(--green-light);color:var(--green-dark);">
-          <svg viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-        </div>
-        <div>
-          <div class="quick-card-label">Open cart</div>
-          <div class="quick-card-sub">12 items ready</div>
-        </div>
+    <!-- ── Next month preview (end of month only) ── -->
+    <div id="home-next-month-preview" class="home-next-month" style="display:none;">
+      <span style="font-size:16px;margin-right:8px;">🎯</span>
+      <div id="home-next-month-text" style="font-size:13px;color:var(--text-secondary);line-height:1.4;"></div>
+    </div>
+
+    <!-- ── Things to do ── -->
+    <div class="home-todo-card">
+      <div class="home-todo-title">
+        <span style="font-size:16px;">✨</span>
+        <span>Just a few things to do</span>
       </div>
-      <div class="quick-card" onclick="openScanner()">
-        <div class="quick-card-icon" style="background:var(--blue-light);color:var(--blue);">
-          <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+      <div id="home-todo-list"></div>
+    </div>
+
+    <!-- ── This month stats ── -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-title" id="home-glance-label">This month</span>
+        <span class="section-link" onclick="switchTab('perspective')">Full picture</span>
+      </div>
+      <div class="home-stats-grid">
+        <div class="home-stat-card green">
+          <div class="home-stat-val" id="home-snap-hauls">0</div>
+          <div class="home-stat-label">Hauls</div>
         </div>
-        <div>
-          <div class="quick-card-label">Scan receipt</div>
-          <div class="quick-card-sub">Log a haul</div>
+        <div class="home-stat-card teal">
+          <div class="home-stat-val" id="home-snap-saved">$0</div>
+          <div class="home-stat-label">Saved</div>
+        </div>
+        <div class="home-stat-card amber">
+          <div class="home-stat-val" id="home-snap-avg">$0</div>
+          <div class="home-stat-label">Avg haul</div>
+        </div>
+        <div class="home-stat-card purple">
+          <div class="home-stat-val" id="home-snap-days">0</div>
+          <div class="home-stat-label">Days left</div>
         </div>
       </div>
     </div>
 
+    <!-- ── Most recent haul ── -->
     <div class="section">
       <div class="section-header">
         <span class="section-title">Most recent haul</span>
         <span class="section-link" onclick="switchTab('perspective')">See all</span>
       </div>
-      <div class="card recent-haul-card" onclick="openHaulDetail('aldi-may22')">
-        <div class="haul-head">
-          <div class="store-avatar" style="background:var(--purple-light);color:var(--purple);">
-            <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-          </div>
-          <div>
-            <div class="haul-store">ALDI</div>
-            <div class="haul-date">May 22 · 2 days ago</div>
-          </div>
-          <div class="haul-amount">
-            <div class="haul-total">$15.57</div>
-            <div class="haul-items-count">3 items</div>
-          </div>
-        </div>
-        <div class="haul-preview">
-          <div class="haul-item-row"><span>Org baby arugula</span><span>$2.59</span></div>
-          <div class="haul-item-row"><span>Organic spring mix</span><span>$4.99</span></div>
-          <div class="haul-item-row"><span>Supreme deli pizza</span><span>$7.99</span></div>
-        </div>
-        <div class="haul-more">Tap to see full haul →</div>
-      </div>
+      <div id="home-recent-haul" style="margin:0 16px;"></div>
     </div>
 
-    <div class="section">
-      <div class="section-header">
-        <span class="section-title">AI nudge</span>
-        <span class="section-link" onclick="switchTab('plan')">See all</span>
-      </div>
-      <div class="card nudge-card-home">
-        <div class="nudge-icon-wrap">
-          <svg viewBox="0 0 24 24"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
-        </div>
-        <div class="nudge-body">
-          <div class="nudge-title">You're low on protein</div>
-          <div class="nudge-text">Salmon and chicken were bought 6 days ago. No new protein in your cart yet.</div>
-          <div class="nudge-btns">
-            <button class="nudge-btn primary" onclick="switchTab('cart')">Add to cart</button>
-            <button class="nudge-btn" onclick="switchTab('plan')">See all nudges</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="section">
-      <div class="section-header"><span class="section-title">May at a glance</span></div>
-      <div class="snap-grid">
-        <div class="snap-card"><div class="snap-val">6</div><div class="snap-label">Hauls</div></div>
-        <div class="snap-card"><div class="snap-val color-green">$51.50</div><div class="snap-label">Saved</div></div>
-        <div class="snap-card"><div class="snap-val">$130</div><div class="snap-label">Avg haul</div></div>
-      </div>
-    </div>
-    <div style="height:8px;"></div>
+    <div style="height:16px;"></div>
   </div>
 
   <!-- ═══════════════════════════════════════
@@ -939,21 +1075,23 @@ html, body {
       <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
       Home
     </button>
-    <button class="nav-btn" onclick="switchTab('perspective')" id="nav-perspective">
-      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-      Perspective
-    </button>
     <button class="nav-btn" onclick="switchTab('cart')" id="nav-cart">
       <svg viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
       Cart
     </button>
+    <button class="nav-scan-btn" onclick="openScanner()">
+      <div class="nav-scan-icon">
+        <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+      </div>
+      <span class="nav-scan-label">Scan</span>
+    </button>
     <button class="nav-btn" onclick="switchTab('shelf')" id="nav-shelf">
       <svg viewBox="0 0 24 24"><line x1="4" y1="21" x2="4" y2="3"/><line x1="9" y1="21" x2="9" y2="13"/><line x1="14" y1="21" x2="14" y2="8"/><line x1="19" y1="21" x2="19" y2="17"/><line x1="2" y1="21" x2="22" y2="21"/></svg>
-      Shelf
+      Pantry
     </button>
-    <button class="nav-btn" onclick="switchTab('plan')" id="nav-plan">
-      <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-      Plan
+    <button class="nav-btn" onclick="switchTab('perspective')" id="nav-perspective">
+      <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Insights
     </button>
   </nav>
 </div>
@@ -1055,7 +1193,7 @@ html, body {
 // ═══════════════════════════════════════
 const HAULS = {
   'costco-may3': {
-    store:'Costco', date:'May 3, 2026', total:209.48, saved:14.00,
+    store:'Costco', date:'May 3, 2026', month:'2026-05', total:209.48, saved:14.00,
     items:[
       {cat:'Dairy & Eggs', name:'Organic eggs', price:7.69},
       {cat:'Dairy & Eggs', name:'Organic eggs', price:7.69},
@@ -1083,7 +1221,7 @@ const HAULS = {
     ]
   },
   'detwilers-may4': {
-    store:"Detwiler's", date:'May 4, 2026', total:34.67, saved:1.00,
+    store:"Detwiler's", date:'May 4, 2026', month:'2026-05', total:34.67, saved:1.00,
     items:[
       {cat:'Meat & Protein', name:'Petr Bev Lightning Mushroom', price:5.99},
       {cat:'Condiments', name:'PM Drs Creamy Ranch', price:9.99},
@@ -1095,7 +1233,7 @@ const HAULS = {
     ]
   },
   'costco-may11': {
-    store:'Costco', date:'May 11, 2026', total:233.18, saved:7.50,
+    store:'Costco', date:'May 11, 2026', month:'2026-05', total:233.18, saved:7.50,
     items:[
       {cat:'Supplements', name:'KS Organic A2 Protein', price:12.99},
       {cat:'Frozen', name:'Tallow fries', price:11.99},
@@ -1119,7 +1257,7 @@ const HAULS = {
     ]
   },
   'publix-may16': {
-    store:'Publix', date:'May 16, 2026', total:15.97, saved:0,
+    store:'Publix', date:'May 16, 2026', month:'2026-05', total:15.97, saved:0,
     items:[
       {cat:'Beverages', name:'Knudsen Org Guava Dragonfruit', price:7.99},
       {cat:'Fresh Produce', name:'Organic carrots', price:1.99},
@@ -1127,7 +1265,7 @@ const HAULS = {
     ]
   },
   'costco-may18': {
-    store:'Costco', date:'May 18, 2026', total:274.60, saved:30.50,
+    store:'Costco', date:'May 18, 2026', month:'2026-05', total:274.60, saved:30.50,
     items:[
       {cat:'Beverages', name:'LaCroix variety', price:9.99},
       {cat:'Beverages', name:'Olipop variety', price:19.99},
@@ -1160,7 +1298,7 @@ const HAULS = {
     ]
   },
   'aldi-may22': {
-    store:'ALDI', date:'May 22, 2026', total:15.57, saved:0,
+    store:'ALDI', date:'May 22, 2026', month:'2026-05', total:15.57, saved:0,
     items:[
       {cat:'Fresh Produce', name:'Org baby arugula', price:2.59},
       {cat:'Fresh Produce', name:'Organic spring mix', price:4.99},
@@ -1304,6 +1442,226 @@ let activeShelfFilter = 'All';
 let activeSwipe = null;
 
 // ═══════════════════════════════════════
+// BUDGET & MONTH HELPERS
+// ═══════════════════════════════════════
+const MONTHLY_BUDGET_BASE = 850;
+
+function getMonthKey(date) {
+  return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}`;
+}
+
+function getMonthName(monthKey) {
+  const [y, m] = monthKey.split('-').map(Number);
+  return new Date(y, m-1, 1).toLocaleString('default', {month:'long', year:'numeric'});
+}
+
+function getNextMonthKey(monthKey) {
+  const [y, m] = monthKey.split('-').map(Number);
+  return m === 12 ? `${y+1}-01` : `${y}-${String(m+1).padStart(2,'0')}`;
+}
+
+function getPrevMonthKey(monthKey) {
+  const [y, m] = monthKey.split('-').map(Number);
+  return m === 1 ? `${y-1}-12` : `${y}-${String(m-1).padStart(2,'0')}`;
+}
+
+function getMonthHauls(monthKey) {
+  return Object.values(HAULS).filter(h => h.month === monthKey);
+}
+
+function calcMonthBudget(monthKey) {
+  const base = MONTHLY_BUDGET_BASE;
+  const prevKey = getPrevMonthKey(monthKey);
+  const prevHauls = getMonthHauls(prevKey);
+  const prevSpent = prevHauls.reduce((s,h) => s + (h.total||0), 0);
+  // Rollover = leftover (positive) or deficit (negative) from previous month
+  const rollover = base - prevSpent; // positive = surplus, negative = deficit
+  const available = base + rollover;
+  const currentHauls = getMonthHauls(monthKey);
+  const spent = currentHauls.reduce((s,h) => s + (h.total||0), 0);
+  const remaining = available - spent;
+  const saved = currentHauls.reduce((s,h) => s + (h.saved||0), 0);
+  return { base, rollover, available, spent, remaining, saved, hauls: currentHauls };
+}
+
+function storeStyle(name) {
+  const n = (name||'').toLowerCase();
+  if(n.includes('costco'))  return {bg:'var(--blue-light)',   fg:'var(--blue)'};
+  if(n.includes('aldi'))    return {bg:'var(--purple-light)', fg:'var(--purple)'};
+  if(n.includes('publix'))  return {bg:'var(--green-light)',  fg:'var(--green-dark)'};
+  if(n.includes('detwil'))  return {bg:'#EAF3DE',             fg:'#3B6D11'};
+  if(n.includes('walmart')) return {bg:'var(--blue-light)',   fg:'#0071CE'};
+  return {bg:'var(--bg-secondary)', fg:'var(--text-secondary)'};
+}
+
+function daysAgoText(dateStr) {
+  try {
+    const d = new Date(dateStr);
+    const diff = Math.round((new Date() - d) / 86400000);
+    if(diff === 0) return 'today';
+    if(diff === 1) return 'yesterday';
+    return `${diff} days ago`;
+  } catch(e) { return dateStr; }
+}
+
+function renderHomeScreen() {
+  const today    = new Date();
+  const monthKey = getMonthKey(today);
+  const budget   = calcMonthBudget(monthKey);
+  const daysInMonth = new Date(today.getFullYear(), today.getMonth()+1, 0).getDate();
+  const daysLeft = daysInMonth - today.getDate();
+  const pct      = budget.available > 0 ? Math.min(100, Math.round((budget.spent / budget.available) * 100)) : 0;
+  const monthName = today.toLocaleString('default', {month:'long'});
+
+  // ── Greeting ──
+  const h = today.getHours();
+  document.getElementById('greeting').textContent = h<12?'Good morning':'Good afternoon';
+  document.getElementById('home-month-label').textContent = `${monthName} · ${today.getFullYear()}`;
+
+  // ── Budget header ──
+  document.getElementById('home-remaining').textContent = `$${Math.max(0,budget.remaining).toFixed(2)} left`;
+  document.getElementById('home-spent-of').textContent  = `$${budget.spent.toFixed(2)} of $${budget.available.toFixed(2)} spent`;
+  document.getElementById('home-pct').textContent = `${pct}%`;
+
+  // Circular progress ring (circumference = 2π×15 ≈ 94.25)
+  const circleEl = document.getElementById('home-pct-circle');
+  if(circleEl) {
+    const offset = 94.25 * (1 - pct/100);
+    circleEl.style.strokeDashoffset = offset;
+    circleEl.style.stroke = pct > 90 ? '#FFB347' : 'white';
+  }
+
+  // Rollover note
+  const rolloverEl = document.getElementById('home-rollover-note');
+  if(Math.abs(budget.rollover) > 0.01) {
+    const sign = budget.rollover > 0 ? '↑' : '↓';
+    rolloverEl.textContent = `${sign} $${Math.abs(budget.rollover).toFixed(2)} rolled over from last month`;
+    rolloverEl.style.display = 'block';
+  } else {
+    rolloverEl.style.display = 'none';
+  }
+
+  // ── End of month next-month preview ──
+  const previewEl = document.getElementById('home-next-month-preview');
+  if(daysLeft <= 5 && budget.remaining > 0) {
+    const nextName = new Date(today.getFullYear(), today.getMonth()+1, 1).toLocaleString('default',{month:'long'});
+    const nextAvail = MONTHLY_BUDGET_BASE + budget.remaining;
+    document.getElementById('home-next-month-text').innerHTML =
+      `<strong>${nextName} starts with $${nextAvail.toFixed(2)}</strong> — your $${budget.remaining.toFixed(2)} surplus is rolling forward. Give it a job in your Pantry.`;
+    previewEl.style.display = 'flex';
+  } else {
+    previewEl.style.display = 'none';
+  }
+
+  // ── Things to do ──
+  const todos = [];
+  const unchecked = cartItems.filter(i => !i.checked).length;
+
+  // Cart ready?
+  if(unchecked > 0) {
+    todos.push({
+      badge: unchecked, badgeClass: 'green',
+      title: `${unchecked} items in your cart`,
+      sub: 'Ready to shop',
+      action: 'Shop now', actionClass: 'solid',
+      fn: "switchTab('cart')"
+    });
+  }
+
+  // Surplus to assign?
+  if(budget.remaining > 20) {
+    todos.push({
+      badge: '💰', badgeClass: 'amber',
+      title: `$${budget.remaining.toFixed(2)} ahead this month`,
+      sub: 'AI has a job for this money',
+      action: 'See plan', actionClass: 'amber',
+      fn: "switchTab('plan')"
+    });
+  }
+
+  // Items due based on purchase history (check last 3 staple families)
+  const dueItems = shelfItems.filter(f => f.staple).slice(0, 2);
+  if(dueItems.length > 0) {
+    todos.push({
+      badge: dueItems.length, badgeClass: 'teal',
+      title: `${dueItems[0].general} may be running low`,
+      sub: `Last: ${dueItems[0].brands[0].last}`,
+      action: 'Add to cart', actionClass: 'teal',
+      fn: "switchTab('cart')"
+    });
+  }
+
+  // No recent scan?
+  const allHauls = Object.values(HAULS);
+  const lastHaul = allHauls.sort((a,b) => new Date(b.date)-new Date(a.date))[0];
+  const daysSinceScan = lastHaul ? Math.round((today - new Date(lastHaul.date))/86400000) : 999;
+  if(daysSinceScan > 3) {
+    todos.push({
+      badge: '🧾', badgeClass: 'amber',
+      title: 'Receipt not scanned',
+      sub: daysSinceScan < 999 ? `Last haul ${daysSinceScan} days ago` : 'Scan your first receipt',
+      action: 'Scan now', actionClass: 'solid',
+      fn: 'openScanner()'
+    });
+  }
+
+  const todoEl = document.getElementById('home-todo-list');
+  if(todos.length === 0) {
+    todoEl.innerHTML = `<div class="todo-item"><span style="font-size:20px;">🎉</span><div class="todo-info"><div class="todo-title">You're all caught up!</div><div class="todo-sub">Pantry is looking good this month</div></div></div>`;
+  } else {
+    todoEl.innerHTML = todos.map(t => `
+      <div class="todo-item" onclick="${t.fn}">
+        <div class="todo-badge ${t.badgeClass}">${t.badge}</div>
+        <div class="todo-info">
+          <div class="todo-title">${t.title}</div>
+          <div class="todo-sub">${t.sub}</div>
+        </div>
+        <button class="todo-action ${t.actionClass}" onclick="event.stopPropagation();${t.fn}">${t.action}</button>
+      </div>`).join('');
+  }
+
+  // ── Stats grid ──
+  const avg = budget.hauls.length > 0 ? budget.spent / budget.hauls.length : 0;
+  document.getElementById('home-glance-label').textContent = `${monthName} at a glance`;
+  document.getElementById('home-snap-hauls').textContent = budget.hauls.length;
+  document.getElementById('home-snap-saved').textContent = `$${budget.saved.toFixed(2)}`;
+  document.getElementById('home-snap-avg').textContent   = `$${Math.round(avg)}`;
+  document.getElementById('home-snap-days').textContent  = daysLeft;
+
+  // ── Most recent haul ──
+  const sortedHauls = Object.entries(HAULS).sort((a,b) => new Date(b[1].date)-new Date(a[1].date));
+  const recentEl = document.getElementById('home-recent-haul');
+  if(sortedHauls.length > 0) {
+    const [key, haul] = sortedHauls[0];
+    const s = storeStyle(haul.store);
+    const itemCount = (haul.items||[]).filter(i=>!i.coupon&&i.price>0).length;
+    const preview = (haul.items||[]).filter(i=>i.price>0&&!i.coupon).slice(0,3);
+    recentEl.innerHTML = `
+      <div class="card recent-haul-card" onclick="openHaulDetail('${key}')">
+        <div class="haul-head">
+          <div class="store-avatar" style="background:${s.bg};color:${s.fg};">
+            <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          </div>
+          <div>
+            <div class="haul-store">${haul.store}</div>
+            <div class="haul-date">${haul.date} · ${daysAgoText(haul.date)}</div>
+          </div>
+          <div class="haul-amount">
+            <div class="haul-total">$${haul.total.toFixed(2)}</div>
+            <div class="haul-items-count">${itemCount} items</div>
+          </div>
+        </div>
+        <div class="haul-preview">
+          ${preview.map(i=>`<div class="haul-item-row"><span>${i.name}</span><span>$${i.price.toFixed(2)}</span></div>`).join('')}
+        </div>
+        <div class="haul-more">Tap to see full haul →</div>
+      </div>`;
+  } else {
+    recentEl.innerHTML = `<div style="padding:24px 20px;text-align:center;color:var(--text-tertiary);font-size:14px;">No hauls yet — tap Scan to log your first one</div>`;
+  }
+}
+
+// ═══════════════════════════════════════
 // NAVIGATION
 // ═══════════════════════════════════════
 function switchTab(tab) {
@@ -1311,6 +1669,7 @@ function switchTab(tab) {
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('screen-'+tab).classList.add('active');
   document.getElementById('nav-'+tab).classList.add('active');
+  if(tab==='home') renderHomeScreen();
   if(tab==='cart') renderCart();
   if(tab==='shelf') renderShelf();
   if(tab==='plan') generateAINudges();
@@ -2023,10 +2382,21 @@ function guessCat(name) {
   return 'Pantry Staples';
 }
 
-function confirmHaul() {
-  const data      = window._scanData || {};
-  const matched   = window._scanMatched || [];
-  const missed    = window._scanMissed || [];
+function confirmHaul(monthKey) {
+  const data    = window._scanData || {};
+  const matched = window._scanMatched || [];
+  const today   = new Date();
+
+  // If monthKey not provided, check if near end of month
+  if(!monthKey) {
+    const daysLeft = new Date(today.getFullYear(), today.getMonth()+1, 0).getDate() - today.getDate();
+    const budget = calcMonthBudget(getMonthKey(today));
+    if(daysLeft <= 5 && budget.remaining < 150) {
+      showHaulMonthModal(today);
+      return;
+    }
+    monthKey = getMonthKey(today);
+  }
 
   // Auto-check matched items in cart
   matched.forEach(({cart}) => {
@@ -2034,14 +2404,14 @@ function confirmHaul() {
     if(item) item.checked = true;
   });
 
-  // Log haul to HAULS (Perspective)
+  // Log haul
   const haulId  = 'scan-' + Date.now();
-  const today   = new Date();
   const dateStr = today.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
   const saved   = Math.abs((data.items||[]).filter(i=>i.price<0).reduce((s,i)=>s+i.price,0));
   HAULS[haulId] = {
     store: data.store || 'Store',
     date:  dateStr,
+    month: monthKey,
     total: data.total || 0,
     saved: saved,
     items: (data.items||[]).map(i => ({cat: guessCat(i.name), name: i.name, price: i.price, coupon: i.price < 0}))
@@ -2049,14 +2419,51 @@ function confirmHaul() {
 
   closeScanner();
   renderCart();
+  renderHomeScreen();
 
   const toast = document.createElement('div');
   toast.style.cssText = 'position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:white;border-radius:12px;padding:12px 20px;font-size:14px;font-weight:500;z-index:600;white-space:nowrap;';
-  toast.textContent = `Haul logged! ${matched.length} items matched ✓`;
+  const monthName = getMonthName(monthKey).split(' ')[0];
+  toast.textContent = `Haul logged to ${monthName}! ${matched.length} items matched ✓`;
   document.body.appendChild(toast);
-  setTimeout(() => toast.remove(), 3000);
+  setTimeout(() => toast.remove(), 3500);
 
-  switchTab('perspective');
+  switchTab('home');
+}
+
+function showHaulMonthModal(today) {
+  const currentKey  = getMonthKey(today);
+  const nextKey     = getNextMonthKey(currentKey);
+  const currentName = getMonthName(currentKey).split(' ')[0];
+  const nextName    = getMonthName(nextKey).split(' ')[0];
+  const budget      = calcMonthBudget(currentKey);
+  const daysLeft    = new Date(today.getFullYear(), today.getMonth()+1, 0).getDate() - today.getDate();
+
+  const modal = document.createElement('div');
+  modal.id = 'month-modal';
+  modal.style.cssText = 'position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.5);display:flex;align-items:flex-end;justify-content:center;';
+  modal.innerHTML = `
+    <div style="background:var(--bg);border-radius:20px 20px 0 0;padding:28px 24px 40px;width:100%;max-width:480px;">
+      <div style="width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 24px;"></div>
+      <div style="font-size:20px;font-weight:700;margin-bottom:8px;">Which month is this haul for?</div>
+      <div style="font-size:15px;color:var(--text-secondary);margin-bottom:24px;line-height:1.5;">
+        You have <strong>$${budget.remaining.toFixed(2)}</strong> left in ${currentName} with ${daysLeft} day${daysLeft!==1?'s':''} to go.
+        Hauls counted toward ${nextName} will roll your remaining budget forward.
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <button onclick="document.getElementById('month-modal').remove(); confirmHaul('${nextKey}');" style="background:var(--green);color:white;border:none;border-radius:14px;padding:16px;font-size:16px;font-weight:600;cursor:pointer;">
+          Count toward ${nextName}
+          <div style="font-size:12px;font-weight:400;opacity:0.85;margin-top:3px;">${nextName} starts with $${(850 + budget.remaining).toFixed(2)}</div>
+        </button>
+        <button onclick="document.getElementById('month-modal').remove(); confirmHaul('${currentKey}');" style="background:var(--bg-secondary);color:var(--text-primary);border:none;border-radius:14px;padding:16px;font-size:16px;font-weight:600;cursor:pointer;">
+          Keep in ${currentName}
+          <div style="font-size:12px;font-weight:400;color:var(--text-secondary);margin-top:3px;">$${budget.remaining.toFixed(2)} remaining</div>
+        </button>
+        <button onclick="document.getElementById('month-modal').remove();" style="background:none;color:var(--text-tertiary);border:none;padding:8px;font-size:14px;cursor:pointer;">Cancel</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if(e.target === modal) modal.remove(); });
 }
 
 // ═══════════════════════════════════════
@@ -2291,6 +2698,7 @@ function refreshNudges() {
 // Initial renders
 renderCart();
 renderShelf();
+renderHomeScreen();
 checkSetup();
 </script>
 </body>
