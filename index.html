@@ -482,6 +482,35 @@ html, body {
 .color-red { color: var(--red); }
 .fw-500 { font-weight: 500; }
 .fw-600 { font-weight: 600; }
+
+/* ── CAMERA ZONE ── */
+.camera-zone {
+  border: 2px solid var(--green);
+  border-radius: var(--radius-lg);
+  padding: 36px 20px;
+  text-align: center;
+  cursor: pointer;
+  background: var(--green-light);
+  margin-bottom: 10px;
+  transition: opacity 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.camera-zone:active { opacity: 0.8; }
+.camera-zone svg { width: 48px; height: 48px; stroke: var(--green-dark); fill: none; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; margin-bottom: 12px; }
+.camera-zone-label { font-size: 18px; font-weight: 600; color: var(--green-dark); margin-bottom: 4px; }
+.camera-zone-sub { font-size: 13px; color: var(--green); }
+
+/* ── RECEIPT VERIFICATION ── */
+.verify-section-header { padding: 12px 0 6px; border-top: 0.5px solid var(--border); margin-top: 4px; }
+.verify-badge { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; padding: 4px 12px; border-radius: 99px; }
+.verify-badge.green { background: var(--green-light); color: var(--green-dark); }
+.verify-badge.amber { background: var(--amber-light); color: #854F0B; }
+.verify-badge.red { background: #FDECEA; color: var(--red); }
+.verify-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-top: 0.5px solid var(--border); }
+.verify-check { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; }
+.verify-check.green { background: var(--green-light); color: var(--green-dark); }
+.verify-check.amber { background: var(--amber-light); color: #854F0B; }
+.verify-check.red { background: #FDECEA; color: var(--red); }
 </style>
 </head>
 <body>
@@ -957,16 +986,26 @@ html, body {
 <div class="modal-overlay" id="scanner-modal">
   <div class="modal-sheet">
     <div class="modal-handle"></div>
-    <div class="modal-title">Scan a receipt</div>
-    <div class="modal-sub">Take a photo or upload a receipt and Pantry. will extract all the items automatically.</div>
 
-    <div class="upload-zone" onclick="document.getElementById('receipt-input').click()">
-      <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-      <div class="upload-zone-label">Take photo or choose from library</div>
-      <div class="upload-zone-sub">iPhone will ask which option you prefer</div>
+    <!-- Camera trigger screen -->
+    <div id="scanner-camera-screen">
+      <div class="modal-title">Scan your receipt</div>
+      <div class="modal-sub" style="margin-bottom:20px;">Point your camera at the receipt right after checkout.</div>
+      <div class="camera-zone" onclick="document.getElementById('receipt-input').click()">
+        <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        <div class="camera-zone-label">Open camera</div>
+        <div class="camera-zone-sub">Tap to photograph your receipt</div>
+      </div>
+      <div style="text-align:center;margin-top:12px;">
+        <span style="font-size:12px;color:var(--text-tertiary);cursor:pointer;text-decoration:underline;" onclick="document.getElementById('receipt-library').click()">choose from photo library instead</span>
+      </div>
     </div>
-    <input type="file" id="receipt-input" accept="image/*" onchange="handleReceiptUpload(this)">
 
+    <!-- File inputs: camera-first and library fallback -->
+    <input type="file" id="receipt-input" accept="image/*" capture="environment" onchange="handleReceiptUpload(this)" style="display:none;">
+    <input type="file" id="receipt-library" accept="image/*" onchange="handleReceiptUpload(this)" style="display:none;">
+
+    <!-- Scanning indicator -->
     <div class="scanning-indicator" id="scanning-indicator">
       <div class="scanning-dots">
         <div class="scanning-dot"></div>
@@ -976,17 +1015,22 @@ html, body {
       <div class="scanning-text" id="scanning-text">Reading your receipt...</div>
     </div>
 
+    <!-- Verification result -->
     <div class="scan-result" id="scan-result">
-      <div style="font-size:14px;font-weight:600;margin-bottom:4px;" id="scan-store-name">Store</div>
-      <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:12px;" id="scan-date"></div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:16px;">
+        <div>
+          <div style="font-size:17px;font-weight:600;" id="scan-store-name"></div>
+          <div style="font-size:12px;color:var(--text-tertiary);margin-top:2px;" id="scan-date"></div>
+        </div>
+        <div style="font-size:22px;font-weight:600;" id="scan-total-amt"></div>
+      </div>
       <div id="scan-items-list"></div>
-      <div class="scan-total"><span>Total</span><span id="scan-total-amt"></span></div>
-      <button class="big-btn green" style="margin-top:12px;" onclick="addScanToCart()">
-        <svg viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-        Add all to cart
+      <button class="big-btn green" style="margin-top:16px;" onclick="confirmHaul()">
+        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+        Confirm &amp; log haul
       </button>
-      <button class="big-btn outline" onclick="closeScanner()">Cancel</button>
-    <div style="text-align:center;margin-top:4px;font-size:12px;color:var(--text-tertiary);cursor:pointer;" onclick="closeScanner();document.getElementById('setup-screen').classList.remove('hidden');">⚙️ Update API key</div>
+      <button class="big-btn outline" style="margin-top:0;" onclick="closeScanner()">Cancel</button>
+      <div style="text-align:center;font-size:12px;color:var(--text-tertiary);cursor:pointer;margin-top:4px;" onclick="closeScanner();document.getElementById('setup-screen').classList.remove('hidden');">⚙️ Update API key</div>
     </div>
   </div>
 </div>
@@ -1683,11 +1727,20 @@ function openScanner() {
   document.getElementById('scanner-modal').classList.add('open');
   document.getElementById('scan-result').classList.remove('visible');
   document.getElementById('scanning-indicator').classList.remove('visible');
+  document.getElementById('scanner-camera-screen').style.display = 'block';
+  document.getElementById('receipt-input').value = '';
+  document.getElementById('receipt-library').value = '';
+  // Auto-open camera on mobile
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  if(isMobile) setTimeout(() => document.getElementById('receipt-input').click(), 350);
 }
 
 function closeScanner() {
   document.getElementById('scanner-modal').classList.remove('open');
   document.getElementById('receipt-input').value = '';
+  document.getElementById('receipt-library').value = '';
+  document.getElementById('scan-result').classList.remove('visible');
+  document.getElementById('scanning-indicator').classList.remove('visible');
 }
 
 // ═══════════════════════════════════════
@@ -1864,51 +1917,135 @@ function imageToJpegBase64(file) {
   });
 }
 
+// ── Fuzzy match receipt item names to cart item names ──
+function fuzzyMatch(a, b) {
+  const norm = s => s.toLowerCase().replace(/[^a-z0-9 ]/g, '').trim();
+  const na = norm(a), nb = norm(b);
+  if(na === nb) return true;
+  if(na.includes(nb) || nb.includes(na)) return true;
+  const aWords = na.split(' ').filter(w => w.length > 2);
+  const bWords = nb.split(' ').filter(w => w.length > 2);
+  return aWords.some(aw => bWords.some(bw => aw.includes(bw) || bw.includes(aw)));
+}
+
 function showScanResult(data) {
   document.getElementById('scanning-indicator').classList.remove('visible');
+  document.getElementById('scanner-camera-screen').style.display = 'none';
   document.getElementById('scan-store-name').textContent = data.store || 'Receipt';
   document.getElementById('scan-date').textContent = data.date || '';
   document.getElementById('scan-total-amt').textContent = `$${(data.total||0).toFixed(2)}`;
 
-  let html = '';
-  (data.items||[]).forEach((item,idx) => {
-    const isNeg = item.price < 0;
-    html += `
-      <div class="scan-item-row" id="scan-item-${idx}">
-        <span class="scan-item-name">${item.name}</span>
-        <span class="scan-item-price" style="color:${isNeg?'var(--green)':'var(--text-primary)'};">${isNeg?'-':''}$${Math.abs(item.price).toFixed(2)}</span>
-        <div class="scan-item-remove" onclick="removeScanItem(${idx})">
-          <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-        </div>
-      </div>`;
+  const allItems   = data.items || [];
+  const purchased  = allItems.filter(i => i.price > 0);
+  const coupons    = allItems.filter(i => i.price < 0);
+  const activeCart = cartItems.filter(i => !i.checked);
+
+  const matched   = [];
+  const unplanned = [];
+  const usedCartIds = new Set();
+
+  purchased.forEach(rItem => {
+    const hit = activeCart.find(c => !usedCartIds.has(c.id) && fuzzyMatch(c.name, rItem.name));
+    if(hit) { matched.push({receipt: rItem, cart: hit}); usedCartIds.add(hit.id); }
+    else unplanned.push(rItem);
   });
 
+  const missed = activeCart.filter(c => !usedCartIds.has(c.id));
+
+  let html = '';
+
+  // ✅ MATCHED
+  if(matched.length > 0) {
+    html += `<div class="verify-section-header"><span class="verify-badge green">✓ ${matched.length} on your list</span></div>`;
+    matched.forEach(({receipt, cart}) => {
+      const diff = receipt.price - cart.price;
+      const diffHtml = Math.abs(diff) > 0.01
+        ? `<div style="font-size:11px;color:${diff>0?'var(--red)':'var(--green)'};">${diff>0?'↑':'↓'}$${Math.abs(diff).toFixed(2)} vs planned</div>` : '';
+      const altName = receipt.name.toLowerCase() !== cart.name.toLowerCase()
+        ? `<div style="font-size:11px;color:var(--text-tertiary);">listed as "${cart.name}"</div>` : '';
+      html += `<div class="verify-row">
+        <div class="verify-check green">✓</div>
+        <div style="flex:1;"><div style="font-size:14px;">${receipt.name}</div>${altName}</div>
+        <div style="text-align:right;"><div style="font-size:14px;font-weight:500;">$${receipt.price.toFixed(2)}</div>${diffHtml}</div>
+      </div>`;
+    });
+  }
+
+  // ➕ NOT ON LIST
+  if(unplanned.length > 0) {
+    html += `<div class="verify-section-header"><span class="verify-badge amber">+ ${unplanned.length} not on your list</span></div>`;
+    unplanned.forEach(item => {
+      html += `<div class="verify-row">
+        <div class="verify-check amber">+</div>
+        <div style="flex:1;font-size:14px;">${item.name}</div>
+        <div style="font-size:14px;font-weight:500;">$${item.price.toFixed(2)}</div>
+      </div>`;
+    });
+  }
+
+  // ❌ MISSED
+  if(missed.length > 0) {
+    html += `<div class="verify-section-header"><span class="verify-badge red">✗ ${missed.length} not on receipt</span></div>`;
+    missed.forEach(item => {
+      html += `<div class="verify-row">
+        <div class="verify-check red">✗</div>
+        <div style="flex:1;"><div style="font-size:14px;">${item.name}</div><div style="font-size:11px;color:var(--text-tertiary);">Did you forget this?</div></div>
+        <div style="font-size:13px;color:var(--text-tertiary);">not bought</div>
+      </div>`;
+    });
+  }
+
+  // 💰 COUPONS
+  if(coupons.length > 0) {
+    const saved = coupons.reduce((s,c) => s + Math.abs(c.price), 0);
+    html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-top:0.5px solid var(--border);margin-top:4px;">
+      <span style="font-size:13px;color:var(--green-dark);font-weight:500;">💰 Coupons & savings</span>
+      <span style="font-size:14px;font-weight:600;color:var(--green);">-$${saved.toFixed(2)}</span>
+    </div>`;
+  }
+
   document.getElementById('scan-items-list').innerHTML = html;
-  document.getElementById('scan-items-list').dataset.items = JSON.stringify(data.items);
-  document.getElementById('scan-items-list').dataset.store = data.store||'';
+  window._scanData = data;
+  window._scanMatched = matched;
+  window._scanUnplanned = unplanned;
+  window._scanMissed = missed;
   document.getElementById('scan-result').classList.add('visible');
 }
 
-function removeScanItem(idx) {
-  const el = document.getElementById('scan-item-'+idx);
-  if(el) el.remove();
-}
+function confirmHaul() {
+  const data      = window._scanData || {};
+  const matched   = window._scanMatched || [];
+  const missed    = window._scanMissed || [];
 
-function addScanToCart() {
-  const list = document.getElementById('scan-items-list');
-  const items = JSON.parse(list.dataset.items||'[]');
-  const store = list.dataset.store||'';
-  const remaining = list.querySelectorAll('.scan-item-row');
-  const remainingIds = new Set([...remaining].map(r=>parseInt(r.id.split('-').pop())));
-
-  items.forEach((item,idx)=>{
-    if(remainingIds.has(idx) && item.price > 0) {
-      cartItems.push({id:Date.now()+idx, cat:'Pantry Staples', name:item.name, qty:1, price:item.price, store, checked:false});
-    }
+  // Auto-check matched items in cart
+  matched.forEach(({cart}) => {
+    const item = cartItems.find(i => i.id === cart.id);
+    if(item) item.checked = true;
   });
 
+  // Log haul to HAULS (Perspective)
+  const haulId  = 'scan-' + Date.now();
+  const today   = new Date();
+  const dateStr = today.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
+  const saved   = Math.abs((data.items||[]).filter(i=>i.price<0).reduce((s,i)=>s+i.price,0));
+  HAULS[haulId] = {
+    store: data.store || 'Store',
+    date:  dateStr,
+    total: data.total || 0,
+    saved: saved,
+    items: (data.items||[]).map(i => ({cat: guessCat(i.name), name: i.name, price: i.price, coupon: i.price < 0}))
+  };
+
   closeScanner();
-  switchTab('cart');
+  renderCart();
+
+  const toast = document.createElement('div');
+  toast.style.cssText = 'position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:white;border-radius:12px;padding:12px 20px;font-size:14px;font-weight:500;z-index:600;white-space:nowrap;';
+  toast.textContent = `Haul logged! ${matched.length} items matched ✓`;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
+
+  switchTab('perspective');
 }
 
 // ═══════════════════════════════════════
