@@ -305,39 +305,16 @@ html, body {
 .stat-val { font-size: 20px; font-weight: 600; }
 .stat-label { font-size: 11px; color: var(--text-tertiary); margin-top: 2px; }
 
-/* ── SWIPE ROWS ── */
-.swipe-wrap { position: relative; overflow: hidden; border-top: 0.5px solid var(--border); user-select: none; -webkit-user-select: none; }
-
-/* Right action (swipe left) — Delete = red */
-.swipe-action-right {
+.swipe-wrap { position: relative; overflow: hidden; border-top: 0.5px solid var(--border); }
+.swipe-action {
   position: absolute; right: 0; top: 0; bottom: 0;
-  display: flex; align-items: center; justify-content: center;
-  background: var(--red); color: white;
-  border-radius: 12px 0 0 12px; width: 0; overflow: hidden;
-  font-size: 14px; font-weight: 600; cursor: pointer;
-  transition: border-radius 0.15s ease, width 0.05s;
-  padding: 0; white-space: nowrap; opacity: 0;
+  width: 100px; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 3px;
+  font-size: 12px; font-weight: 500; cursor: pointer;
 }
-.swipe-action-right.visible {
-  opacity: 1; padding: 0 16px;
-}
-
-/* Left action (swipe right) — Staple = amber */
-.swipe-action-left {
-  position: absolute; left: 8px; top: 50%; transform: translateY(-50%);
-  display: flex; align-items: center; justify-content: center;
-  background: var(--amber); color: white;
-  border-radius: 12px; width: 0; min-width: 0; overflow: hidden; height: calc(100% - 12px);
-  font-size: 14px; font-weight: 600; cursor: pointer;
-  transition: border-radius 0.15s, min-width 0.05s, width 0.05s;
-  padding: 0; white-space: nowrap; opacity: 0;
-}
-.swipe-action-left.visible { opacity: 1; min-width: 72px; padding: 0 16px; }
-.swipe-action-left.staple-on { background: var(--green); }
-
-/* While actively swiping — stretch and flatten corners */
-.swipe-action-right.stretching { border-radius: 0 12px 12px 0; }
-.swipe-action-left.stretching { border-radius: 12px 0 0 12px; }
+.swipe-action.off { background: var(--amber); color: white; }
+.swipe-action.on { background: var(--green); color: white; }
+.swipe-action svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
 
 .shelf-row {
   display: flex; align-items: center; gap: 10px;
@@ -398,14 +375,6 @@ html, body {
 .budget-edit-btn { font-size: 12px; padding: 4px 12px; border-radius: 99px; border: 0.5px solid var(--border-strong); color: var(--text-secondary); cursor: pointer; background: none; font-family: var(--font); }
 
 /* ── API KEY SETUP SCREEN ── */
-@keyframes slideUp {
-  from { transform: translateY(100%); }
-  to { transform: translateY(0); }
-}
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
 .setup-screen {
   position: fixed; inset: 0; background: var(--bg); z-index: 200;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -741,7 +710,7 @@ html, body {
       <svg viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
       That's in the bag
     </button>
-    <div class="big-btn-sub">Moves all items to your Pantry & Perspective</div>
+    <div class="big-btn-sub">Moves all items to your Shelf & Perspective</div>
   </div>
 
   <!-- ═══════════════════════════════════════
@@ -750,7 +719,7 @@ html, body {
   <div id="screen-shelf" class="screen">
     <div class="topbar">
       <button class="icon-btn"><svg viewBox="0 0 24 24"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg></button>
-      <span class="topbar-title">Pantry</span>
+      <span class="topbar-title">Shelf</span>
       <button class="icon-btn"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></button>
     </div>
 
@@ -928,7 +897,7 @@ html, body {
     </button>
     <button class="nav-btn" onclick="switchTab('shelf')" id="nav-shelf">
       <svg viewBox="0 0 24 24"><line x1="4" y1="21" x2="4" y2="3"/><line x1="9" y1="21" x2="9" y2="13"/><line x1="14" y1="21" x2="14" y2="8"/><line x1="19" y1="21" x2="19" y2="17"/><line x1="2" y1="21" x2="22" y2="21"/></svg>
-      Pantry
+      Shelf
     </button>
     <button class="nav-btn" onclick="switchTab('plan')" id="nav-plan">
       <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
@@ -1301,14 +1270,17 @@ function renderCart() {
     html += `<div class="cat-header"><span class="cat-title">${cat}</span><span class="cat-count-label">${items.length}</span></div>`;
     items.forEach(item => {
       html += `
-        <div class="swipe-wrap" id="cswrap-${item.id}">
-          <div class="swipe-action-right" id="caction-${item.id}" onclick="deleteCartItem(${item.id})">Delete</div>
-          <div class="cart-item-row${item.checked?' checked':''}" id="crow-${item.id}">
-            <div class="checkbox${item.checked?' done':''}" onclick="toggleCartItem(${item.id})">
+        <div class="cart-swipe-wrap" id="cswrap-${item.id}">
+          <div class="cart-delete-action" onclick="deleteCartItem(${item.id})">
+            <svg viewBox="0 0 24 24" style="width:20px;height:20px;stroke:white;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+            <span>Delete</span>
+          </div>
+          <div class="cart-item-row${item.checked?' checked':''}" id="crow-${item.id}" onclick="toggleCartItem(${item.id})">
+            <div class="checkbox${item.checked?' done':''}">
               <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
             </div>
             <div class="cart-item-info">
-              <div class="cart-item-name${item.checked?' struck':''}" onclick="toggleCartItem(${item.id})">${item.name}</div>
+              <div class="cart-item-name${item.checked?' struck':''}">${item.name}</div>
               <div class="cart-item-meta">Qty ${item.qty} · ${item.store}</div>
             </div>
             <div class="cart-item-price">$${(item.price*item.qty).toFixed(2)}</div>
@@ -1341,103 +1313,11 @@ function updateCartProgress() {
 }
 
 function checkoutCart() {
-  const MONTHLY_BUDGET = 850;
-  const today = new Date();
-  const dayOfMonth = today.getDate();
-  const daysInMonth = new Date(today.getFullYear(), today.getMonth()+1, 0).getDate();
-  const daysLeft = daysInMonth - dayOfMonth;
-  
-  // Calculate current May spending (hardcoded for now, will be dynamic)
-  const maySpent = 783.47;
-  const remaining = MONTHLY_BUDGET - maySpent;
-  
-  // Check if we're in the end-of-month gray zone
-  const cartTotal = cartItems.reduce((sum, i) => sum + (i.price * i.qty), 0);
-  const isEndOfMonth = daysLeft <= 5;
-  const isNearBudget = remaining < 100;
-  
-  if(isEndOfMonth && isNearBudget) {
-    const currentMonth = today.toLocaleString('default', {month:'long'});
-    const nextMonth = new Date(today.getFullYear(), today.getMonth()+1, 1).toLocaleString('default', {month:'long'});
-    
-    // Show month assignment modal
-    showMonthAssignModal(currentMonth, nextMonth, remaining, cartTotal, daysLeft);
-    return;
+  if(confirm('Check out this haul? All items will move to your Shelf & Perspective.')) {
+    cartItems = [];
+    renderCart();
+    alert('That\'s in the bag! Haul logged. 🛒');
   }
-  
-  // Normal checkout
-  confirmCheckout('current');
-}
-
-function showMonthAssignModal(currentMonth, nextMonth, remaining, cartTotal, daysLeft) {
-  // Create modal
-  const modal = document.createElement('div');
-  modal.id = 'month-modal';
-  modal.style.cssText = `
-    position:fixed; inset:0; z-index:500; 
-    background:rgba(0,0,0,0.5); 
-    display:flex; align-items:flex-end; justify-content:center;
-    animation: fadeIn 0.2s ease;
-  `;
-  
-  modal.innerHTML = `
-    <div style="
-      background:var(--bg); border-radius:20px 20px 0 0; 
-      padding:28px 24px 40px; width:100%; max-width:480px;
-      animation: slideUp 0.3s cubic-bezier(0.25,0.46,0.45,0.94);
-    ">
-      <div style="width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 24px;"></div>
-      <div style="font-size:20px;font-weight:700;color:var(--text);margin-bottom:8px;">End of month haul</div>
-      <div style="font-size:15px;color:var(--text-secondary);margin-bottom:24px;line-height:1.5;">
-        You have <strong>$${remaining.toFixed(2)}</strong> left in ${currentMonth} with ${daysLeft} day${daysLeft===1?'':'s'} to go. 
-        Want to count this haul toward ${nextMonth} instead?
-      </div>
-      
-      <div style="display:flex;flex-direction:column;gap:12px;">
-        <button onclick="confirmCheckout('next'); document.getElementById('month-modal').remove();" style="
-          background:var(--green);color:white;border:none;
-          border-radius:14px;padding:16px;font-size:16px;font-weight:600;cursor:pointer;
-        ">Count toward ${nextMonth}</button>
-        
-        <button onclick="confirmCheckout('current'); document.getElementById('month-modal').remove();" style="
-          background:var(--bg-secondary);color:var(--text);border:none;
-          border-radius:14px;padding:16px;font-size:16px;font-weight:600;cursor:pointer;
-        ">Keep in ${currentMonth} ($${remaining.toFixed(2)} left)</button>
-        
-        <button onclick="document.getElementById('month-modal').remove();" style="
-          background:none;color:var(--text-tertiary);border:none;
-          padding:8px;font-size:14px;cursor:pointer;
-        ">Cancel</button>
-      </div>
-    </div>
-  `;
-  
-  document.body.appendChild(modal);
-  modal.addEventListener('click', e => { if(e.target === modal) modal.remove(); });
-}
-
-function confirmCheckout(monthAssignment) {
-  const month = monthAssignment === 'next' 
-    ? new Date(new Date().getFullYear(), new Date().getMonth()+1, 1).toLocaleString('default', {month:'long'})
-    : new Date().toLocaleString('default', {month:'long'});
-  
-  cartItems = [];
-  renderCart();
-  
-  // Show confirmation toast
-  const toast = document.createElement('div');
-  toast.style.cssText = `
-    position:fixed; bottom:100px; left:50%; transform:translateX(-50%);
-    background:#1a1a1a; color:white; border-radius:12px;
-    padding:12px 20px; font-size:14px; font-weight:500;
-    z-index:600; animation: fadeIn 0.2s ease;
-    white-space:nowrap;
-  `;
-  toast.textContent = monthAssignment === 'next' 
-    ? `Haul logged to ${month}. Fresh start! 🎉`
-    : `That's in the bag! Haul logged to ${month}. 🛒`;
-  document.body.appendChild(toast);
-  setTimeout(() => toast.remove(), 3000);
 }
 
 function buildAIList() {
@@ -1459,79 +1339,24 @@ function deleteCartItem(id) {
 
 let cartActiveSwipe = null;
 function setupCartSwipe(id, row) {
-  let startX = 0, currentX = 0, dragging = false;
-  const THRESHOLD = 60;
-  const actionRight = document.getElementById('caction-' + id);
-
-  function getTranslate() {
-    const t = row.style.transform;
-    const m = t && t.match(/translateX\((-?[\d.]+)px\)/);
-    return m ? parseFloat(m[1]) : 0;
-  }
-
-  function onStart(x) {
-    startX = x; currentX = getTranslate(); dragging = true;
-    row.style.transition = 'none';
-    if(actionRight) actionRight.style.transition = 'none';
+  let startX = 0;
+  const onStart = (x) => {
+    startX = x;
     if(cartActiveSwipe && cartActiveSwipe !== id) {
-      const prev = document.getElementById('crow-' + cartActiveSwipe);
-      if(prev) { prev.style.transition = 'transform 0.3s ease'; prev.style.transform = 'translateX(0)'; }
+      const prev = document.getElementById('crow-'+cartActiveSwipe);
+      if(prev) prev.style.transform = 'translateX(0)';
       cartActiveSwipe = null;
     }
-  }
-
-  function onMove(x) {
-    if(!dragging) return;
-    const dx = Math.min(0, x - startX + currentX);
-    const clamped = Math.max(-300, dx); // allow full swipe past screen
-    row.style.transform = `translateX(${clamped}px)`;
-    if(actionRight) {
-      if(clamped < -5) {
-        actionRight.classList.add('visible');
-        // Width matches exactly how far the row has moved
-        actionRight.style.width = Math.abs(clamped) + 'px';
-        actionRight.classList.toggle('stretching', clamped < -20);
-      } else {
-        actionRight.classList.remove('visible');
-        actionRight.style.width = '0';
-      }
-    }
-  }
-
-  function onEnd(x) {
-    if(!dragging) return; dragging = false;
-    const dx = x - startX + currentX;
-    const FULL_DELETE = -220;
-    row.style.transition = 'transform 0.3s cubic-bezier(0.25,0.46,0.45,0.94)';
-    if(actionRight) { actionRight.style.transition = 'width 0.3s cubic-bezier(0.25,0.46,0.45,0.94)'; actionRight.classList.remove('stretching'); }
-
-    if(dx < FULL_DELETE) {
-      const wrap = document.getElementById('cswrap-' + id);
-      if(wrap) {
-        wrap.style.transition = 'transform 0.25s ease, opacity 0.25s ease, max-height 0.3s ease 0.2s';
-        wrap.style.transform = 'translateX(-110%)';
-        wrap.style.opacity = '0';
-        wrap.style.maxHeight = wrap.offsetHeight + 'px';
-        setTimeout(() => { wrap.style.maxHeight = '0'; wrap.style.overflow = 'hidden'; }, 50);
-        setTimeout(() => deleteCartItem(id), 400);
-      }
-    } else if(dx < -THRESHOLD) {
-      row.style.transform = 'translateX(-90px)';
-      if(actionRight) { actionRight.classList.add('visible'); actionRight.style.width = '90px'; }
-      cartActiveSwipe = id;
-    } else {
-      row.style.transform = 'translateX(0)';
-      if(actionRight) { actionRight.classList.remove('visible'); actionRight.style.width = '0'; }
-      if(cartActiveSwipe === id) cartActiveSwipe = null;
-    }
-  }
-
-  row.addEventListener('touchstart', e => { e.stopPropagation(); onStart(e.touches[0].clientX); }, {passive:true});
-  row.addEventListener('touchmove', e => onMove(e.touches[0].clientX), {passive:true});
-  row.addEventListener('touchend', e => onEnd(e.changedTouches[0].clientX), {passive:true});
-  row.addEventListener('mousedown', e => { e.preventDefault(); onStart(e.clientX); window.addEventListener('mousemove', mm); window.addEventListener('mouseup', mu); });
-  function mm(e) { e.preventDefault(); onMove(e.clientX); }
-  function mu(e) { onEnd(e.clientX); window.removeEventListener('mousemove', mm); window.removeEventListener('mouseup', mu); }
+  };
+  const onEnd = (x) => {
+    const dx = x - startX;
+    if(dx < -40) { row.style.transform = 'translateX(-90px)'; cartActiveSwipe = id; }
+    else if(dx > 20) { row.style.transform = 'translateX(0)'; if(cartActiveSwipe===id) cartActiveSwipe=null; }
+  };
+  row.addEventListener('touchstart', e=>onStart(e.touches[0].clientX), {passive:true});
+  row.addEventListener('touchend', e=>onEnd(e.changedTouches[0].clientX), {passive:true});
+  row.addEventListener('mousedown', e=>onStart(e.clientX));
+  row.addEventListener('mouseup', e=>onEnd(e.clientX));
 }
 
 function promptAddItem() {
@@ -1543,7 +1368,7 @@ function promptAddItem() {
 }
 
 // ═══════════════════════════════════════
-// PANTRY
+// SHELF
 // ═══════════════════════════════════════
 function renderShelf() {
   const search = ((document.getElementById('shelf-search')||{}).value||'').toLowerCase();
@@ -1588,8 +1413,10 @@ function renderShelf() {
 
       html += `
         <div class="swipe-wrap" id="swrap-${family.id}">
-          <div class="swipe-action-right" id="saction-right-${family.id}" onclick="deleteShelfFamily('${family.id}')">Delete</div>
-          <div class="swipe-action-left ${family.staple?'staple-on':''}" id="saction-left-${family.id}" onclick="toggleStaple('${family.id}')">${family.staple?'Stapled':'Staple'}</div>
+          <div class="swipe-action ${stapleClass}" id="saction-${family.id}" onclick="toggleStaple('${family.id}')">
+            <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <span>${stapleLabel}</span>
+          </div>
           <div class="shelf-row" id="srow-${family.id}" onclick="${hasMultiple ? `toggleFamily('${family.id}')` : ''}">
             <div class="shelf-icon" style="background:${catColor(cat).bg};color:${catColor(cat).fg};">${catIcon(cat)}</div>
             <div class="shelf-info">
@@ -1654,7 +1481,9 @@ function toggleStaple(id) {
   const family = shelfItems.find(f=>f.id===id);
   if(!family) return;
   family.staple = !family.staple;
-  closeShelfSwipe(id);
+  const row = document.getElementById('srow-'+id);
+  if(row) row.style.transform = 'translateX(0)';
+  if(activeSwipe===id) activeSwipe=null;
   setTimeout(()=>renderShelf(), 300);
 }
 
@@ -1807,7 +1636,7 @@ function checkSetup() {
   const screen = document.getElementById('setup-screen');
   if(!screen) return;
   if(key && key.startsWith('sk-')) {
-    screen.style.display = 'none';
+    screen.style.display = "none"; screen.style.pointerEvents = "none";
     screen.classList.add('hidden');
   } else {
     screen.classList.remove('hidden');
@@ -1842,39 +1671,16 @@ async function handleReceiptUpload(input) {
     // Convert to JPEG via canvas — handles HEIC and large iPhone photos
     const { base64, mediaType } = await imageToJpegBase64(file);
 
-    const prompt = `You are a receipt parser for a grocery tracking app. Parse every line item on this receipt and categorize each one.
+    const prompt = `You are a receipt parser for a grocery tracking app. Look carefully at this receipt image and extract all grocery food and beverage items.
 
 Return ONLY a valid JSON object, nothing else, no markdown, no explanation:
-{
-  "store": "store name",
-  "date": "date from receipt",
-  "items": [{"name":"readable item name","price":price as number,"sale":false,"excluded":false,"excludeReason":""}],
-  "total": total as number
-}
-
-For each item set "excluded" and "excludeReason" as follows:
-
-excluded: false (grocery items to include):
-- All food (produce, meat, dairy, eggs, bread, pantry staples, snacks, frozen food)
-- Non-alcoholic beverages (water, juice, soda, coffee, tea, energy drinks, sparkling water)
-- Supplements and protein powders
-- Condiments, sauces, spices
-- Coupons/savings on food items (negative price)
-
-excluded: true with excludeReason:
-- Beer, lager, ale, wine, spirits, hard seltzer, cider → excludeReason: "Alcohol"
-- Prescriptions, medications → excludeReason: "Pharmacy"
-- Shampoo, soap, tampons, deodorant, toothpaste → excludeReason: "Personal care"
-- Makeup, skincare, beauty → excludeReason: "Cosmetics"
-- Cleaning supplies, detergent → excludeReason: "Household"
-- Flowers, plants → excludeReason: "Non-food"
-- Bags, packaging fees → excludeReason: "Fee"
-- Clothing, merchandise → excludeReason: "Non-food"
-- Gift cards → excludeReason: "Non-food"
+{"store":"store name","date":"date from receipt","items":[{"name":"readable item name","price":price as number,"sale":false}],"total":total as number}
 
 Rules:
+- Include all food, drink, and grocery items
+- Skip: prescriptions, personal care, cosmetics, cleaning products, flowers, paper bags
+- For coupons or instant savings, add as negative price item: {"name":"Coupon · item","price":-amount}
 - Use clean readable names not receipt codes (e.g. "Organic eggs" not "1068083 ORG FR EGGS")
-- Every line item on the receipt must appear in the items array
 - If you cannot read parts clearly, still return your best attempt at the JSON`;
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -1960,165 +1766,259 @@ function showScanResult(data) {
   document.getElementById('scan-date').textContent = data.date || '';
   document.getElementById('scan-total-amt').textContent = `$${(data.total||0).toFixed(2)}`;
 
-  const allItems = data.items || [];
-  const groceryItems = allItems.filter(i => !i.excluded);
-  const excludedItems = allItems.filter(i => i.excluded);
-
   let html = '';
-
-  // Grocery items section
-  if(groceryItems.length > 0) {
-    html += `<div style="font-size:11px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.06em;padding:12px 20px 6px;">Grocery items</div>`;
-    groceryItems.forEach((item, idx) => {
-      const isNeg = item.price < 0;
-      html += `
-        <div class="scan-item-row" id="scan-row-${idx}" style="display:flex;align-items:center;padding:12px 20px;border-top:0.5px solid var(--border);gap:12px;">
-          <div class="scan-item-check" onclick="toggleScanItem(${idx})" style="width:22px;height:22px;border-radius:50%;border:1.5px solid var(--green);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;background:var(--green);">
-            <svg viewBox="0 0 24 24" style="width:12px;height:12px;stroke:white;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;"><polyline points="20 6 9 17 4 12"/></svg>
-          </div>
-          <div style="flex:1;min-width:0;">
-            <div style="font-size:14px;color:var(--text);font-weight:500;">${item.name}</div>
-            ${item.sale ? `<div style="font-size:11px;color:var(--green-dark);font-weight:500;">On sale</div>` : ''}
-          </div>
-          <div style="font-size:14px;font-weight:600;color:${isNeg?'var(--green-dark)':'var(--text)'};">
-            ${isNeg?'-':''}$${Math.abs(item.price).toFixed(2)}
-          </div>
-        </div>`;
-    });
-  }
-
-  // Excluded items section
-  if(excludedItems.length > 0) {
-    html += `<div style="font-size:11px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.06em;padding:16px 20px 6px;">Not tracked</div>`;
-    excludedItems.forEach((item, idx) => {
-      const exIdx = groceryItems.length + idx;
-      const reasonColors = {
-        'Alcohol': '#993C1D',
-        'Pharmacy': '#185FA5',
-        'Personal care': '#534AB7',
-        'Cosmetics': '#534AB7',
-        'Household': '#3B6D11',
-        'Non-food': '#6a6a62',
-        'Fee': '#6a6a62',
-      };
-      const color = reasonColors[item.excludeReason] || '#6a6a62';
-      html += `
-        <div class="scan-item-row" id="scan-row-${exIdx}" style="display:flex;align-items:center;padding:12px 20px;border-top:0.5px solid var(--border);gap:12px;opacity:0.6;">
-          <div style="width:22px;height:22px;border-radius:50%;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;background:var(--bg-secondary);">
-            <svg viewBox="0 0 24 24" style="width:10px;height:10px;stroke:var(--text-tertiary);fill:none;stroke-width:2;stroke-linecap:round;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-          </div>
-          <div style="flex:1;min-width:0;">
-            <div style="font-size:14px;color:var(--text-secondary);">${item.name}</div>
-            <div style="font-size:11px;color:${color};font-weight:500;">${item.excludeReason}</div>
-          </div>
-          <div style="display:flex;align-items:center;gap:8px;">
-            <div style="font-size:13px;color:var(--text-tertiary);">$${Math.abs(item.price).toFixed(2)}</div>
-            <button onclick="includeExcludedItem(${exIdx})" style="
-              font-size:11px;font-weight:600;color:var(--green-dark);
-              background:var(--green-light);border:none;border-radius:8px;
-              padding:4px 8px;cursor:pointer;white-space:nowrap;
-            ">+ Track</button>
-          </div>
-        </div>`;
-    });
-  }
+  (data.items||[]).forEach((item,idx) => {
+    const isNeg = item.price < 0;
+    html += `
+      <div class="scan-item-row" id="scan-item-${idx}">
+        <span class="scan-item-name">${item.name}</span>
+        <span class="scan-item-price" style="color:${isNeg?'var(--green)':'var(--text-primary)'};">${isNeg?'-':''}$${Math.abs(item.price).toFixed(2)}</span>
+        <div class="scan-item-remove" onclick="removeScanItem(${idx})">
+          <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </div>
+      </div>`;
+  });
 
   document.getElementById('scan-items-list').innerHTML = html;
-
-  // Store all items for add-to-cart
-  window._scanData = data;
-  window._scanGroceryItems = groceryItems;
-
+  document.getElementById('scan-items-list').dataset.items = JSON.stringify(data.items);
+  document.getElementById('scan-items-list').dataset.store = data.store||'';
   document.getElementById('scan-result').classList.add('visible');
 }
 
-function toggleScanItem(idx) {
-  const row = document.getElementById('scan-row-' + idx);
-  if(!row) return;
-  const check = row.querySelector('.scan-item-check');
-  const isChecked = check.style.background === 'var(--green)' || check.style.background.includes('1D9E75');
-  if(isChecked) {
-    check.style.background = 'transparent';
-    check.style.borderColor = 'var(--border)';
-    check.innerHTML = '';
-    row.style.opacity = '0.4';
-    // Mark as deselected
-    if(window._scanGroceryItems[idx]) window._scanGroceryItems[idx]._deselected = true;
-  } else {
-    check.style.background = 'var(--green)';
-    check.style.borderColor = 'var(--green)';
-    check.innerHTML = '<svg viewBox="0 0 24 24" style="width:12px;height:12px;stroke:white;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;"><polyline points="20 6 9 17 4 12"/></svg>';
-    row.style.opacity = '1';
-    if(window._scanGroceryItems[idx]) window._scanGroceryItems[idx]._deselected = false;
-  }
+function removeScanItem(idx) {
+  const el = document.getElementById('scan-item-'+idx);
+  if(el) el.remove();
 }
-
-function includeExcludedItem(idx) {
-  const allItems = window._scanData.items || [];
-  const item = allItems[idx];
-  if(!item) return;
-  item.excluded = false;
-  // Move to grocery section
-  window._scanGroceryItems.push(item);
-  // Re-render
-  showScanResult(window._scanData);
-}
-
 
 function addScanToCart() {
-  const items = (window._scanGroceryItems || []).filter(i => !i._deselected);
-  if(items.length === 0) {
-    alert('No items to add. Tap the checkboxes to select items.');
-    return;
-  }
-  
-  // Add to cart
-  items.forEach(item => {
-    if(item.price >= 0) {
-      const newItem = {
-        id: Date.now() + Math.random(),
-        name: item.name,
-        price: item.price,
-        qty: 1,
-        cat: guessCat(item.name),
-        store: window._scanData?.store || 'Store',
-        checked: false,
-        sale: item.sale || false
-      };
-      cartItems.push(newItem);
+  const list = document.getElementById('scan-items-list');
+  const items = JSON.parse(list.dataset.items||'[]');
+  const store = list.dataset.store||'';
+  const remaining = list.querySelectorAll('.scan-item-row');
+  const remainingIds = new Set([...remaining].map(r=>parseInt(r.id.split('-').pop())));
+
+  items.forEach((item,idx)=>{
+    if(remainingIds.has(idx) && item.price > 0) {
+      cartItems.push({id:Date.now()+idx, cat:'Pantry Staples', name:item.name, qty:1, price:item.price, store, checked:false});
     }
   });
-  
+
   closeScanner();
   switchTab('cart');
-  renderCart();
-  
-  const toast = document.createElement('div');
-  toast.style.cssText = 'position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:white;border-radius:12px;padding:12px 20px;font-size:14px;font-weight:500;z-index:600;white-space:nowrap;';
-  toast.textContent = `${items.length} items added to cart!`;
-  document.body.appendChild(toast);
-  setTimeout(() => toast.remove(), 2500);
 }
 
-function guessCat(name) {
-  const n = name.toLowerCase();
-  if(/salmon|cod|chicken|beef|pork|turkey|meat|fish|shrimp|steak|sausage|fryer|strip/.test(n)) return 'Meat & Protein';
-  if(/egg|milk|cheese|yogurt|butter|cream|feta|cheddar|dairy/.test(n)) return 'Dairy & Eggs';
-  if(/apple|banana|avocado|tomato|lettuce|kale|spinach|arugula|pepper|onion|lemon|lime|berry|mango|peach|melon|grape|orange|mandarin|carrot|cucumber|fruit|produce|mix|salad/.test(n)) return 'Fresh Produce';
-  if(/water|sparkling|lacroix|celsius|energy|coffee|tea|juice|soda|olipop|drink/.test(n)) return 'Beverages';
-  if(/protein|orgain|vital|collagen|supplement/.test(n)) return 'Pantry Staples';
-  return 'Pantry Staples';
+// ═══════════════════════════════════════
+// CLOSE MODAL ON OVERLAY CLICK
+// ═══════════════════════════════════════
+document.getElementById('scanner-modal').addEventListener('click', function(e){
+  if(e.target===this) closeScanner();
+});
+
+// ═══════════════════════════════════════
+// AI NUDGES — ANTHROPIC
+// ═══════════════════════════════════════
+
+const PURCHASE_HISTORY_SUMMARY = `
+PURCHASE HISTORY (April–May 2026):
+
+PROTEIN & MEAT:
+- Sockeye Salmon: bought May 18 ($20.98) and May 11 ($16.79) at Costco. Price going UP.
+- Organic Fryers (chicken): bought May 18 ($30.98) at Costco. First time buying.
+- Frizzle Chicken: bought May 3 ($13.99) at Costco.
+- Spicy Strips (chicken): bought May 3 ($14.99) at Costco.
+- KS Steak Strips: bought May 3 and Apr 8 ($11.99) at Costco. Regular price.
+- Beef Sticks: bought May 18 and May 11 ($17.99) at Costco.
+- Beef Jerky Mango: bought May 11 ($18.89) at Costco.
+- Atlantic Cod: bought Apr 8 ($30.78) at Costco.
+- Herb Turkey: bought Apr 26 ($14.99) at Costco.
+- Pork Andouille Sausage: bought Apr 11 ($5.29) at Detwiler's.
+
+PRODUCE:
+- Avocados: bought May 18 ($4.89), May 11 ($4.69), May 3 ($4.69) at Costco. Price creeping up.
+- Lolli Peppers: bought May 3, Apr 26, Apr 8 ($5.49) at Costco. Stable price.
+- Organic Cucumber: bought May 3 ($4.99), Apr 8 ($5.99) at Costco. Price went DOWN.
+- Bananas: bought May 4 ($1.22) at Detwiler's, Apr 26 ($2.19) at Costco.
+- Tomato Medley: bought May 18 ($6.69) at Costco.
+- RR Tomatoes: bought May 3 ($6.99) at Costco.
+- Strawberries: bought Apr 26 ($4.49, on sale) at Costco.
+- Blueberries: bought May 11 ($6.49, coupon) at Costco.
+- Watermelon: bought May 11 ($6.99) at Costco.
+- Cantaloupe: bought May 3 ($5.89) at Costco.
+- Peaches: bought May 11 ($7.99) at Costco.
+- Mandarins: bought May 18 ($4.29) at Costco.
+- Organic Carrots: bought May 16 ($1.99) at Publix.
+- Arugula: bought Apr 26 ($4.99), May 22 ($2.59 at ALDI) at Costco/ALDI.
+- Spring Mix/Sweet Kale: bought May 3, Apr 8 at Costco.
+- Org Spring Mix: bought May 22 ($4.99) at ALDI.
+- Lemons: bought May 4 ($1.50) at Detwiler's.
+
+DAIRY & EGGS:
+- Organic Eggs: bought May 18 ($7.69), May 3 (x2, $7.69), Apr 26 ($7.59) at Costco. Slowly rising.
+- Greek Yogurt: bought May 18 ($6.99), May 3 ($6.99) at Costco. Stable.
+- KS Sharp Cheddar: bought May 3 ($5.39) at Costco. First buy.
+- Crumbled Feta: bought May 3 ($6.89) at Costco. First buy.
+- Irish Butter: bought Apr 8 ($16.29, coupon -$4.30) at Costco.
+- KS Organic A2 Protein (milk): bought May 18 ($12.99), May 11 ($12.99), May 3 ($11.79), Apr 26 ($11.79), Apr 8 ($11.79) at Costco. Price went UP recently.
+
+PROTEIN SUPPLEMENTS:
+- Vital Proteins: bought May 3 ($23.99 after $6 coupon) at Costco. Regular buyer.
+- Orgain Chocolate: bought May 3 ($25.99 after $8 coupon), Apr 26 ($25.99 after $8 coupon) at Costco. Always use coupon.
+- Orgain Collagen: bought May 18 ($23.99 after $6 coupon), May 11 ($23.99 after $6 coupon) at Costco.
+
+PANTRY:
+- EVOO Hummus: bought May 18 ($7.49), May 11 ($7.49), Apr 26 ($7.49) at Costco. Very regular.
+- Naan Bread: bought May 3 ($6.99) at Costco.
+- Cocoa Cereal: bought May 3 ($9.59), Apr 26 ($9.59) at Costco.
+- Sauerkraut: bought Apr 26 ($9.59) at Costco.
+- Vanilla Syrup: bought Apr 26 ($16.99) at Costco.
+- Organic Bone Broth: bought Apr 26 ($26.78) at Costco.
+- Quinoa & Rice: bought May 18 ($8.99 after $3 coupon) at Costco.
+- EVOO (olive oil): bought Apr 26 ($7.49) at Costco.
+- Kinders Rub: bought Apr 26 ($6.89) at Costco.
+- Tallow Fries: bought May 11 ($11.99) at Costco.
+- Tallow Chips: bought May 18 ($7.99) at Costco.
+- Truly Salted: bought May 18 ($10.99 after $3 coupon) at Costco.
+
+BEVERAGES:
+- KS Sparkling Water: bought May 11 ($17.59), Apr 26 ($16.99), Apr 8 ($16.99) at Costco. Price UP.
+- LaCroix Variety: bought May 18 ($9.99), May 3 ($9.99) at Costco.
+- Celsius Energy: bought May 11 ($23.99), Apr 8 ($23.99) at Costco.
+- KS Energy 12Z: bought Apr 26 ($16.99, on sale) at Costco.
+- Olipop Variety: bought May 18 ($14.99 after $5 coupon) at Costco.
+- Char Coffee: bought May 18 ($17.99 after $5 coupon) at Costco.
+
+STORES USED: Costco (primary, ~91% of spend), Detwiler's Farm Market (fresh produce), Publix (occasional), ALDI (occasional), Walmart (occasional)
+MONTHLY BUDGET: $850
+MAY SPEND SO FAR: $783.47 (92% of budget, 7 days left in month)
+`;
+
+async function generateAINudges() {
+  const apiKey = getApiKey();
+  if(!apiKey) {
+    document.getElementById('setup-screen').classList.remove('hidden');
+    return;
+  }
+
+  document.getElementById('nudges-loading').style.display = 'block';
+  document.getElementById('nudges-container').style.display = 'none';
+  document.getElementById('nudge-refresh-btn').style.opacity = '0.5';
+
+  try {
+    const today = new Date();
+    const dayOfMonth = today.getDate();
+    const daysLeft = new Date(today.getFullYear(), today.getMonth()+1, 0).getDate() - dayOfMonth;
+
+    const prompt = `You are the AI brain of Pantry., a smart grocery tracking app. Based on this family's grocery purchase history, generate 3-4 specific, actionable nudges.
+
+${PURCHASE_HISTORY_SUMMARY}
+
+TODAY: May ${dayOfMonth}, 2026. Days left in month: ${daysLeft}. Budget remaining: $66.53.
+
+Generate nudges that are:
+1. SPECIFIC — mention the exact item, price, store, and days since last bought
+2. PROTEIN-AWARE — if they need protein, suggest a SPECIFIC type (salmon, chicken, beef, pork, fish) based on what they haven't bought recently, not just "protein"
+3. PRICE-SMART — flag items that have gone up in price, or where a cheaper alternative exists
+4. BUDGET-CONSCIOUS — with only $66.53 left and ${daysLeft} days to go, factor that in
+5. VARIETY-FOCUSED — if they've bought the same protein 3 weeks in a row, suggest switching it up
+
+Return ONLY a JSON array, no markdown, no explanation:
+[
+  {
+    "type": "protein|produce|staple|deal|budget",
+    "title": "Short punchy title (5 words max)",
+    "text": "2-3 sentence specific insight with item names, prices, days since bought, and store",
+    "item": "specific item to add to cart",
+    "urgent": true or false
+  }
+]
+
+Be conversational and specific. Don't be generic. Reference actual items from their history.`;
+
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-opus-4-5',
+        max_tokens: 1000,
+        messages: [{
+          role: 'user',
+          content: prompt
+        }]
+      })
+    });
+
+    if(!response.ok) throw new Error('API error ' + response.status);
+
+    const data = await response.json();
+    const text = data.content?.map(c=>c.text||'').join('') || '';
+    const clean = text.replace(/```json|```/g,'').trim();
+    const jsonMatch = clean.match(/\[[\s\S]*\]/);
+    if(!jsonMatch) throw new Error('No JSON');
+    const nudges = JSON.parse(jsonMatch[0]);
+    renderAINudges(nudges);
+
+  } catch(err) {
+    console.error('Nudge error:', err);
+    document.getElementById('nudges-loading').style.display = 'none';
+    document.getElementById('nudges-container').style.display = 'block';
+    document.getElementById('nudge-refresh-btn').style.opacity = '1';
+  }
 }
 
-function closeShelfSwipe(id) {
-  const row = document.getElementById('srow-' + id);
-  if(row) { row.style.transition = 'transform 0.3s ease'; row.style.transform = 'translateX(0)'; }
-  if(activeSwipe === id) activeSwipe = null;
+function renderAINudges(nudges) {
+  document.getElementById('nudges-loading').style.display = 'none';
+  document.getElementById('nudge-refresh-btn').style.opacity = '1';
+
+  const typeStyles = {
+    protein: { bg:'var(--coral-light)', color:'var(--coral)', border:'var(--coral)',
+      icon:'<path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/>' },
+    produce: { bg:'var(--green-light)', color:'var(--green-dark)', border:'#3B6D11',
+      icon:'<path d="M12 22V12M12 12C12 7 7 3 2 5M12 12C12 7 17 3 22 5"/>' },
+    staple: { bg:'var(--blue-light)', color:'var(--blue)', border:'var(--blue)',
+      icon:'<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>' },
+    deal: { bg:'var(--amber-light)', color:'#854F0B', border:'var(--amber)',
+      icon:'<path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/>' },
+    budget: { bg:'#FBEAF0', color:'#993556', border:'#993556',
+      icon:'<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>' },
+  };
+
+  let html = '';
+  nudges.forEach((nudge, idx) => {
+    const style = typeStyles[nudge.type] || typeStyles.staple;
+    html += `
+      <div class="card plan-nudge-card ${nudge.type}" id="ai-nudge-${idx}" style="border-left-color:${style.border};">
+        <div class="nudge-icon-wrap" style="background:${style.bg};color:${style.color};">
+          <svg viewBox="0 0 24 24">${style.icon}</svg>
+        </div>
+        <div class="nudge-body">
+          <div class="nudge-title">${nudge.title}</div>
+          <div class="nudge-text">${nudge.text}</div>
+          <div class="nudge-btns">
+            <button class="nudge-btn primary" onclick="switchTab('cart')">Add to cart</button>
+            <button class="nudge-btn" onclick="this.closest('.card').style.display='none'">Dismiss</button>
+          </div>
+        </div>
+      </div>`;
+  });
+
+  document.getElementById('nudges-container').innerHTML = html;
+  document.getElementById('nudges-container').style.display = 'block';
 }
 
-function deleteShelfFamily(id) {
-  shelfItems = shelfItems.filter(f => f.id !== id);
-  renderShelf();
+function refreshNudges() {
+  generateAINudges();
 }
 
-
+// ═══════════════════════════════════════
+// Initial renders
+renderCart();
+renderShelf();
+checkSetup();
+</script>
+</body>
+</html>
