@@ -670,6 +670,92 @@ html, body {
 .home-stat-card.purple { background: var(--purple-light); }
 .home-stat-val { font-size: 22px; font-weight: 700; color: var(--text-primary); }
 .home-stat-label { font-size: 12px; color: var(--text-secondary); margin-top: 2px; font-weight: 500; }
+
+/* ══════════════════════════════
+   INSIGHTS SCREEN
+══════════════════════════════ */
+.insights-header {
+  background: linear-gradient(135deg, var(--grad-start) 0%, var(--grad-end) 100%);
+  padding: 20px 20px 32px;
+  color: white;
+}
+.insights-header-title { font-size: 22px; font-weight: 700; margin-bottom: 2px; }
+.insights-header-sub { font-size: 13px; opacity: 0.8; }
+
+/* Month selector pills */
+.month-selector {
+  display: flex; gap: 8px;
+  padding: 16px 16px 0;
+  overflow-x: auto; scrollbar-width: none;
+}
+.month-selector::-webkit-scrollbar { display: none; }
+.month-pill {
+  flex-shrink: 0; padding: 7px 16px;
+  border-radius: 99px; border: 1.5px solid var(--border-strong);
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  background: var(--bg); color: var(--text-secondary);
+  font-family: var(--font); transition: all 0.15s;
+  white-space: nowrap;
+}
+.month-pill.active {
+  background: var(--green); border-color: var(--green); color: white;
+}
+
+/* Budget summary card */
+.insights-budget-card {
+  margin: 12px 16px 0;
+  background: white; border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm); overflow: hidden;
+}
+.insights-budget-top {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  padding: 16px 16px 12px;
+}
+.insights-budget-left { flex: 1; }
+.insights-budget-amt { font-size: 28px; font-weight: 700; letter-spacing: -1px; color: var(--text-primary); }
+.insights-budget-sub { font-size: 13px; color: var(--text-secondary); margin-top: 3px; }
+.insights-budget-badge {
+  padding: 5px 12px; border-radius: 99px;
+  font-size: 13px; font-weight: 700;
+}
+.insights-budget-badge.under { background: var(--green-light); color: var(--green-dark); }
+.insights-budget-badge.over  { background: var(--coral-light);  color: var(--coral); }
+.insights-bar-track {
+  height: 6px; background: var(--bg-secondary);
+  border-radius: 0; overflow: hidden;
+}
+.insights-bar-fill { height: 100%; background: var(--green); transition: width 0.4s ease; }
+.insights-bar-fill.warning { background: var(--amber); }
+.insights-bar-fill.danger  { background: var(--red); }
+.insights-rollover {
+  padding: 10px 16px;
+  font-size: 13px; color: var(--text-secondary);
+  border-top: 0.5px solid var(--border);
+  display: flex; align-items: center; gap: 6px;
+}
+
+/* Spending trend bars */
+.trend-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 0; border-top: 0.5px solid var(--border);
+}
+.trend-label { font-size: 13px; color: var(--text-secondary); min-width: 70px; }
+.trend-bar-wrap { flex: 1; height: 8px; background: var(--bg-secondary); border-radius: 99px; overflow: hidden; }
+.trend-bar { height: 100%; border-radius: 99px; background: var(--green); transition: width 0.4s ease; }
+.trend-bar.current { background: linear-gradient(90deg, var(--grad-start), var(--grad-end)); }
+.trend-amt { font-size: 13px; font-weight: 600; min-width: 52px; text-align: right; color: var(--text-primary); }
+
+/* Stats summary row */
+.insights-stats {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 10px; margin: 12px 16px 0;
+}
+.insights-stat {
+  background: white; border-radius: var(--radius-md);
+  padding: 14px 16px; box-shadow: var(--shadow-sm);
+}
+.insights-stat-val { font-size: 20px; font-weight: 700; color: var(--text-primary); }
+.insights-stat-label { font-size: 12px; color: var(--text-secondary); margin-top: 2px; font-weight: 500; }
 </style>
 </head>
 <body>
@@ -762,99 +848,79 @@ html, body {
        PERSPECTIVE SCREEN
   ════════════════════════════════════════ -->
   <div id="screen-perspective" class="screen">
-    <div class="topbar">
-      <div style="font-size:16px;font-weight:600;">May 2026</div>
-      <div class="topbar-icons">
-        <button class="icon-btn"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></button>
-      </div>
+
+    <!-- Gradient header -->
+    <div class="insights-header">
+      <div class="insights-header-title">Insights</div>
+      <div class="insights-header-sub">Your grocery history & trends</div>
     </div>
 
-    <div class="budget-hero" style="margin:0 16px;">
-      <div class="budget-hero-top">
-        <div>
-          <div class="budget-hero-label">Remaining in May</div>
-          <div class="budget-hero-amount">$66.53</div>
-          <div class="budget-hero-sub">$783.47 of $850.00 spent</div>
+    <!-- Month selector -->
+    <div class="month-selector" id="insights-month-selector"></div>
+
+    <!-- Budget card for selected month -->
+    <div class="insights-budget-card">
+      <div class="insights-budget-top">
+        <div class="insights-budget-left">
+          <div style="font-size:12px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;" id="insights-month-title">Month</div>
+          <div class="insights-budget-amt" id="insights-spent">$0</div>
+          <div class="insights-budget-sub" id="insights-budget-sub">of $850 budget</div>
         </div>
-        <div class="budget-hero-right">
-          <div style="font-size:11px;opacity:0.75;">May 2026</div>
-          <div class="budget-hero-pct">92%</div>
-          <div class="budget-hero-pct-label">spent</div>
-        </div>
+        <div class="insights-budget-badge under" id="insights-budget-badge">On track</div>
       </div>
-      <div class="budget-bar-track"><div class="budget-bar-fill" style="width:92%;"></div></div>
-      <div class="budget-bar-labels"><span>$0</span><span>6 hauls · 7 days left</span><span>$850</span></div>
+      <div class="insights-bar-track">
+        <div class="insights-bar-fill" id="insights-bar" style="width:0%;"></div>
+      </div>
+      <div class="insights-rollover" id="insights-rollover" style="display:none;"></div>
     </div>
 
-    <div class="section">
-      <div class="section-header"><span class="section-title">Perspective</span></div>
-      <div class="col-labels"><span>Haul</span><span>Spent</span></div>
-
-      <div class="haul-row" onclick="openHaulDetail('costco-may3')">
-        <div class="store-avatar" style="background:var(--blue-light);color:var(--blue);width:36px;height:36px;"><svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg></div>
-        <div style="flex:1;"><div style="font-size:15px;font-weight:500;">Costco</div><div style="font-size:12px;color:var(--text-tertiary);margin-top:1px;">May 3</div></div>
-        <div class="haul-row-right"><div class="haul-row-spent">$209.48</div><div class="haul-row-count">22 items</div></div>
+    <!-- Summary stats -->
+    <div class="insights-stats">
+      <div class="insights-stat">
+        <div class="insights-stat-val" id="insights-hauls">0</div>
+        <div class="insights-stat-label">Hauls this month</div>
       </div>
-      <div class="haul-row" onclick="openHaulDetail('detwilers-may4')">
-        <div class="store-avatar" style="background:#EAF3DE;color:#3B6D11;width:36px;height:36px;"><svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;"><path d="M12 22V12M12 12C12 7 7 3 2 5M12 12C12 7 17 3 22 5"/></svg></div>
-        <div style="flex:1;"><div style="font-size:15px;font-weight:500;">Detwiler's</div><div style="font-size:12px;color:var(--text-tertiary);margin-top:1px;">May 4</div></div>
-        <div class="haul-row-right"><div class="haul-row-spent">$34.67</div><div class="haul-row-count">7 items</div></div>
+      <div class="insights-stat">
+        <div class="insights-stat-val color-green" id="insights-saved">$0</div>
+        <div class="insights-stat-label">Saved in coupons</div>
       </div>
-      <div class="haul-row" onclick="openHaulDetail('costco-may11')">
-        <div class="store-avatar" style="background:var(--blue-light);color:var(--blue);width:36px;height:36px;"><svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg></div>
-        <div style="flex:1;"><div style="font-size:15px;font-weight:500;">Costco</div><div style="font-size:12px;color:var(--text-tertiary);margin-top:1px;">May 11</div></div>
-        <div class="haul-row-right"><div class="haul-row-spent">$233.18</div><div class="haul-row-count">17 items</div></div>
+      <div class="insights-stat">
+        <div class="insights-stat-val" id="insights-avg">$0</div>
+        <div class="insights-stat-label">Avg per haul</div>
       </div>
-      <div class="haul-row" onclick="openHaulDetail('publix-may16')">
-        <div class="store-avatar" style="background:var(--green-light);color:var(--green-dark);width:36px;height:36px;"><svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
-        <div style="flex:1;"><div style="font-size:15px;font-weight:500;">Publix</div><div style="font-size:12px;color:var(--text-tertiary);margin-top:1px;">May 16</div></div>
-        <div class="haul-row-right"><div class="haul-row-spent">$15.97</div><div class="haul-row-count">3 items</div></div>
-      </div>
-      <div class="haul-row" onclick="openHaulDetail('costco-may18')">
-        <div class="store-avatar" style="background:var(--blue-light);color:var(--blue);width:36px;height:36px;"><svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg></div>
-        <div style="flex:1;"><div style="font-size:15px;font-weight:500;">Costco</div><div style="font-size:12px;color:var(--text-tertiary);margin-top:1px;">May 18</div></div>
-        <div class="haul-row-right"><div class="haul-row-spent">$274.60</div><div class="haul-row-count">23 items</div></div>
-      </div>
-      <div class="haul-row" onclick="openHaulDetail('aldi-may22')">
-        <div class="store-avatar" style="background:var(--purple-light);color:var(--purple);width:36px;height:36px;"><svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
-        <div style="flex:1;"><div style="font-size:15px;font-weight:500;">ALDI</div><div style="font-size:12px;color:var(--text-tertiary);margin-top:1px;">May 22</div></div>
-        <div class="haul-row-right"><div class="haul-row-spent">$15.57</div><div class="haul-row-count">3 items</div></div>
-      </div>
-
-      <div class="divider-label">Upcoming</div>
-      <div class="haul-row">
-        <div class="store-avatar" style="background:var(--bg-secondary);color:var(--text-tertiary);width:36px;height:36px;"><svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
-        <div style="flex:1;"><div style="font-size:15px;color:var(--text-secondary);">Next run</div><div style="font-size:12px;color:var(--text-tertiary);margin-top:1px;">AI predicted · ~May 25</div></div>
-        <div class="haul-row-right"><div class="haul-row-spent" style="color:var(--text-tertiary);">~$66</div><div class="haul-row-count">est.</div></div>
+      <div class="insights-stat">
+        <div class="insights-stat-val" id="insights-remaining">$0</div>
+        <div class="insights-stat-label">Remaining</div>
       </div>
     </div>
 
-    <div class="section">
-      <div class="section-header"><span class="section-title">May summary</span></div>
-      <div class="summary-block">
-        <div class="summary-row"><span class="summary-label">Budget</span><span class="summary-value">$850.00</span></div>
-        <div class="summary-row"><span class="summary-label">Total spent</span><span class="summary-value">$783.47</span></div>
-        <div class="summary-row"><span class="summary-label">Remaining</span><span class="summary-value color-green">$66.53</span></div>
-        <div class="summary-row"><span class="summary-label">Hauls</span><span class="summary-value">6</span></div>
-        <div class="summary-row"><span class="summary-label">Avg per haul</span><span class="summary-value">$130.58</span></div>
-        <div class="summary-row"><span class="summary-label">Coupons & savings</span><span class="summary-value color-green">$51.50</span></div>
+    <!-- Spending trend (last 4 months) -->
+    <div class="section" id="insights-trend-section">
+      <div class="section-header"><span class="section-title">Spending trend</span></div>
+      <div style="margin:0 16px;background:white;border-radius:var(--radius-lg);padding:12px 16px;box-shadow:var(--shadow-sm);">
+        <div id="insights-trend"></div>
       </div>
     </div>
 
+    <!-- By store -->
     <div class="section">
       <div class="section-header"><span class="section-title">By store</span></div>
-      <div class="store-bar-block">
-        <div class="store-bar-row"><span class="store-bar-name">Costco</span><div class="store-bar-track"><div class="store-bar-fill" style="width:92%;background:var(--blue);"></div></div><span class="store-bar-amt">$717.26</span></div>
-        <div class="store-bar-row"><span class="store-bar-name">Detwiler's</span><div class="store-bar-track"><div class="store-bar-fill" style="width:24%;background:#3B6D11;"></div></div><span class="store-bar-amt">$34.67</span></div>
-        <div class="store-bar-row"><span class="store-bar-name">Publix</span><div class="store-bar-track"><div class="store-bar-fill" style="width:11%;background:var(--green);"></div></div><span class="store-bar-amt">$15.97</span></div>
-        <div class="store-bar-row"><span class="store-bar-name">ALDI</span><div class="store-bar-track"><div class="store-bar-fill" style="width:11%;background:var(--purple);"></div></div><span class="store-bar-amt">$15.57</span></div>
+      <div class="store-bar-block" id="insights-by-store"></div>
+    </div>
+
+    <!-- Hauls list -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-title" id="insights-hauls-title">Hauls</span>
+        <button class="big-btn green" style="margin:0;padding:8px 16px;font-size:13px;" onclick="openScanner()">+ Log haul</button>
+      </div>
+      <div id="insights-haul-list"></div>
+      <div id="insights-empty" style="display:none;padding:32px 20px;text-align:center;color:var(--text-tertiary);font-size:14px;">
+        No hauls recorded for this month yet.
       </div>
     </div>
 
-    <button class="big-btn green" style="margin-top:16px;" onclick="openScanner()">
-      <svg viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-      Log a haul
-    </button>
+    <div style="height:16px;"></div>
   </div>
 
   <!-- ═══════════════════════════════════════
@@ -1191,229 +1257,10 @@ html, body {
 // ═══════════════════════════════════════
 // DATA
 // ═══════════════════════════════════════
-const HAULS = {
-  'costco-may3': {
-    store:'Costco', date:'May 3, 2026', month:'2026-05', total:209.48, saved:14.00,
-    items:[
-      {cat:'Dairy & Eggs', name:'Organic eggs', price:7.69},
-      {cat:'Dairy & Eggs', name:'Organic eggs', price:7.69},
-      {cat:'Dairy & Eggs', name:'Greek yogurt', price:6.99},
-      {cat:'Dairy & Eggs', name:'Crumbled feta', price:6.89},
-      {cat:'Dairy & Eggs', name:'KS sharp cheddar', price:5.39},
-      {cat:'Meat & Protein', name:'Frizzle chicken', price:13.99},
-      {cat:'Meat & Protein', name:'Spicy strips', price:14.99},
-      {cat:'Meat & Protein', name:'KS steak strips', price:11.99},
-      {cat:'Pantry Staples', name:'Orgain chocolate', price:33.99},
-      {cat:'Pantry Staples', name:'Coupon · Orgain', price:-8.00, coupon:true},
-      {cat:'Pantry Staples', name:'Vital Proteins', price:29.99},
-      {cat:'Pantry Staples', name:'Coupon · Vital Proteins', price:-6.00, coupon:true},
-      {cat:'Pantry Staples', name:'Cocoa cereal', price:9.59},
-      {cat:'Pantry Staples', name:'Naan bread', price:6.99},
-      {cat:'Fresh Produce', name:'Red onions', price:5.39},
-      {cat:'Fresh Produce', name:'Organic cucumber', price:4.99},
-      {cat:'Fresh Produce', name:'Vidalia onion', price:4.39},
-      {cat:'Fresh Produce', name:'Lolli peppers', price:5.49},
-      {cat:'Fresh Produce', name:'Avocados', price:4.69},
-      {cat:'Fresh Produce', name:'Cantaloupe', price:5.89},
-      {cat:'Fresh Produce', name:'RR tomatoes', price:6.99},
-      {cat:'Fresh Produce', name:'Sweet kale duo', price:6.99},
-      {cat:'Supplements', name:'KS Organic A2 Protein', price:11.79},
-    ]
-  },
-  'detwilers-may4': {
-    store:"Detwiler's", date:'May 4, 2026', month:'2026-05', total:34.67, saved:1.00,
-    items:[
-      {cat:'Meat & Protein', name:'Petr Bev Lightning Mushroom', price:5.99},
-      {cat:'Condiments', name:'PM Drs Creamy Ranch', price:9.99},
-      {cat:'Condiments', name:'M Drs Italian', price:9.99},
-      {cat:'Condiments', name:'San-J Tamari', price:3.99},
-      {cat:'Fresh Produce', name:'Bananas', price:1.22},
-      {cat:'Fresh Produce', name:'Herb dill', price:1.99},
-      {cat:'Fresh Produce', name:'Lemons (3)', price:1.50},
-    ]
-  },
-  'costco-may11': {
-    store:'Costco', date:'May 11, 2026', month:'2026-05', total:233.18, saved:7.50,
-    items:[
-      {cat:'Supplements', name:'KS Organic A2 Protein', price:12.99},
-      {cat:'Frozen', name:'Tallow fries', price:11.99},
-      {cat:'Fresh Produce', name:'Roasted veg', price:16.49},
-      {cat:'Meat & Protein', name:'Sockeye salmon', price:16.79},
-      {cat:'Snacks', name:'Beef sticks', price:17.99},
-      {cat:'Snacks', name:'Beef jerky mango', price:18.89},
-      {cat:'Fresh Produce', name:'Watermelon', price:6.99},
-      {cat:'Pantry Staples', name:'EVOO hummus', price:7.49},
-      {cat:'Fresh Produce', name:'Peaches', price:7.99},
-      {cat:'Supplements', name:'Orgncoll PR', price:29.99},
-      {cat:'Supplements', name:'Coupon · Orgncoll PR', price:-6.00, coupon:true},
-      {cat:'Fresh Produce', name:'Lolli peppers', price:5.49},
-      {cat:'Fresh Produce', name:'Avocados', price:4.69},
-      {cat:'Snacks', name:'Jcky Bikini', price:13.99, sale:true},
-      {cat:'Fresh Produce', name:'Blueberries', price:6.49},
-      {cat:'Fresh Produce', name:'Coupon · Blueberries', price:-1.50, coupon:true},
-      {cat:'Beverages', name:'KS Energy 12Z', price:16.99},
-      {cat:'Beverages', name:'KS sparkling water', price:17.59},
-      {cat:'Beverages', name:'Celsius energy', price:23.99},
-    ]
-  },
-  'publix-may16': {
-    store:'Publix', date:'May 16, 2026', month:'2026-05', total:15.97, saved:0,
-    items:[
-      {cat:'Beverages', name:'Knudsen Org Guava Dragonfruit', price:7.99},
-      {cat:'Fresh Produce', name:'Organic carrots', price:1.99},
-      {cat:'Ready-Made', name:'Popcorn chicken cup', price:5.99},
-    ]
-  },
-  'costco-may18': {
-    store:'Costco', date:'May 18, 2026', month:'2026-05', total:274.60, saved:30.50,
-    items:[
-      {cat:'Beverages', name:'LaCroix variety', price:9.99},
-      {cat:'Beverages', name:'Olipop variety', price:19.99},
-      {cat:'Beverages', name:'Coupon · Olipop', price:-5.00, coupon:true},
-      {cat:'Meat & Protein', name:'Organic fryers', price:30.98},
-      {cat:'Ready-Made', name:'Quesadilla', price:15.39},
-      {cat:'Supplements', name:'KS Organic A2 Protein', price:12.99},
-      {cat:'Snacks', name:'Tallow chips', price:7.99},
-      {cat:'Beverages', name:'Char coffee', price:22.99},
-      {cat:'Beverages', name:'Coupon · Coffee', price:-5.00, coupon:true},
-      {cat:'Dairy & Eggs', name:'Greek yogurt', price:6.99},
-      {cat:'Pantry Staples', name:'Quinoa & rice', price:11.99},
-      {cat:'Pantry Staples', name:'Coupon · Quinoa', price:-3.00, coupon:true},
-      {cat:'Snacks', name:'Truly salted', price:13.99},
-      {cat:'Snacks', name:'Coupon · Truly salted', price:-3.00, coupon:true},
-      {cat:'Pantry Staples', name:'EVOO hummus', price:7.49},
-      {cat:'Snacks', name:'Beef sticks', price:17.99},
-      {cat:'Snacks', name:'Fruitola', price:13.79},
-      {cat:'Snacks', name:'Var pack CF', price:15.99},
-      {cat:'Fresh Produce', name:'Avocados', price:4.89},
-      {cat:'Fresh Produce', name:'Limes 3lb', price:5.59},
-      {cat:'Snacks', name:'Candy snap', price:8.99},
-      {cat:'Fresh Produce', name:'Mandarins', price:4.29},
-      {cat:'Fresh Produce', name:'Org Bella mushrooms', price:4.79},
-      {cat:'Supplements', name:'Orgncoll PR', price:29.99},
-      {cat:'Supplements', name:'Coupon · Orgncoll PR', price:-6.00, coupon:true},
-      {cat:'Fresh Produce', name:'Tomato medley', price:6.69},
-      {cat:'Dairy & Eggs', name:'Organic eggs', price:7.69},
-      {cat:'Meat & Protein', name:'Sockeye salmon', price:20.98},
-    ]
-  },
-  'aldi-may22': {
-    store:'ALDI', date:'May 22, 2026', month:'2026-05', total:15.57, saved:0,
-    items:[
-      {cat:'Fresh Produce', name:'Org baby arugula', price:2.59},
-      {cat:'Fresh Produce', name:'Organic spring mix', price:4.99},
-      {cat:'Ready-Made', name:'Supreme deli pizza', price:7.99},
-    ]
-  }
-};
+const HAULS = {};
 
-// Item Families — general item groups with specific brands underneath
-const ITEM_FAMILIES = [
-  {
-    id:'tomatoes', general:'Tomatoes', cat:'Fresh Produce', staple:false,
-    brands:[
-      {name:'RR Tomatoes', price:6.99, prev:null, trend:'flat', last:'May 3 · Costco'},
-      {name:'Tomato Medley', price:6.69, prev:null, trend:'flat', last:'May 18 · Costco'},
-    ]
-  },
-  {
-    id:'eggs', general:'Eggs', cat:'Dairy & Eggs', staple:true,
-    brands:[
-      {name:'Organic Eggs', price:7.69, prev:7.59, trend:'up', last:'May 18 · Costco'},
-      {name:'Eggs FR 2DZ', price:4.19, prev:null, trend:'flat', last:'Apr 26 · Costco'},
-    ]
-  },
-  {
-    id:'sparkling-water', general:'Sparkling Water', cat:'Beverages', staple:true,
-    brands:[
-      {name:'KS Sparkling Water', price:17.59, prev:16.99, trend:'up', last:'May 11 · Costco'},
-      {name:'LaCroix Variety', price:9.99, prev:9.99, trend:'flat', last:'May 18 · Costco'},
-    ]
-  },
-  {
-    id:'protein-supplement', general:'Protein Supplement', cat:'Pantry Staples', staple:true,
-    brands:[
-      {name:'Vital Proteins', price:23.99, prev:23.99, trend:'flat', last:'May 3 · Costco', sale:true},
-      {name:'Orgain Chocolate', price:25.99, prev:25.99, trend:'flat', last:'May 3 · Costco', sale:true},
-      {name:'KS Organic A2 Protein', price:12.99, prev:11.79, trend:'up', last:'May 18 · Costco'},
-    ]
-  },
-  {
-    id:'fish', general:'Fish', cat:'Meat & Protein', staple:true,
-    brands:[
-      {name:'Sockeye Salmon', price:20.98, prev:16.79, trend:'up', last:'May 18 · Costco'},
-      {name:'Atlantic Cod', price:30.78, prev:null, trend:'flat', last:'Apr 8 · Costco'},
-    ]
-  },
-  {
-    id:'chicken', general:'Chicken', cat:'Meat & Protein', staple:true,
-    brands:[
-      {name:'Organic Fryers', price:30.98, prev:null, trend:'flat', last:'May 18 · Costco'},
-      {name:'Frizzle Chicken', price:13.99, prev:null, trend:'flat', last:'May 3 · Costco'},
-      {name:'Spicy Strips', price:14.99, prev:null, trend:'flat', last:'May 3 · Costco'},
-    ]
-  },
-  {
-    id:'greens', general:'Greens / Salad Mix', cat:'Fresh Produce', staple:true,
-    brands:[
-      {name:'Sweet Kale Duo', price:6.99, prev:6.99, trend:'flat', last:'May 3 · Costco'},
-      {name:'Spring Mix', price:4.49, prev:null, trend:'flat', last:'Apr 8 · Costco'},
-      {name:'Org Baby Arugula', price:2.59, prev:null, trend:'flat', last:'May 22 · ALDI'},
-      {name:'Organic Spring Mix', price:4.99, prev:null, trend:'flat', last:'May 22 · ALDI'},
-    ]
-  },
-  {
-    id:'hummus', general:'Hummus', cat:'Pantry Staples', staple:true,
-    brands:[
-      {name:'EVOO Hummus', price:7.49, prev:7.49, trend:'flat', last:'May 18 · Costco'},
-      {name:'Graza Hummus', price:7.49, prev:null, trend:'flat', last:'Apr 8 · Costco'},
-    ]
-  },
-  {
-    id:'energy-drinks', general:'Energy Drinks', cat:'Beverages', staple:false,
-    brands:[
-      {name:'Celsius Energy', price:23.99, prev:23.99, trend:'flat', last:'May 11 · Costco'},
-      {name:'KS Energy 12Z', price:16.99, prev:null, trend:'flat', last:'Apr 26 · Costco'},
-    ]
-  },
-  {
-    id:'beef-snacks', general:'Beef Snacks', cat:'Meat & Protein', staple:false,
-    brands:[
-      {name:'Beef Sticks', price:17.99, prev:17.99, trend:'flat', last:'May 18 · Costco'},
-      {name:'Beef Jerky Mango', price:18.89, prev:null, trend:'flat', last:'May 11 · Costco'},
-      {name:'KS Steak Strips', price:11.99, prev:11.99, trend:'flat', last:'May 3 · Costco'},
-    ]
-  },
-  {
-    id:'onions', general:'Onions', cat:'Fresh Produce', staple:false,
-    brands:[
-      {name:'Red Onions', price:5.39, prev:null, trend:'flat', last:'May 3 · Costco'},
-      {name:'Vidalia Onion', price:4.39, prev:null, trend:'flat', last:'May 3 · Costco'},
-    ]
-  },
-  // Single-brand items
-  {id:'avocados', general:'Avocados', cat:'Fresh Produce', staple:true, brands:[
-    {name:'Avocados', price:4.89, prev:4.69, trend:'up', last:'May 18 · Costco'}
-  ]},
-  {id:'peppers', general:'Lolli Peppers', cat:'Fresh Produce', staple:true, brands:[
-    {name:'Lolli Peppers', price:5.49, prev:5.49, trend:'flat', last:'May 3 · Costco'}
-  ]},
-  {id:'cucumber', general:'Cucumber', cat:'Fresh Produce', staple:false, brands:[
-    {name:'Organic Cucumber', price:4.99, prev:5.99, trend:'down', last:'May 3 · Costco'}
-  ]},
-  {id:'bananas', general:'Bananas', cat:'Fresh Produce', staple:true, brands:[
-    {name:'Bananas', price:1.22, prev:2.19, trend:'down', last:"May 4 · Detwiler's"}
-  ]},
-  {id:'yogurt', general:'Greek Yogurt', cat:'Dairy & Eggs', staple:false, brands:[
-    {name:'Greek Yogurt', price:6.99, prev:6.99, trend:'flat', last:'May 18 · Costco'}
-  ]},
-  {id:'cheddar', general:'Cheddar', cat:'Dairy & Eggs', staple:true, brands:[
-    {name:'KS Sharp Cheddar', price:5.39, prev:null, trend:'flat', last:'May 3 · Costco'}
-  ]},
-  {id:'feta', general:'Feta', cat:'Dairy & Eggs', staple:false, brands:[
-    {name:'Crumbled Feta', price:6.89, prev:null, trend:'flat', last:'May 3 · Costco'}
-  ]},
-];
+// Item Families — built from scanned receipts
+const ITEM_FAMILIES = [];
 
 // Flatten for backwards compat
 const SHELF_ITEMS = ITEM_FAMILIES.flatMap(f => f.brands.map(b => ({
@@ -1422,20 +1269,7 @@ const SHELF_ITEMS = ITEM_FAMILIES.flatMap(f => f.brands.map(b => ({
 
 let shelfItems = ITEM_FAMILIES.map(f => ({...f}));
 
-const CART_ITEMS = [
-  {cat:'Fresh Produce', name:'Avocados', qty:1, price:4.89, store:'Costco', checked:false},
-  {cat:'Fresh Produce', name:'Lolli peppers', qty:1, price:5.49, store:'Costco', checked:false},
-  {cat:'Fresh Produce', name:'Organic cucumber', qty:1, price:4.99, store:'Costco', checked:false},
-  {cat:'Fresh Produce', name:'Bananas', qty:1, price:1.22, store:"Detwiler's", checked:false},
-  {cat:'Dairy & Eggs', name:'Organic eggs', qty:2, price:7.69, store:'Costco', checked:false},
-  {cat:'Dairy & Eggs', name:'Greek yogurt', qty:1, price:6.99, store:'Costco', checked:false},
-  {cat:'Dairy & Eggs', name:'KS sharp cheddar', qty:1, price:5.39, store:'Costco', checked:false},
-  {cat:'Meat & Protein', name:'Organic fryers', qty:1, price:30.98, store:'Costco', checked:false},
-  {cat:'Meat & Protein', name:'Sockeye salmon', qty:1, price:20.98, store:'Costco', checked:false},
-  {cat:'Pantry Staples', name:'EVOO hummus', qty:1, price:7.49, store:'Costco', checked:false},
-  {cat:'Pantry Staples', name:'Orgain chocolate', qty:1, price:33.99, store:'Costco', checked:false},
-  {cat:'Pantry Staples', name:'KS Organic A2 Protein', qty:1, price:12.99, store:'Costco', checked:false},
-];
+const CART_ITEMS = [];
 
 let cartItems = CART_ITEMS.map((i,idx) => ({...i, id:idx}));
 let activeShelfFilter = 'All';
@@ -1473,9 +1307,15 @@ function calcMonthBudget(monthKey) {
   const base = MONTHLY_BUDGET_BASE;
   const prevKey = getPrevMonthKey(monthKey);
   const prevHauls = getMonthHauls(prevKey);
-  const prevSpent = prevHauls.reduce((s,h) => s + (h.total||0), 0);
-  // Rollover = leftover (positive) or deficit (negative) from previous month
-  const rollover = base - prevSpent; // positive = surplus, negative = deficit
+
+  // Only calculate rollover if there are ACTUAL recorded hauls in the previous month.
+  // Without real data, assume no rollover (prevents the $1700 cold-start bug).
+  let rollover = 0;
+  if(prevHauls.length > 0) {
+    const prevSpent = prevHauls.reduce((s,h) => s + (h.total||0), 0);
+    rollover = base - prevSpent; // positive = surplus, negative = deficit
+  }
+
   const available = base + rollover;
   const currentHauls = getMonthHauls(monthKey);
   const spent = currentHauls.reduce((s,h) => s + (h.total||0), 0);
@@ -1664,15 +1504,166 @@ function renderHomeScreen() {
 // ═══════════════════════════════════════
 // NAVIGATION
 // ═══════════════════════════════════════
+// ═══════════════════════════════════════
+// INSIGHTS (PERSPECTIVE)
+// ═══════════════════════════════════════
+let insightsSelectedMonth = null;
+
+function renderInsights(monthKey) {
+  const today = new Date();
+  if(!monthKey) monthKey = insightsSelectedMonth || getMonthKey(today);
+  insightsSelectedMonth = monthKey;
+
+  // ── Build month selector from available months ──
+  const allMonthKeys = [...new Set(Object.values(HAULS).map(h=>h.month).filter(Boolean))];
+  // Add current month even if no hauls yet
+  const currentKey = getMonthKey(today);
+  if(!allMonthKeys.includes(currentKey)) allMonthKeys.push(currentKey);
+  // Sort descending
+  allMonthKeys.sort((a,b) => b.localeCompare(a));
+
+  const selectorEl = document.getElementById('insights-month-selector');
+  selectorEl.innerHTML = allMonthKeys.map(mk => {
+    const name = new Date(mk+'-15').toLocaleString('default',{month:'long',year:'numeric'});
+    return `<button class="month-pill${mk===monthKey?' active':''}" onclick="renderInsights('${mk}')">${name}</button>`;
+  }).join('');
+
+  // ── Budget for selected month ──
+  const budget = calcMonthBudget(monthKey);
+  const pct = budget.available > 0 ? Math.min(100, Math.round(budget.spent/budget.available*100)) : 0;
+  const monthName = new Date(monthKey+'-15').toLocaleString('default',{month:'long',year:'numeric'});
+
+  document.getElementById('insights-month-title').textContent = monthName;
+  document.getElementById('insights-spent').textContent = `$${budget.spent.toFixed(2)}`;
+  document.getElementById('insights-budget-sub').textContent = `of $${budget.available.toFixed(2)} budget`;
+
+  const barEl = document.getElementById('insights-bar');
+  barEl.style.width = pct+'%';
+  barEl.className = 'insights-bar-fill' + (pct>=100?' danger':pct>=80?' warning':'');
+
+  const badgeEl = document.getElementById('insights-budget-badge');
+  const isCurrentMonth = monthKey === currentKey;
+  if(isCurrentMonth) {
+    badgeEl.textContent = pct >= 100 ? 'Over budget' : `${100-pct}% left`;
+    badgeEl.className = 'insights-budget-badge ' + (pct>=100?'over':'under');
+  } else {
+    // Completed month
+    badgeEl.textContent = budget.remaining >= 0 ? `$${budget.remaining.toFixed(2)} under` : `$${Math.abs(budget.remaining).toFixed(2)} over`;
+    badgeEl.className = 'insights-budget-badge ' + (budget.remaining>=0?'under':'over');
+  }
+
+  // Rollover note
+  const rolloverEl = document.getElementById('insights-rollover');
+  if(!isCurrentMonth && Math.abs(budget.rollover) < 0.01 && budget.hauls.length === 0) {
+    rolloverEl.style.display = 'none';
+  } else if(budget.remaining !== 0 && !isCurrentMonth) {
+    const sign = budget.remaining >= 0 ? '↑' : '↓';
+    const nextName = new Date(monthKey.replace(/(\d{4})-(\d{2})/,(_,y,m)=>{ const nm=+m+1; return nm>12?`${+y+1}-01`:`${y}-${String(nm).padStart(2,'0')}`})+'-15').toLocaleString('default',{month:'long'});
+    rolloverEl.innerHTML = `<span style="font-size:15px;">${sign}</span> $${Math.abs(budget.remaining).toFixed(2)} ${budget.remaining>=0?'surplus':'deficit'} rolled to ${nextName}`;
+    rolloverEl.style.display = 'flex';
+  } else if(isCurrentMonth && Math.abs(budget.rollover) > 0.01) {
+    const sign = budget.rollover >= 0 ? '↑' : '↓';
+    const prevName = new Date(getPrevMonthKey(monthKey)+'-15').toLocaleString('default',{month:'long'});
+    rolloverEl.innerHTML = `<span style="font-size:15px;">${sign}</span> Includes $${Math.abs(budget.rollover).toFixed(2)} ${budget.rollover>=0?'surplus':'deficit'} from ${prevName}`;
+    rolloverEl.style.display = 'flex';
+  } else {
+    rolloverEl.style.display = 'none';
+  }
+
+  // ── Stats ──
+  const avg = budget.hauls.length > 0 ? budget.spent/budget.hauls.length : 0;
+  document.getElementById('insights-hauls').textContent = budget.hauls.length;
+  document.getElementById('insights-saved').textContent = `$${budget.saved.toFixed(2)}`;
+  document.getElementById('insights-avg').textContent = `$${Math.round(avg)}`;
+  document.getElementById('insights-remaining').textContent = `$${Math.max(0,budget.remaining).toFixed(2)}`;
+
+  // ── Spending trend (up to 4 months) ──
+  const trendMonths = allMonthKeys.slice(0,4).reverse();
+  const maxSpend = Math.max(...trendMonths.map(mk=>calcMonthBudget(mk).spent), MONTHLY_BUDGET_BASE);
+  const trendEl = document.getElementById('insights-trend');
+  trendEl.innerHTML = trendMonths.map(mk => {
+    const b = calcMonthBudget(mk);
+    const w = maxSpend > 0 ? Math.round(b.spent/maxSpend*100) : 0;
+    const name = new Date(mk+'-15').toLocaleString('default',{month:'short',year:'2-digit'});
+    const isCurrent = mk === monthKey;
+    return `<div class="trend-row">
+      <div class="trend-label">${name}</div>
+      <div class="trend-bar-wrap"><div class="trend-bar${isCurrent?' current':''}" style="width:${w}%;"></div></div>
+      <div class="trend-amt">$${Math.round(b.spent)}</div>
+    </div>`;
+  }).join('');
+  if(trendMonths.length < 2) document.getElementById('insights-trend-section').style.display='none';
+  else document.getElementById('insights-trend-section').style.display='block';
+
+  // ── By store ──
+  const storeMap = {};
+  budget.hauls.forEach(h => {
+    if(!storeMap[h.store]) storeMap[h.store] = 0;
+    storeMap[h.store] += h.total||0;
+  });
+  const storeEntries = Object.entries(storeMap).sort((a,b)=>b[1]-a[1]);
+  const maxStore = storeEntries[0]?.[1] || 1;
+  const storeEl = document.getElementById('insights-by-store');
+  if(storeEntries.length > 0) {
+    storeEl.innerHTML = storeEntries.map(([name, amt]) => {
+      const s = storeStyle(name);
+      const w = Math.round(amt/maxStore*100);
+      return `<div class="store-bar-row">
+        <span class="store-bar-name">${name}</span>
+        <div class="store-bar-track"><div class="store-bar-fill" style="width:${w}%;background:${s.fg};"></div></div>
+        <span class="store-bar-amt">$${amt.toFixed(2)}</span>
+      </div>`;
+    }).join('');
+    storeEl.parentElement.style.display = 'block';
+  } else {
+    storeEl.parentElement.style.display = 'none';
+  }
+
+  // ── Haul list ──
+  const haulListEl = document.getElementById('insights-haul-list');
+  const emptyEl = document.getElementById('insights-empty');
+  document.getElementById('insights-hauls-title').textContent = `${monthName} hauls`;
+
+  const monthHauls = Object.entries(HAULS)
+    .filter(([,h]) => h.month === monthKey)
+    .sort((a,b) => new Date(b[1].date)-new Date(a[1].date));
+
+  if(monthHauls.length === 0) {
+    haulListEl.innerHTML = '';
+    emptyEl.style.display = 'block';
+  } else {
+    emptyEl.style.display = 'none';
+    haulListEl.innerHTML = monthHauls.map(([key, haul]) => {
+      const s = storeStyle(haul.store);
+      const itemCount = (haul.items||[]).filter(i=>!i.coupon&&i.price>0).length;
+      return `<div class="haul-row" onclick="openHaulDetail('${key}')">
+        <div class="store-avatar" style="background:${s.bg};color:${s.fg};width:36px;height:36px;">
+          <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        </div>
+        <div style="flex:1;">
+          <div style="font-size:15px;font-weight:500;">${haul.store}</div>
+          <div style="font-size:12px;color:var(--text-tertiary);margin-top:1px;">${haul.date}</div>
+        </div>
+        <div class="haul-row-right">
+          <div class="haul-row-spent">$${haul.total.toFixed(2)}</div>
+          <div class="haul-row-count">${itemCount} items${haul.saved>0?' · $'+haul.saved.toFixed(2)+' saved':''}</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+}
+
 function switchTab(tab) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('screen-'+tab).classList.add('active');
-  document.getElementById('nav-'+tab).classList.add('active');
+  const navBtn = document.getElementById('nav-'+tab);
+  if(navBtn) navBtn.classList.add('active');
   if(tab==='home') renderHomeScreen();
   if(tab==='cart') renderCart();
   if(tab==='shelf') renderShelf();
   if(tab==='plan') generateAINudges();
+  if(tab==='perspective') renderInsights();
 }
 
 // ═══════════════════════════════════════
@@ -2498,79 +2489,50 @@ document.addEventListener('mousedown', function(e) {
 // AI NUDGES — ANTHROPIC
 // ═══════════════════════════════════════
 
-const PURCHASE_HISTORY_SUMMARY = `
-PURCHASE HISTORY (April–May 2026):
+function buildPurchaseHistorySummary() {
+  const allHauls = Object.values(HAULS);
+  if(allHauls.length === 0) return 'No purchase history yet — this is the first haul.';
 
-PROTEIN & MEAT:
-- Sockeye Salmon: bought May 18 ($20.98) and May 11 ($16.79) at Costco. Price going UP.
-- Organic Fryers (chicken): bought May 18 ($30.98) at Costco. First time buying.
-- Frizzle Chicken: bought May 3 ($13.99) at Costco.
-- Spicy Strips (chicken): bought May 3 ($14.99) at Costco.
-- KS Steak Strips: bought May 3 and Apr 8 ($11.99) at Costco. Regular price.
-- Beef Sticks: bought May 18 and May 11 ($17.99) at Costco.
-- Beef Jerky Mango: bought May 11 ($18.89) at Costco.
-- Atlantic Cod: bought Apr 8 ($30.78) at Costco.
-- Herb Turkey: bought Apr 26 ($14.99) at Costco.
-- Pork Andouille Sausage: bought Apr 11 ($5.29) at Detwiler's.
+  const today = new Date();
+  const lines = [];
 
-PRODUCE:
-- Avocados: bought May 18 ($4.89), May 11 ($4.69), May 3 ($4.69) at Costco. Price creeping up.
-- Lolli Peppers: bought May 3, Apr 26, Apr 8 ($5.49) at Costco. Stable price.
-- Organic Cucumber: bought May 3 ($4.99), Apr 8 ($5.99) at Costco. Price went DOWN.
-- Bananas: bought May 4 ($1.22) at Detwiler's, Apr 26 ($2.19) at Costco.
-- Tomato Medley: bought May 18 ($6.69) at Costco.
-- RR Tomatoes: bought May 3 ($6.99) at Costco.
-- Strawberries: bought Apr 26 ($4.49, on sale) at Costco.
-- Blueberries: bought May 11 ($6.49, coupon) at Costco.
-- Watermelon: bought May 11 ($6.99) at Costco.
-- Cantaloupe: bought May 3 ($5.89) at Costco.
-- Peaches: bought May 11 ($7.99) at Costco.
-- Mandarins: bought May 18 ($4.29) at Costco.
-- Organic Carrots: bought May 16 ($1.99) at Publix.
-- Arugula: bought Apr 26 ($4.99), May 22 ($2.59 at ALDI) at Costco/ALDI.
-- Spring Mix/Sweet Kale: bought May 3, Apr 8 at Costco.
-- Org Spring Mix: bought May 22 ($4.99) at ALDI.
-- Lemons: bought May 4 ($1.50) at Detwiler's.
+  // Item history across all hauls
+  const itemMap = {};
+  allHauls.forEach(haul => {
+    (haul.items||[]).filter(i => i.price > 0 && !i.coupon).forEach(item => {
+      const key = item.name.toLowerCase().replace(/[^a-z0-9 ]/g,'').trim();
+      if(!itemMap[key]) itemMap[key] = { name:item.name, prices:[], dates:[], stores:[], cat:item.cat };
+      itemMap[key].prices.push(item.price);
+      itemMap[key].dates.push(haul.date);
+      itemMap[key].stores.push(haul.store);
+    });
+  });
 
-DAIRY & EGGS:
-- Organic Eggs: bought May 18 ($7.69), May 3 (x2, $7.69), Apr 26 ($7.59) at Costco. Slowly rising.
-- Greek Yogurt: bought May 18 ($6.99), May 3 ($6.99) at Costco. Stable.
-- KS Sharp Cheddar: bought May 3 ($5.39) at Costco. First buy.
-- Crumbled Feta: bought May 3 ($6.89) at Costco. First buy.
-- Irish Butter: bought Apr 8 ($16.29, coupon -$4.30) at Costco.
-- KS Organic A2 Protein (milk): bought May 18 ($12.99), May 11 ($12.99), May 3 ($11.79), Apr 26 ($11.79), Apr 8 ($11.79) at Costco. Price went UP recently.
+  // Budget context
+  const mk = getMonthKey(today);
+  const budget = calcMonthBudget(mk);
+  lines.push(`BUDGET: $${MONTHLY_BUDGET_BASE}/month | Spent: $${budget.spent.toFixed(2)} | Remaining: $${budget.remaining.toFixed(2)} | Days left: ${new Date(today.getFullYear(),today.getMonth()+1,0).getDate()-today.getDate()}`);
 
-PROTEIN SUPPLEMENTS:
-- Vital Proteins: bought May 3 ($23.99 after $6 coupon) at Costco. Regular buyer.
-- Orgain Chocolate: bought May 3 ($25.99 after $8 coupon), Apr 26 ($25.99 after $8 coupon) at Costco. Always use coupon.
-- Orgain Collagen: bought May 18 ($23.99 after $6 coupon), May 11 ($23.99 after $6 coupon) at Costco.
+  // Recent hauls
+  const recent = allHauls.sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,8);
+  lines.push('\nRECENT HAULS:');
+  recent.forEach(h => {
+    const items = (h.items||[]).filter(i=>i.price>0&&!i.coupon);
+    lines.push(`- ${h.store} | ${h.date} | $${h.total.toFixed(2)} | ${items.length} items | month: ${h.month||'unknown'}`);
+  });
 
-PANTRY:
-- EVOO Hummus: bought May 18 ($7.49), May 11 ($7.49), Apr 26 ($7.49) at Costco. Very regular.
-- Naan Bread: bought May 3 ($6.99) at Costco.
-- Cocoa Cereal: bought May 3 ($9.59), Apr 26 ($9.59) at Costco.
-- Sauerkraut: bought Apr 26 ($9.59) at Costco.
-- Vanilla Syrup: bought Apr 26 ($16.99) at Costco.
-- Organic Bone Broth: bought Apr 26 ($26.78) at Costco.
-- Quinoa & Rice: bought May 18 ($8.99 after $3 coupon) at Costco.
-- EVOO (olive oil): bought Apr 26 ($7.49) at Costco.
-- Kinders Rub: bought Apr 26 ($6.89) at Costco.
-- Tallow Fries: bought May 11 ($11.99) at Costco.
-- Tallow Chips: bought May 18 ($7.99) at Costco.
-- Truly Salted: bought May 18 ($10.99 after $3 coupon) at Costco.
+  // Item history
+  lines.push('\nITEM PURCHASE HISTORY (item | latest price | bought N times | last store | last date | price trend):');
+  Object.values(itemMap).sort((a,b)=>a.name.localeCompare(b.name)).forEach(item => {
+    const n = item.prices.length;
+    const last = item.prices[n-1];
+    const prev = n > 1 ? item.prices[n-2] : null;
+    const trend = prev ? (last>prev?'price UP':last<prev?'price DOWN':'stable') : 'first purchase';
+    lines.push(`- ${item.name} | $${last.toFixed(2)} | ${n}x | ${item.stores[n-1]} | ${item.dates[n-1]} | ${trend}`);
+  });
 
-BEVERAGES:
-- KS Sparkling Water: bought May 11 ($17.59), Apr 26 ($16.99), Apr 8 ($16.99) at Costco. Price UP.
-- LaCroix Variety: bought May 18 ($9.99), May 3 ($9.99) at Costco.
-- Celsius Energy: bought May 11 ($23.99), Apr 8 ($23.99) at Costco.
-- KS Energy 12Z: bought Apr 26 ($16.99, on sale) at Costco.
-- Olipop Variety: bought May 18 ($14.99 after $5 coupon) at Costco.
-- Char Coffee: bought May 18 ($17.99 after $5 coupon) at Costco.
-
-STORES USED: Costco (primary, ~91% of spend), Detwiler's Farm Market (fresh produce), Publix (occasional), ALDI (occasional), Walmart (occasional)
-MONTHLY BUDGET: $850
-MAY SPEND SO FAR: $783.47 (92% of budget, 7 days left in month)
-`;
+  return lines.join('\n');
+}
 
 async function generateAINudges() {
   const apiKey = getApiKey();
@@ -2588,31 +2550,18 @@ async function generateAINudges() {
     const dayOfMonth = today.getDate();
     const daysLeft = new Date(today.getFullYear(), today.getMonth()+1, 0).getDate() - dayOfMonth;
 
-    const prompt = `You are the AI brain of Pantry., a smart grocery tracking app. Based on this family's grocery purchase history, generate 3-4 specific, actionable nudges.
+    const summary = buildPurchaseHistorySummary();
+    const currentBudget = calcMonthBudget(getMonthKey(today));
 
-${PURCHASE_HISTORY_SUMMARY}
+    const prompt = `You are the AI brain of Pantry., a smart grocery budget app using YNAB philosophy — every dollar has a job, surplus builds pantry resilience.
 
-TODAY: May ${dayOfMonth}, 2026. Days left in month: ${daysLeft}. Budget remaining: $66.53.
+${summary}
 
-Generate nudges that are:
-1. SPECIFIC — mention the exact item, price, store, and days since last bought
-2. PROTEIN-AWARE — if they need protein, suggest a SPECIFIC type (salmon, chicken, beef, pork, fish) based on what they haven't bought recently, not just "protein"
-3. PRICE-SMART — flag items that have gone up in price, or where a cheaper alternative exists
-4. BUDGET-CONSCIOUS — with only $66.53 left and ${daysLeft} days to go, factor that in
-5. VARIETY-FOCUSED — if they've bought the same protein 3 weeks in a row, suggest switching it up
+TODAY: ${today.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})}. Days left in month: ${daysLeft}. Budget remaining: $${currentBudget.remaining.toFixed(2)}.
 
-Return ONLY a JSON array, no markdown, no explanation:
-[
-  {
-    "type": "protein|produce|staple|deal|budget",
-    "title": "Short punchy title (5 words max)",
-    "text": "2-3 sentence specific insight with item names, prices, days since bought, and store",
-    "item": "specific item to add to cart",
-    "urgent": true or false
-  }
-]
-
-Be conversational and specific. Don't be generic. Reference actual items from their history.`;
+Generate 3-4 specific actionable nudges. If no history yet, welcome user and suggest scanning first receipt.
+Return ONLY a JSON array, no markdown:
+[{"type":"protein|produce|staple|deal|budget","title":"Short title (5 words max)","text":"2-3 sentences referencing actual items, prices, days since bought, store.","item":"specific item","urgent":false}]`;
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -2699,6 +2648,7 @@ function refreshNudges() {
 renderCart();
 renderShelf();
 renderHomeScreen();
+renderInsights();
 checkSetup();
 </script>
 </body>
