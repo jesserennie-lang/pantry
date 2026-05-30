@@ -247,9 +247,29 @@ html, body {
 .cat-title { font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; }
 .cat-count-label { font-size: 11px; color: var(--text-tertiary); }
 
+/* ── CART SWIPE DELETE ── */
+.cart-swipe-wrap {
+  position: relative; overflow: hidden;
+  border-top: 0.5px solid var(--border);
+  user-select: none; -webkit-user-select: none;
+}
+.cart-delete-action {
+  position: absolute; right: 0; top: 0; bottom: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 5px;
+  background: var(--red); color: white;
+  width: 0; overflow: hidden; opacity: 0;
+  font-size: 12px; font-weight: 600; cursor: pointer;
+  white-space: nowrap; border-radius: 12px 0 0 12px;
+}
+.cart-delete-action.visible { opacity: 1; }
+.cart-delete-action.flat-left { border-radius: 0 0 0 0; }
+.cart-delete-action svg { width: 20px; height: 20px; stroke: white; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
 .cart-item-row {
   display: flex; align-items: center; gap: 12px;
-  padding: 11px 20px; border-top: 0.5px solid var(--border);
+  padding: 11px 20px; background: var(--bg);
+  transform: translateX(0);
+  position: relative; z-index: 1;
   cursor: pointer; transition: background 0.1s;
 }
 .cart-item-row:hover { background: var(--bg-secondary); }
@@ -909,7 +929,7 @@ html, body {
 <!-- ═══════════════════════════════════════
      API KEY SETUP SCREEN
 ════════════════════════════════════════ -->
-<div class="setup-screen hidden" id="setup-screen" style="display:none;pointer-events:none;">
+<div class="setup-screen hidden" id="setup-screen">
   <div class="setup-logo">Pantry.</div>
   <div class="setup-tagline">Your smart grocery tracker</div>
   <div class="setup-card">
@@ -1339,24 +1359,95 @@ function deleteCartItem(id) {
 
 let cartActiveSwipe = null;
 function setupCartSwipe(id, row) {
-  let startX = 0;
-  const onStart = (x) => {
-    startX = x;
+  let startX = 0, currentX = 0, dragging = false;
+  const THRESHOLD = 60;
+  const FULL_DELETE = -230;
+
+  function getTranslate() {
+    const m = row.style.transform && row.style.transform.match(/translateX\((-?[\d.]+)px\)/);
+    return m ? parseFloat(m[1]) : 0;
+  }
+  function getDeleteBtn() {
+    const wrap = document.getElementById('cswrap-' + id);
+    return wrap ? wrap.querySelector('.cart-delete-action') : null;
+  }
+
+  function onStart(x) {
+    startX = x; currentX = getTranslate(); dragging = true;
+    row.style.transition = 'none';
+    const btn = getDeleteBtn(); if(btn) btn.style.transition = 'none';
+    // Close any other open swipe
     if(cartActiveSwipe && cartActiveSwipe !== id) {
-      const prev = document.getElementById('crow-'+cartActiveSwipe);
-      if(prev) prev.style.transform = 'translateX(0)';
+      const prevWrap = document.getElementById('cswrap-' + cartActiveSwipe);
+      const prevRow = document.getElementById('crow-' + cartActiveSwipe);
+      const prevBtn = prevWrap ? prevWrap.querySelector('.cart-delete-action') : null;
+      if(prevRow) { prevRow.style.transition = 'transform 0.3s ease'; prevRow.style.transform = 'translateX(0)'; }
+      if(prevBtn) { prevBtn.classList.remove('visible'); prevBtn.style.width = '0'; }
       cartActiveSwipe = null;
     }
-  };
-  const onEnd = (x) => {
-    const dx = x - startX;
-    if(dx < -40) { row.style.transform = 'translateX(-90px)'; cartActiveSwipe = id; }
-    else if(dx > 20) { row.style.transform = 'translateX(0)'; if(cartActiveSwipe===id) cartActiveSwipe=null; }
-  };
-  row.addEventListener('touchstart', e=>onStart(e.touches[0].clientX), {passive:true});
-  row.addEventListener('touchend', e=>onEnd(e.changedTouches[0].clientX), {passive:true});
-  row.addEventListener('mousedown', e=>onStart(e.clientX));
-  row.addEventListener('mouseup', e=>onEnd(e.clientX));
+  }
+
+  function onMove(x) {
+    if(!dragging) return;
+    const raw = x - startX + currentX;
+    const clamped = Math.min(0, Math.max(-600, raw));
+    row.style.transform = `translateX(${clamped}px)`;
+    const btn = getDeleteBtn();
+    if(btn) {
+      if(clamped < -4) {
+        btn.classList.add('visible');
+        btn.style.width = Math.abs(clamped) + 'px';
+        // Corners: rounded when peeking, flat when fully stretched across
+        if(clamped < -240) { btn.classList.add('flat-left'); }
+        else { btn.classList.remove('flat-left'); }
+      } else {
+        btn.classList.remove('visible'); btn.style.width = '0';
+      }
+    }
+  }
+
+  function onEnd(x) {
+    if(!dragging) return; dragging = false;
+    const dx = x - startX + currentX;
+    const btn = getDeleteBtn();
+    row.style.transition = 'transform 0.35s cubic-bezier(0.25,0.46,0.45,0.94)';
+    if(btn) btn.style.transition = 'width 0.35s cubic-bezier(0.25,0.46,0.45,0.94)';
+
+    if(dx < FULL_DELETE) {
+      // Full swipe — fly off and delete
+      row.style.transition = 'transform 0.25s ease';
+      row.style.transform = 'translateX(-110vw)';
+      if(btn) { btn.style.transition = 'width 0.25s ease'; btn.style.width = '110vw'; }
+      const wrap = document.getElementById('cswrap-' + id);
+      setTimeout(() => {
+        if(wrap) {
+          const h = wrap.offsetHeight;
+          wrap.style.maxHeight = h + 'px';
+          wrap.style.overflow = 'hidden';
+          wrap.style.transition = 'max-height 0.28s ease, opacity 0.2s ease';
+          requestAnimationFrame(() => { wrap.style.maxHeight = '0'; wrap.style.opacity = '0'; });
+          setTimeout(() => deleteCartItem(id), 300);
+        }
+      }, 180);
+    } else if(dx < -THRESHOLD) {
+      // Partial swipe — snap to 90px to show delete button
+      row.style.transform = 'translateX(-90px)';
+      if(btn) { btn.classList.add('visible'); btn.style.width = '90px'; btn.classList.remove('flat-left'); }
+      cartActiveSwipe = id;
+    } else {
+      // Snap back
+      row.style.transform = 'translateX(0)';
+      if(btn) { btn.classList.remove('visible'); btn.style.width = '0'; }
+      if(cartActiveSwipe === id) cartActiveSwipe = null;
+    }
+  }
+
+  row.addEventListener('touchstart', e => { e.stopPropagation(); onStart(e.touches[0].clientX); }, {passive:true});
+  row.addEventListener('touchmove', e => { onMove(e.touches[0].clientX); }, {passive:true});
+  row.addEventListener('touchend', e => onEnd(e.changedTouches[0].clientX), {passive:true});
+  row.addEventListener('mousedown', e => { e.preventDefault(); onStart(e.clientX); window.addEventListener('mousemove', mm); window.addEventListener('mouseup', mu); });
+  function mm(e) { e.preventDefault(); onMove(e.clientX); }
+  function mu(e) { onEnd(e.clientX); window.removeEventListener('mousemove', mm); window.removeEventListener('mouseup', mu); }
 }
 
 function promptAddItem() {
@@ -1636,7 +1727,7 @@ function checkSetup() {
   const screen = document.getElementById('setup-screen');
   if(!screen) return;
   if(key && key.startsWith('sk-')) {
-    screen.style.display = "none"; screen.style.pointerEvents = "none";
+    screen.style.display = 'none';
     screen.classList.add('hidden');
   } else {
     screen.classList.remove('hidden');
