@@ -270,8 +270,11 @@ html, body {
   padding: 11px 20px; background: var(--bg);
   transform: translateX(0);
   position: relative; z-index: 1;
-  cursor: pointer; transition: background 0.1s;
+  cursor: grab; transition: background 0.1s;
 }
+.cart-item-row:active { cursor: grabbing; }
+.cart-item-name { cursor: pointer; }
+.checkbox { cursor: pointer; }
 .cart-item-row:hover { background: var(--bg-secondary); }
 .cart-item-row.checked { opacity: 0.45; }
 
@@ -1295,12 +1298,12 @@ function renderCart() {
             <svg viewBox="0 0 24 24" style="width:20px;height:20px;stroke:white;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
             <span>Delete</span>
           </div>
-          <div class="cart-item-row${item.checked?' checked':''}" id="crow-${item.id}" onclick="toggleCartItem(${item.id})">
-            <div class="checkbox${item.checked?' done':''}">
+          <div class="cart-item-row${item.checked?' checked':''}" id="crow-${item.id}">
+            <div class="checkbox${item.checked?' done':''}" onclick="toggleCartItem(${item.id})">
               <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
             </div>
             <div class="cart-item-info">
-              <div class="cart-item-name${item.checked?' struck':''}">${item.name}</div>
+              <div class="cart-item-name${item.checked?' struck':''}" onclick="toggleCartItem(${item.id})">${item.name}</div>
               <div class="cart-item-meta">Qty ${item.qty} · ${item.store}</div>
             </div>
             <div class="cart-item-price">$${(item.price*item.qty).toFixed(2)}</div>
@@ -1372,23 +1375,19 @@ function setupCartSwipe(id, row) {
     return wrap ? wrap.querySelector('.cart-delete-action') : null;
   }
 
+  let didDrag = false;
+
   function onStart(x) {
-    startX = x; currentX = getTranslate(); dragging = true;
+    startX = x; currentX = getTranslate(); dragging = true; didDrag = false;
     row.style.transition = 'none';
     const btn = getDeleteBtn(); if(btn) btn.style.transition = 'none';
     // Close any other open swipe
-    if(cartActiveSwipe && cartActiveSwipe !== id) {
-      const prevWrap = document.getElementById('cswrap-' + cartActiveSwipe);
-      const prevRow = document.getElementById('crow-' + cartActiveSwipe);
-      const prevBtn = prevWrap ? prevWrap.querySelector('.cart-delete-action') : null;
-      if(prevRow) { prevRow.style.transition = 'transform 0.3s ease'; prevRow.style.transform = 'translateX(0)'; }
-      if(prevBtn) { prevBtn.classList.remove('visible'); prevBtn.style.width = '0'; }
-      cartActiveSwipe = null;
-    }
+    if(cartActiveSwipe && cartActiveSwipe !== id) closeActiveCartSwipe();
   }
 
   function onMove(x) {
     if(!dragging) return;
+    if(Math.abs(x - startX) > 6) didDrag = true;
     const raw = x - startX + currentX;
     const clamped = Math.min(0, Math.max(-600, raw));
     row.style.transform = `translateX(${clamped}px)`;
@@ -1445,9 +1444,23 @@ function setupCartSwipe(id, row) {
   row.addEventListener('touchstart', e => { e.stopPropagation(); onStart(e.touches[0].clientX); }, {passive:true});
   row.addEventListener('touchmove', e => { onMove(e.touches[0].clientX); }, {passive:true});
   row.addEventListener('touchend', e => onEnd(e.changedTouches[0].clientX), {passive:true});
-  row.addEventListener('mousedown', e => { e.preventDefault(); onStart(e.clientX); window.addEventListener('mousemove', mm); window.addEventListener('mouseup', mu); });
+  row.addEventListener('mousedown', e => {
+    if(e.button !== 0) return; // left click only
+    e.preventDefault();
+    onStart(e.clientX);
+    row.style.cursor = 'grabbing';
+    window.addEventListener('mousemove', mm);
+    window.addEventListener('mouseup', mu);
+  });
   function mm(e) { e.preventDefault(); onMove(e.clientX); }
-  function mu(e) { onEnd(e.clientX); window.removeEventListener('mousemove', mm); window.removeEventListener('mouseup', mu); }
+  function mu(e) {
+    onEnd(e.clientX);
+    row.style.cursor = '';
+    window.removeEventListener('mousemove', mm);
+    window.removeEventListener('mouseup', mu);
+  }
+  // Block click from firing on the row after a drag
+  row.addEventListener('click', e => { if(didDrag) { e.stopPropagation(); e.preventDefault(); didDrag = false; } });
 }
 
 function promptAddItem() {
@@ -1903,6 +1916,27 @@ function addScanToCart() {
 // ═══════════════════════════════════════
 document.getElementById('scanner-modal').addEventListener('click', function(e){
   if(e.target===this) closeScanner();
+});
+
+// ── Close exposed cart delete button when tapping outside ──
+function closeActiveCartSwipe() {
+  if(cartActiveSwipe === null) return;
+  const wrap = document.getElementById('cswrap-' + cartActiveSwipe);
+  const row  = document.getElementById('crow-'  + cartActiveSwipe);
+  const btn  = wrap ? wrap.querySelector('.cart-delete-action') : null;
+  if(row) { row.style.transition = 'transform 0.3s ease'; row.style.transform = 'translateX(0)'; }
+  if(btn) { btn.style.transition = 'width 0.3s ease'; btn.classList.remove('visible'); btn.style.width = '0'; btn.classList.remove('flat-left'); }
+  cartActiveSwipe = null;
+}
+document.addEventListener('touchstart', function(e) {
+  if(cartActiveSwipe === null) return;
+  const wrap = document.getElementById('cswrap-' + cartActiveSwipe);
+  if(wrap && !wrap.contains(e.target)) closeActiveCartSwipe();
+}, {passive: true});
+document.addEventListener('mousedown', function(e) {
+  if(cartActiveSwipe === null) return;
+  const wrap = document.getElementById('cswrap-' + cartActiveSwipe);
+  if(wrap && !wrap.contains(e.target)) closeActiveCartSwipe();
 });
 
 // ═══════════════════════════════════════
