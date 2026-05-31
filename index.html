@@ -1665,6 +1665,11 @@
       <div class="settings-row-label"><div class="t">Anthropic API key</div><div class="s" id="set-api-key-sub">Not set</div></div>
       <div class="settings-row-chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
     </div>
+    <div class="settings-row" onclick="testConnection()">
+      <div class="settings-row-icon" style="background:var(--blue-light);"><svg viewBox="0 0 24 24" style="stroke:var(--blue);"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
+      <div class="settings-row-label"><div class="t">Test connection</div><div class="s" id="set-test-sub">Check that the API key works</div></div>
+      <div class="settings-row-chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
+    </div>
     <div class="settings-row" onclick="closeModal('settings-modal'); startOnboarding(true);">
       <div class="settings-row-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3M12 17h.01"/></svg></div>
       <div class="settings-row-label"><div class="t">Replay setup guide</div><div class="s">Walk through the tour again</div></div>
@@ -2894,6 +2899,45 @@ function saveApiKey() {
   closeModal('api-key-modal');
   openSettings();
   showToast('API key saved');
+}
+
+// One-tap check that the key actually authenticates with Anthropic
+async function testConnection() {
+  const sub = document.getElementById('set-test-sub');
+  if (!hasApiKey()) {
+    sub.textContent = 'No key found — add one above first';
+    sub.style.color = 'var(--red)';
+    return;
+  }
+  sub.textContent = 'Testing…';
+  sub.style.color = 'var(--text-tertiary)';
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: apiHeaders(),
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-5-20250929',
+        max_tokens: 8,
+        messages: [{ role: 'user', content: 'ping' }]
+      })
+    });
+    const data = await res.json();
+    if (data.error) {
+      const msg = data.error.message || JSON.stringify(data.error);
+      sub.textContent = '✗ ' + msg;
+      sub.style.color = 'var(--red)';
+      // Show the masked key diagnostic in an alert so the full detail is readable
+      alert('Connection failed.\n\n' + msg + '\n\n' + keyDiagnostic());
+    } else {
+      sub.textContent = '✓ Connected — the key works';
+      sub.style.color = 'var(--teal)';
+      showToast('API key works!');
+    }
+  } catch (e) {
+    sub.textContent = '✗ Network/CORS error — could not reach Anthropic';
+    sub.style.color = 'var(--red)';
+    alert('Could not reach the API.\n\n' + (e && e.message ? e.message : e) + '\n\n' + keyDiagnostic());
+  }
 }
 
 function editHousehold() {
