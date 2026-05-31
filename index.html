@@ -1287,7 +1287,7 @@ let activeSwipe = null;
 function getMonthlyBudget() {
   return parseFloat(localStorage.getItem('pantry_budget') || '850');
 }
-const getMonthlyBudget() = getMonthlyBudget();
+const MONTHLY_BUDGET_BASE = getMonthlyBudget();
 
 function getMonthKey(date) {
   return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}`;
@@ -1588,7 +1588,7 @@ function renderInsights(monthKey) {
 
   // ── Spending trend (up to 4 months) ──
   const trendMonths = allMonthKeys.slice(0,4).reverse();
-  const maxSpend = Math.max(...trendMonths.map(mk=>calcMonthBudget(mk).spent), getMonthlyBudget();
+    const maxSpend = Math.max(...trendMonths.map(mk=>calcMonthBudget(mk).spent), getMonthlyBudget());
   const trendEl = document.getElementById('insights-trend');
   trendEl.innerHTML = trendMonths.map(mk => {
     const b = calcMonthBudget(mk);
