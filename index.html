@@ -1685,8 +1685,24 @@
 // ════════════════════════════════════════════════════
 // API KEY
 // ════════════════════════════════════════════════════
+//
+// ┌─────────────────────────────────────────────────────────────┐
+// │  PASTE YOUR ANTHROPIC API KEY BETWEEN THE QUOTES BELOW.       │
+// │  Get one at: https://console.anthropic.com → API Keys        │
+// │  It starts with  sk-ant-                                     │
+// │                                                              │
+// │  Example:                                                    │
+// │    const HARDCODED_API_KEY = "sk-ant-api03-XXXXXXXX...";      │
+// │                                                              │
+// │  IMPORTANT: anyone who views this site's source can read     │
+// │  this key. Set a monthly spend limit on the key in the       │
+// │  Anthropic console so a leak can't run up large charges.     │
+// └─────────────────────────────────────────────────────────────┘
+const HARDCODED_API_KEY = "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";
 
 function getApiKey() {
+  // Baked-in key wins; otherwise fall back to a key entered in Settings.
+  if (HARDCODED_API_KEY && HARDCODED_API_KEY.trim()) return HARDCODED_API_KEY.trim();
   return localStorage.getItem('pantry_api_key') || '';
 }
 
@@ -2326,7 +2342,7 @@ Return ONLY a JSON array, no markdown, no extra text:
       method: 'POST',
       headers: apiHeaders(),
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-sonnet-4-5-20250929',
         max_tokens: 1000,
         messages: [{ role: 'user', content: prompt }]
       })
@@ -2480,7 +2496,7 @@ async function handleReceiptUpload(input) {
       method: 'POST',
       headers: apiHeaders(),
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-sonnet-4-5-20250929',
         max_tokens: 1500,
         messages: [{
           role: 'user',
@@ -2828,9 +2844,13 @@ function openSettings() {
   document.getElementById('set-budget-sub').textContent = '$' + getBudgetForMonth(key).toLocaleString() + ' / ' + monthLabelFromKey(key);
   // API key status
   const storedKey = getApiKey();
-  document.getElementById('set-api-key-sub').textContent = storedKey
-    ? '••••••••' + storedKey.slice(-4) + ' · tap to change'
-    : 'Not set — required for AI features';
+  if (HARDCODED_API_KEY && HARDCODED_API_KEY.trim()) {
+    document.getElementById('set-api-key-sub').textContent = 'Built into the app ✓';
+  } else if (storedKey) {
+    document.getElementById('set-api-key-sub').textContent = '••••••••' + storedKey.slice(-4) + ' · tap to change';
+  } else {
+    document.getElementById('set-api-key-sub').textContent = 'Not set — required for AI features';
+  }
   document.getElementById('settings-modal').classList.add('open');
 }
 
