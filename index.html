@@ -1414,12 +1414,15 @@
       <label class="form-label">Store</label>
       <select class="form-input" id="receipt-store" style="margin-bottom:16px;"></select>
 
-      <input type="file" id="receipt-file-input" accept="image/*" capture="environment" style="display:none" onchange="handleReceiptUpload(this)">
-      <button class="btn-primary" style="margin-bottom:12px;" onclick="document.getElementById('receipt-file-input').click()">
+      <label class="btn-primary" style="margin-bottom:12px; cursor:pointer;" id="receipt-camera-label">
         <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
         Take a Photo
-      </button>
-      <button class="btn-ghost" style="width:100%;" onclick="document.getElementById('receipt-file-input').click()">Upload from Library</button>
+        <input type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" capture="environment" style="display:none;" onchange="handleReceiptUpload(this)">
+      </label>
+      <label class="btn-ghost" style="width:100%; cursor:pointer; justify-content:center; display:flex; align-items:center;" id="receipt-library-label">
+        Upload from Library
+        <input type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" style="display:none;" onchange="handleReceiptUpload(this)">
+      </label>
     </div>
     <div id="receipt-processing" style="display:none; padding: 0 20px 16px; text-align:center;">
       <div class="ai-spinner" style="margin:0 auto 12px;"></div>
@@ -2358,6 +2361,13 @@ function setReceiptMonth(target) {
   document.getElementById('seg-next').classList.toggle('active', target === 'next');
 }
 
+function showReceiptButtons(visible) {
+  const cam = document.getElementById('receipt-camera-label');
+  const lib = document.getElementById('receipt-library-label');
+  if (cam) cam.style.display = visible ? 'flex' : 'none';
+  if (lib) lib.style.display = visible ? 'flex' : 'none';
+}
+
 function openReceiptModal() {
   // Reset to current month each time
   setReceiptMonth('current');
@@ -2372,8 +2382,7 @@ function openReceiptModal() {
   sel.innerHTML = household.stores.concat(['Other']).map(s => `<option>${s}</option>`).join('');
   // Reset processing UI
   document.getElementById('receipt-processing').style.display = 'none';
-  document.querySelector('#receipt-modal .btn-primary').style.display = 'flex';
-  document.querySelector('#receipt-modal .btn-ghost').style.display = 'block';
+  showReceiptButtons(true);
   document.getElementById('receipt-modal').classList.add('open');
 }
 
@@ -2438,8 +2447,7 @@ function showReceiptProcessing(msg) {
   const proc = document.getElementById('receipt-processing');
   proc.style.display = 'block';
   proc.innerHTML = `<div class="ai-spinner" style="margin:0 auto 12px;"></div><div style="font-size:14px; color:var(--text-secondary);">${msg}</div>`;
-  document.querySelector('#receipt-modal .btn-primary').style.display = 'none';
-  document.querySelector('#receipt-modal .btn-ghost').style.display = 'none';
+  showReceiptButtons(false);
 }
 
 // Show an error and let the user retry
@@ -2453,8 +2461,7 @@ function showReceiptError(msg) {
 
 function resetReceiptModal() {
   document.getElementById('receipt-processing').style.display = 'none';
-  document.querySelector('#receipt-modal .btn-primary').style.display = 'flex';
-  document.querySelector('#receipt-modal .btn-ghost').style.display = 'block';
+  showReceiptButtons(true);
 }
 
 // Robustly pull a JSON array out of a model response that may include prose/markdown
