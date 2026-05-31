@@ -1342,9 +1342,9 @@ function getMonthHauls(monthKey) {
 }
 
 function calcMonthBudget(monthKey) {
-  const base = getMonthlyBudget();
-  const prevKey = getPrevMonthKey(monthKey);
-  const prevHauls = getMonthHauls(prevKey);
+  const proratedMonth = localStorage.getItem('pantry_prorated_month');
+  const proratedAmount = parseFloat(localStorage.getItem('pantry_prorated_amount') || '0');
+  const base = (proratedMonth === monthKey && proratedAmount > 0) ? proratedAmount : getMonthlyBudget();
 
   // Only calculate rollover if there are ACTUAL recorded hauls in the previous month.
   // Without real data, assume no rollover (prevents the $1700 cold-start bug).
@@ -2781,7 +2781,11 @@ function wizardBack() {
 }
 
 function wizardFinish() {
+  const today = new Date();
+  const currentKey = getMonthKey(today);
   localStorage.setItem('pantry_budget', _wizardBudget.toFixed(2));
+  localStorage.setItem('pantry_prorated_month', currentKey);
+  localStorage.setItem('pantry_prorated_amount', parseFloat(localStorage.getItem('pantry_wizard_prorated')||_wizardBudget).toFixed(2));
   localStorage.setItem('pantry_setup_done', 'true');
   document.getElementById('wizard-overlay').classList.add('hidden');
   renderHomeScreen();
@@ -2790,7 +2794,6 @@ function wizardFinish() {
     document.getElementById('budget-display').textContent = `$${_wizardBudget.toFixed(2)}`;
   }
 }
-
 // ═══════════════════════════════════════
 // ADMIN MODE — tap logo 5x to open
 // ═══════════════════════════════════════
