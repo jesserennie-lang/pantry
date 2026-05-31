@@ -1284,7 +1284,10 @@ let activeSwipe = null;
 // ═══════════════════════════════════════
 // BUDGET & MONTH HELPERS
 // ═══════════════════════════════════════
-const MONTHLY_BUDGET_BASE = 850;
+function getMonthlyBudget() {
+  return parseFloat(localStorage.getItem('pantry_budget') || '850');
+}
+const getMonthlyBudget() = getMonthlyBudget();
 
 function getMonthKey(date) {
   return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}`;
@@ -1310,7 +1313,7 @@ function getMonthHauls(monthKey) {
 }
 
 function calcMonthBudget(monthKey) {
-  const base = MONTHLY_BUDGET_BASE;
+  const base = getMonthlyBudget();
   const prevKey = getPrevMonthKey(monthKey);
   const prevHauls = getMonthHauls(prevKey);
 
@@ -1391,7 +1394,7 @@ function renderHomeScreen() {
   const previewEl = document.getElementById('home-next-month-preview');
   if(daysLeft <= 5 && budget.remaining > 0) {
     const nextName = new Date(today.getFullYear(), today.getMonth()+1, 1).toLocaleString('default',{month:'long'});
-    const nextAvail = MONTHLY_BUDGET_BASE + budget.remaining;
+      const nextAvail = getMonthlyBudget() + budget.remaining;
     document.getElementById('home-next-month-text').innerHTML =
       `<strong>${nextName} starts with $${nextAvail.toFixed(2)}</strong> — your $${budget.remaining.toFixed(2)} surplus is rolling forward. Give it a job in your Pantry.`;
     previewEl.style.display = 'flex';
@@ -1585,7 +1588,7 @@ function renderInsights(monthKey) {
 
   // ── Spending trend (up to 4 months) ──
   const trendMonths = allMonthKeys.slice(0,4).reverse();
-  const maxSpend = Math.max(...trendMonths.map(mk=>calcMonthBudget(mk).spent), MONTHLY_BUDGET_BASE);
+  const maxSpend = Math.max(...trendMonths.map(mk=>calcMonthBudget(mk).spent), getMonthlyBudget();
   const trendEl = document.getElementById('insights-trend');
   trendEl.innerHTML = trendMonths.map(mk => {
     const b = calcMonthBudget(mk);
@@ -2073,8 +2076,14 @@ function dismissNudge(id) {
 }
 
 function editBudget() {
-  const val = prompt('Enter your monthly grocery budget:', '850');
-  if(val && !isNaN(parseFloat(val))) alert(`Budget updated to $${parseFloat(val).toFixed(2)}!`);
+  const current = localStorage.getItem('pantry_budget') || '850';
+  const val = prompt('Enter your monthly grocery budget:', current);
+  if(val && !isNaN(parseFloat(val)) && parseFloat(val) > 0) {
+    localStorage.setItem('pantry_budget', parseFloat(val).toFixed(2));
+    renderHomeScreen();
+    renderInsights();
+    alert(`Budget updated to $${parseFloat(val).toFixed(2)}!`);
+  }
 }
 
 // ═══════════════════════════════════════
@@ -2389,7 +2398,7 @@ function buildMonthPickerUI() {
   const currentBudget = calcMonthBudget(currentKey);
   const currentName = new Date(currentKey+'-15').toLocaleString('default',{month:'long'});
   const nextName = new Date(nextKey+'-15').toLocaleString('default',{month:'long'});
-  const nextAvail = MONTHLY_BUDGET_BASE + Math.max(0, currentBudget.remaining);
+  const nextAvail = getMonthlyBudget() + Math.max(0, currentBudget.remaining);
 
   if(daysLeft <= 5 && _selectedScanMonth === currentKey) {
     _selectedScanMonth = nextKey;
@@ -2557,7 +2566,7 @@ function buildPurchaseHistorySummary() {
   // Budget context
   const mk = getMonthKey(today);
   const budget = calcMonthBudget(mk);
-  lines.push(`BUDGET: $${MONTHLY_BUDGET_BASE}/month | Spent: $${budget.spent.toFixed(2)} | Remaining: $${budget.remaining.toFixed(2)} | Days left: ${new Date(today.getFullYear(),today.getMonth()+1,0).getDate()-today.getDate()}`);
+  lines.push(`BUDGET: $${getMonthlyBudget()}/month | Spent: $${budget.spent.toFixed(2)} | Remaining: $${budget.remaining.toFixed(2)} | Days left: ${new Date(today.getFullYear(),today.getMonth()+1,0).getDate()-today.getDate()}`);
 
   // Recent hauls
   const recent = allHauls.sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,8);
