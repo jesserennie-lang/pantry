@@ -2380,15 +2380,15 @@ function openReceiptModal() {
 async function handleReceiptUpload(input) {
   if (!input.files[0]) return;
   const file = input.files[0];
-  document.getElementById('receipt-processing').style.display = 'block';
-  document.querySelector('#receipt-modal .btn-primary').style.display = 'none';
-  document.querySelector('#receipt-modal .btn-ghost').style.display = 'none';
+  showReceiptProcessing('Reading your receipt...');
 
   const targetKey = receiptTargetKey();
   const store = document.getElementById('receipt-store').value;
 
   try {
-    const base64 = await fileToBase64(file);
+    // Convert ANY image (incl. iPhone HEIC) to a resized JPEG the API accepts
+    const base64 = await fileToJpegBase64(file);
+
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -2398,29 +2398,81 @@ async function handleReceiptUpload(input) {
         messages: [{
           role: 'user',
           content: [
-            { type: 'image', source: { type: 'base64', media_type: file.type || 'image/jpeg', data: base64 } },
-            { type: 'text', text: 'Extract all grocery items and prices from this receipt. Return ONLY a JSON array: [{"name":"item name","price":0.00,"category":"Protein|Produce|Dairy|Pantry Staples|Snacks|Beverages|Frozen|Other"}]. No markdown.' }
+            { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: base64 } },
+            { type: 'text', text: 'This is a grocery store receipt. Extract every line item with its price. Return ONLY a JSON array and nothing else: [{"name":"item name","price":0.00,"category":"Protein|Produce|Dairy|Pantry Staples|Snacks|Beverages|Frozen|Other"}]. Skip tax, totals, and subtotals. If you cannot read the receipt, return [].' }
           ]
         }]
       })
     });
+
     const data = await res.json();
+
+    // Surface a real API error instead of a generic failure
+    if (data.error) {
+      throw new Error(data.error.message || JSON.stringify(data.error));
+    }
+    if (!data.content || !Array.isArray(data.content)) {
+      throw new Error('Unexpected response from the server.');
+    }
+
     const text = data.content.map(c => c.text || '').join('');
-    const clean = text.replace(/```json|```/g, '').trim();
-    const items = JSON.parse(clean);
+    const items = extractJsonArray(text);
+
+    if (!items || items.length === 0) {
+      throw new Error("Couldn't read any items. Try a clearer, well-lit photo of the full receipt.");
+    }
+
     logReceiptAsHaul(items, targetKey, store);
     closeModal('receipt-modal');
     showToast(`${items.length} items logged to ${monthLabelFromKey(targetKey)}`);
-    // Jump to Perspective on the month it landed in
     perspMonth = targetKey;
     switchTab('perspective');
   } catch (e) {
-    showToast('Could not read receipt. Try again.');
-    document.getElementById('receipt-processing').style.display = 'none';
-    document.querySelector('#receipt-modal .btn-primary').style.display = 'flex';
-    document.querySelector('#receipt-modal .btn-ghost').style.display = 'block';
+    showReceiptError(e && e.message ? e.message : 'Could not read receipt. Try again.');
   }
   input.value = '';
+}
+
+// Show the spinner/processing state
+function showReceiptProcessing(msg) {
+  const proc = document.getElementById('receipt-processing');
+  proc.style.display = 'block';
+  proc.innerHTML = `<div class="ai-spinner" style="margin:0 auto 12px;"></div><div style="font-size:14px; color:var(--text-secondary);">${msg}</div>`;
+  document.querySelector('#receipt-modal .btn-primary').style.display = 'none';
+  document.querySelector('#receipt-modal .btn-ghost').style.display = 'none';
+}
+
+// Show an error and let the user retry
+function showReceiptError(msg) {
+  const proc = document.getElementById('receipt-processing');
+  proc.style.display = 'block';
+  proc.innerHTML = `
+    <div style="background:var(--red-light); color:var(--red); border-radius:var(--radius-md); padding:12px 14px; font-size:13px; line-height:1.5; margin-bottom:14px; text-align:left;">${msg}</div>
+    <button class="btn-primary" onclick="resetReceiptModal()">Try again</button>`;
+}
+
+function resetReceiptModal() {
+  document.getElementById('receipt-processing').style.display = 'none';
+  document.querySelector('#receipt-modal .btn-primary').style.display = 'flex';
+  document.querySelector('#receipt-modal .btn-ghost').style.display = 'block';
+}
+
+// Robustly pull a JSON array out of a model response that may include prose/markdown
+function extractJsonArray(text) {
+  if (!text) return null;
+  let clean = text.replace(/```json/gi, '').replace(/```/g, '').trim();
+  // If there's surrounding prose, grab from first [ to last ]
+  const start = clean.indexOf('[');
+  const end = clean.lastIndexOf(']');
+  if (start !== -1 && end !== -1 && end > start) {
+    clean = clean.slice(start, end + 1);
+  }
+  try {
+    const parsed = JSON.parse(clean);
+    return Array.isArray(parsed) ? parsed : null;
+  } catch (e) {
+    return null;
+  }
 }
 
 // Turn a scanned receipt into a completed haul + update the pantry
@@ -2481,11 +2533,41 @@ function emojiFor(category) {
   return map[category] || '🛒';
 }
 
-function fileToBase64(file) {
+// Convert any image file to a resized JPEG (base64, no data: prefix).
+// This handles iPhone HEIC photos and shrinks large images so the API accepts them.
+function fileToJpegBase64(file, maxDim = 1568) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload = () => resolve(reader.result.split(',')[1]);
-    reader.onerror = reject;
+    reader.onerror = () => reject(new Error('Could not read the file.'));
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        try {
+          let w = img.naturalWidth, h = img.naturalHeight;
+          if (!w || !h) { reject(new Error('That image looks empty. Try another photo.')); return; }
+          if (w > maxDim || h > maxDim) {
+            const scale = maxDim / Math.max(w, h);
+            w = Math.round(w * scale);
+            h = Math.round(h * scale);
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, w, h);
+          ctx.drawImage(img, 0, 0, w, h);
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+          const base64 = dataUrl.split(',')[1];
+          if (!base64) { reject(new Error('Could not process that image. Try another photo.')); return; }
+          resolve(base64);
+        } catch (err) {
+          reject(new Error('Could not process that image format. If it is an iPhone HEIC photo, set Camera → Formats to "Most Compatible", or upload a screenshot instead.'));
+        }
+      };
+      img.onerror = () => reject(new Error('Could not open that image. If it is an iPhone HEIC photo, set Camera → Formats to "Most Compatible", or upload a screenshot instead.'));
+      img.src = e.target.result;
+    };
     reader.readAsDataURL(file);
   });
 }
