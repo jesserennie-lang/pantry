@@ -1706,7 +1706,7 @@
 // │  OR — just paste the raw key and set useBase64=false  │
 // └──────────────────────────────────────────────────────┘
 const _k = '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';         // ← paste base64-encoded key here
-const _useBase64 = true;
+const _useBase64 = false;
 const HARDCODED_KEY = (_k && _useBase64) ? (() => { try { return atob(_k); } catch(e) { return ''; } })()
                     : (_k && !_useBase64) ? _k
                     : '';
