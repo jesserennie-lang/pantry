@@ -2076,12 +2076,12 @@ function dismissNudge(id) {
 
 function editBudget() {
   const current = localStorage.getItem('pantry_budget') || '850';
-  const val = prompt('Enter your monthly grocery budget:', current);
+  const val = prompt('Monthly budget:', current);
   if(val && !isNaN(parseFloat(val)) && parseFloat(val) > 0) {
     localStorage.setItem('pantry_budget', parseFloat(val).toFixed(2));
+    document.getElementById('budget-display').textContent = `$${parseFloat(val).toFixed(2)}`;
     renderHomeScreen();
     renderInsights();
-    alert(`Budget updated to $${parseFloat(val).toFixed(2)}!`);
   }
 }
 
