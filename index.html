@@ -996,7 +996,7 @@
           <div class="budget-label" id="home-budget-label">May Budget <span style="opacity:0.6;">· tap to edit</span></div>
           <div class="budget-amount" id="home-budget-amt">$800</div>
           <div class="budget-remaining">
-            <strong id="home-remaining">$344.20</strong> remaining · <span id="home-days">12 days</span> left
+            <strong id="home-remaining">$0.00</strong> remaining · <span id="home-days">—</span> left
           </div>
         </div>
         <div>
@@ -1004,11 +1004,11 @@
         </div>
       </div>
       <div class="progress-bar">
-        <div class="progress-fill" id="home-progress-fill" style="width: 57%"></div>
+        <div class="progress-fill" id="home-progress-fill" style="width: 0%"></div>
       </div>
       <div class="progress-labels">
         <span>$0</span>
-        <span id="home-spent-lbl">$455.80 spent</span>
+        <span id="home-spent-lbl">$0.00 spent</span>
         <span id="home-budget-lbl">$800</span>
       </div>
     </div>
@@ -1018,15 +1018,15 @@
     <div class="section-label" style="padding: 0 0 8px;">This Month</div>
     <div class="this-month-summary">
       <div class="stat-mini">
-        <div class="stat-mini-val" id="home-hauls">3</div>
+        <div class="stat-mini-val" id="home-hauls">0</div>
         <div class="stat-mini-lbl">Hauls</div>
       </div>
       <div class="stat-mini">
-        <div class="stat-mini-val" id="home-items-bought">89</div>
+        <div class="stat-mini-val" id="home-items-bought">0</div>
         <div class="stat-mini-lbl">Items bought</div>
       </div>
       <div class="stat-mini">
-        <div class="stat-mini-val" id="home-on-sale">14</div>
+        <div class="stat-mini-val" id="home-on-sale">0</div>
         <div class="stat-mini-lbl">On sale</div>
       </div>
     </div>
@@ -1041,7 +1041,7 @@
         <svg style="color:var(--teal);" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 012-2h2a2 2 0 012 2M9 5h6M9 12h6M9 16h4"/></svg>
       </div>
       <div class="qa-label">Shopping List</div>
-      <div class="qa-sub" id="qa-list-count">6 items</div>
+      <div class="qa-sub" id="qa-list-count">0 items</div>
     </button>
     <button class="quick-action-btn" onclick="switchTab('perspective')">
       <div class="qa-icon" style="background: #FAEEDA;">
@@ -1055,14 +1055,14 @@
         <svg style="color:var(--blue);" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
       </div>
       <div class="qa-label">Pantry</div>
-      <div class="qa-sub" id="qa-pantry-count">47 items</div>
+      <div class="qa-sub" id="qa-pantry-count">0 items</div>
     </button>
     <button class="quick-action-btn" onclick="switchTab('ai')">
       <div class="qa-icon" style="background: #E1F5EE;">
         <svg style="color:var(--teal);" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 9a3 3 0 015.12 2.12C14 13 12 14 12 16M12 20h.01"/></svg>
       </div>
       <div class="qa-label">AI Suggestions</div>
-      <div class="qa-sub" id="qa-nudge-count">3 new</div>
+      <div class="qa-sub" id="qa-nudge-count">Tap to view</div>
     </button>
   </div>
 
@@ -1089,14 +1089,14 @@
         <div style="flex:1;">
           <div style="font-size:13px; font-weight:500; color:var(--red);">Spent so far</div>
         </div>
-        <div style="font-size:16px; font-weight:700; color:var(--red);" id="snap-spent">$455.80</div>
+        <div style="font-size:16px; font-weight:700; color:var(--red);" id="snap-spent">$0.00</div>
       </div>
       <div class="card-row" style="cursor:default;">
         <div style="flex:1;">
           <div style="font-size:13px; font-weight:500; color:var(--teal);">Remaining</div>
           <div style="font-size:12px; color:var(--text-tertiary); margin-top:2px;">Pantry buffer building 💪</div>
         </div>
-        <div style="font-size:16px; font-weight:700; color:var(--teal);" id="snap-remaining">$344.20</div>
+        <div style="font-size:16px; font-weight:700; color:var(--teal);" id="snap-remaining">$0.00</div>
       </div>
     </div>
   </div>
@@ -1111,7 +1111,7 @@
     <div style="display:flex; align-items:center; justify-content:space-between;">
       <div>
         <div style="font-size:22px; font-weight:700; letter-spacing:-0.4px;">Shopping List</div>
-        <div style="font-size:12px; color:var(--text-tertiary); margin-top:2px;" id="plan-subtitle">Next haul: Costco + Detweilers</div>
+        <div style="font-size:12px; color:var(--text-tertiary); margin-top:2px;" id="plan-subtitle">Your shopping list</div>
       </div>
       <button class="icon-btn" onclick="openAddItem()">
         <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
@@ -1119,11 +1119,11 @@
     </div>
     <div class="plan-progress-wrap">
       <div class="plan-progress-track">
-        <div class="plan-progress-fill" id="plan-progress-fill" style="width:45%"></div>
+        <div class="plan-progress-fill" id="plan-progress-fill" style="width:0%"></div>
       </div>
       <div class="plan-progress-labels">
-        <span id="plan-checked-lbl"><strong>5</strong> of 11 checked</span>
-        <span id="plan-est-total">Est. <strong>$218.40</strong></span>
+        <span id="plan-checked-lbl"><strong>0</strong> of 0 checked</span>
+        <span id="plan-est-total">Est. <strong>$0.00</strong></span>
       </div>
     </div>
   </div>
@@ -1164,14 +1164,14 @@
   <div style="padding: 16px 20px 8px;">
     <div class="persp-summary">
       <div class="persp-stat">
-        <div class="persp-stat-val" id="persp-total">$455.80</div>
+        <div class="persp-stat-val" id="persp-total">$0.00</div>
         <div class="persp-stat-lbl">Total spent</div>
-        <div class="persp-stat-trend trend-down" id="persp-vs-last">↓ $44 vs April</div>
+        <div class="persp-stat-trend trend-down" id="persp-vs-last">No spending yet</div>
       </div>
       <div class="persp-stat">
-        <div class="persp-stat-val" id="persp-remaining">$344.20</div>
+        <div class="persp-stat-val" id="persp-remaining">$0.00</div>
         <div class="persp-stat-lbl">Budget left</div>
-        <div class="persp-stat-trend trend-down" id="persp-days-left">12 days left</div>
+        <div class="persp-stat-trend trend-down" id="persp-days-left">—</div>
       </div>
     </div>
   </div>
@@ -1197,7 +1197,7 @@
     <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
       <div>
         <div style="font-size:22px; font-weight:700; letter-spacing:-0.4px;">Pantry</div>
-        <div style="font-size:12px; color:var(--text-tertiary); margin-top:2px;" id="pantry-subtitle">47 items tracked</div>
+        <div style="font-size:12px; color:var(--text-tertiary); margin-top:2px;" id="pantry-subtitle">0 items tracked</div>
       </div>
       <button class="icon-btn" onclick="openAddPantryItem()">
         <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
@@ -1265,7 +1265,7 @@
     <span>Pantry</span>
   </button>
   <button class="tab-btn" onclick="switchTab('ai')" id="tab-ai">
-    <div class="badge" id="ai-badge">3</div>
+    <div class="badge" id="ai-badge" style="display:none;">0</div>
     <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 9a3 3 0 015.12 2.12C14 13 12 14 12 16M12 20h.01"/></svg>
     <span>AI</span>
   </button>
@@ -1438,7 +1438,7 @@
       <div class="onboard-text">You're the household admin. Name your household and tell us who's doing the shopping.</div>
       <div class="form-group" style="padding:0 0 16px;">
         <label class="form-label">Household name</label>
-        <input class="form-input" id="ob-household-name" placeholder="e.g. The Rennie Family" type="text">
+        <input class="form-input" id="ob-household-name" placeholder="e.g. The Smith Family" type="text">
       </div>
       <div class="form-group" style="padding:0 0 16px;">
         <label class="form-label">Your name (admin)</label>
@@ -1656,10 +1656,7 @@ function monthLabelFromKey(key) {
 }
 
 // Per-month budget targets, persisted. Defaults to $800 for any new month.
-let budgetByMonth = JSON.parse(localStorage.getItem('pantry_budgets') || 'null') || {
-  '2026-05': 800,
-  '2026-04': 800
-};
+let budgetByMonth = JSON.parse(localStorage.getItem('pantry_budgets') || 'null') || {};
 const DEFAULT_BUDGET = 800;
 
 function getBudgetForMonth(key) {
@@ -1694,127 +1691,13 @@ const BUDGET = {
 };
 
 // Shopping list data
-let shoppingList = JSON.parse(localStorage.getItem('pantry_list') || 'null') || [
-  { id: 1, name: 'Organic Salmon', category: 'Protein', lastPrice: 28.99, store: 'Costco', onSale: false, checked: false, qty: 1 },
-  { id: 2, name: 'Orgain Protein Powder', category: 'Pantry Staples', lastPrice: 31.49, store: 'Costco', onSale: true, checked: false, qty: 1 },
-  { id: 3, name: 'Avocados (6 pack)', category: 'Produce', lastPrice: 7.49, store: 'Costco', onSale: false, checked: true, qty: 1 },
-  { id: 4, name: 'Vital Proteins Collagen', category: 'Pantry Staples', lastPrice: 38.99, store: 'Costco', onSale: false, checked: false, qty: 1 },
-  { id: 5, name: 'Grass-fed Ground Beef', category: 'Protein', lastPrice: 22.49, store: 'Detweilers', onSale: true, checked: false, qty: 1 },
-  { id: 6, name: 'Local Honey', category: 'Pantry Staples', lastPrice: 11.99, store: 'Detweilers', onSale: false, checked: true, qty: 1 },
-  { id: 7, name: 'Almond Milk (2-pack)', category: 'Dairy', lastPrice: 9.89, store: 'Costco', onSale: false, checked: false, qty: 1 },
-  { id: 8, name: 'Blueberries (2 lbs)', category: 'Produce', lastPrice: 8.49, store: 'Costco', onSale: true, checked: true, qty: 1 },
-  { id: 9, name: 'Greek Yogurt', category: 'Dairy', lastPrice: 14.99, store: 'Costco', onSale: false, checked: false, qty: 1 },
-  { id: 10, name: 'Rotisserie Chicken', category: 'Protein', lastPrice: 5.99, store: 'Costco', onSale: false, checked: false, qty: 1 },
-  { id: 11, name: 'Cherry Tomatoes', category: 'Produce', lastPrice: 4.99, store: 'Detweilers', onSale: false, checked: false, qty: 1 },
-];
+let shoppingList = JSON.parse(localStorage.getItem('pantry_list') || 'null') || [];
 
 // Pantry (historical items)
-let pantryItems = JSON.parse(localStorage.getItem('pantry_items') || 'null') || [
-  { id: 101, name: 'Organic Salmon', emoji: '🐟', category: 'Protein', priceHistory: [
-    { price: 26.99, store: 'Costco', date: '2026-03-15' },
-    { price: 27.49, store: 'Costco', date: '2026-04-12' },
-    { price: 28.99, store: 'Costco', date: '2026-05-10' },
-  ], stockPct: 15, avgDaysBetween: 28 },
-  { id: 102, name: 'Orgain Protein Powder', emoji: '💪', category: 'Pantry Staples', priceHistory: [
-    { price: 29.99, store: 'Costco', date: '2026-01-20' },
-    { price: 31.49, store: 'Costco', date: '2026-03-18' },
-    { price: 31.49, store: 'Costco', date: '2026-05-02' },
-  ], stockPct: 40, avgDaysBetween: 42 },
-  { id: 103, name: 'Avocados', emoji: '🥑', category: 'Produce', priceHistory: [
-    { price: 6.99, store: 'Costco', date: '2026-04-05' },
-    { price: 7.49, store: 'Costco', date: '2026-04-19' },
-    { price: 7.49, store: 'Costco', date: '2026-05-10' },
-  ], stockPct: 20, avgDaysBetween: 14 },
-  { id: 104, name: 'Vital Proteins Collagen', emoji: '✨', category: 'Pantry Staples', priceHistory: [
-    { price: 36.99, store: 'Costco', date: '2026-02-14' },
-    { price: 38.99, store: 'Costco', date: '2026-04-01' },
-  ], stockPct: 55, avgDaysBetween: 46 },
-  { id: 105, name: 'Grass-fed Ground Beef', emoji: '🥩', category: 'Protein', priceHistory: [
-    { price: 19.99, store: 'Detweilers', date: '2026-03-22' },
-    { price: 21.49, store: 'Detweilers', date: '2026-04-14' },
-    { price: 22.49, store: 'Detweilers', date: '2026-05-05' },
-  ], stockPct: 10, avgDaysBetween: 21 },
-  { id: 106, name: 'Local Raw Honey', emoji: '🍯', category: 'Pantry Staples', priceHistory: [
-    { price: 10.99, store: 'Detweilers', date: '2026-01-10' },
-    { price: 11.99, store: 'Detweilers', date: '2026-04-08' },
-  ], stockPct: 65, avgDaysBetween: 90 },
-  { id: 107, name: 'Almond Milk', emoji: '🥛', category: 'Dairy', priceHistory: [
-    { price: 8.99, store: 'Costco', date: '2026-04-12' },
-    { price: 9.89, store: 'Costco', date: '2026-05-10' },
-  ], stockPct: 60, avgDaysBetween: 28 },
-  { id: 108, name: 'Blueberries', emoji: '🫐', category: 'Produce', priceHistory: [
-    { price: 7.99, store: 'Costco', date: '2026-04-19' },
-    { price: 8.49, store: 'Costco', date: '2026-05-10' },
-  ], stockPct: 0, avgDaysBetween: 14 },
-  { id: 109, name: 'Greek Yogurt', emoji: '🍶', category: 'Dairy', priceHistory: [
-    { price: 13.99, store: 'Costco', date: '2026-03-08' },
-    { price: 14.49, store: 'Costco', date: '2026-04-05' },
-    { price: 14.99, store: 'Costco', date: '2026-05-02' },
-  ], stockPct: 30, avgDaysBetween: 28 },
-  { id: 110, name: 'Rotisserie Chicken', emoji: '🍗', category: 'Protein', priceHistory: [
-    { price: 4.99, store: 'Costco', date: '2026-04-10' },
-    { price: 5.99, store: 'Costco', date: '2026-05-15' },
-  ], stockPct: 0, avgDaysBetween: 10 },
-  { id: 111, name: 'Cherry Tomatoes', emoji: '🍅', category: 'Produce', priceHistory: [
-    { price: 4.49, store: 'Detweilers', date: '2026-04-22' },
-    { price: 4.99, store: 'Detweilers', date: '2026-05-18' },
-  ], stockPct: 5, avgDaysBetween: 14 },
-  { id: 112, name: 'Olive Oil', emoji: '🫒', category: 'Pantry Staples', priceHistory: [
-    { price: 17.99, store: 'Costco', date: '2026-02-20' },
-    { price: 18.49, store: 'Costco', date: '2026-04-18' },
-  ], stockPct: 45, avgDaysBetween: 60 },
-  { id: 113, name: 'Spinach (3 lbs)', emoji: '🥬', category: 'Produce', priceHistory: [
-    { price: 5.49, store: 'Costco', date: '2026-05-02' },
-    { price: 5.99, store: 'Costco', date: '2026-05-16' },
-  ], stockPct: 10, avgDaysBetween: 10 },
-  { id: 114, name: 'Oat Milk (6-pack)', emoji: '🌾', category: 'Dairy', priceHistory: [
-    { price: 11.99, store: 'Costco', date: '2026-04-05' },
-  ], stockPct: 70, avgDaysBetween: 35 },
-];
+let pantryItems = JSON.parse(localStorage.getItem('pantry_items') || 'null') || [];
 
 // Hauls / Perspective data
-let haulsData = JSON.parse(localStorage.getItem('pantry_hauls') || 'null') || {
-  '2026-05': [
-    {
-      id: 'haul-may-1',
-      name: 'Early May',
-      totalAmount: 233.45,
-      trips: [
-        { store: 'Costco', storeKey: 'costco', date: '2026-05-02', amount: 198.32, items: 24 },
-        { store: 'Detweilers', storeKey: 'detweilers', date: '2026-05-05', amount: 35.13, items: 6 }
-      ]
-    },
-    {
-      id: 'haul-may-2',
-      name: 'Mid May',
-      totalAmount: 222.35,
-      trips: [
-        { store: 'Costco', storeKey: 'costco', date: '2026-05-16', amount: 185.22, items: 21 },
-        { store: 'Detweilers', storeKey: 'detweilers', date: '2026-05-18', amount: 37.13, items: 5 }
-      ]
-    }
-  ],
-  '2026-04': [
-    {
-      id: 'haul-apr-1',
-      name: 'Early April',
-      totalAmount: 256.88,
-      trips: [
-        { store: 'Costco', storeKey: 'costco', date: '2026-04-05', amount: 212.10, items: 26 },
-        { store: 'Detweilers', storeKey: 'detweilers', date: '2026-04-07', amount: 44.78, items: 8 }
-      ]
-    },
-    {
-      id: 'haul-apr-2',
-      name: 'Late April',
-      totalAmount: 243.12,
-      trips: [
-        { store: 'Costco', storeKey: 'costco', date: '2026-04-19', amount: 199.80, items: 22 },
-        { store: 'Publix', storeKey: 'publix', date: '2026-04-20', amount: 43.32, items: 7 }
-      ]
-    }
-  ]
-};
+let haulsData = JSON.parse(localStorage.getItem('pantry_hauls') || 'null') || {};
 
 // ════════════════════════════════════════════════════
 // NAV
@@ -1957,9 +1840,39 @@ function renderPerspective() {
 
   const hauls = haulsData[perspMonth] || [];
   const total = hauls.reduce((s, h) => s + h.totalAmount, 0);
+  const monthBudget = getBudgetForMonth(perspMonth);
 
   document.getElementById('persp-total').textContent = '$' + total.toFixed(2);
-  document.getElementById('persp-remaining').textContent = '$' + Math.max(0, BUDGET.monthly - total).toFixed(2);
+  document.getElementById('persp-remaining').textContent = '$' + Math.max(0, monthBudget - total).toFixed(2);
+
+  // Compare to previous month
+  let pm = m - 1, py = y;
+  if (pm < 1) { pm = 12; py--; }
+  const prevKey = `${py}-${String(pm).padStart(2,'0')}`;
+  const prevHauls = haulsData[prevKey] || [];
+  const prevTotal = prevHauls.reduce((s, h) => s + h.totalAmount, 0);
+  const vsEl = document.getElementById('persp-vs-last');
+  if (prevTotal > 0 && hauls.length > 0) {
+    const diff = total - prevTotal;
+    const absD = Math.abs(diff).toFixed(0);
+    vsEl.textContent = (diff <= 0 ? '↓ $' : '↑ $') + absD + ' vs ' + MONTH_NAMES[pm-1].substring(0,3);
+    vsEl.className = 'persp-stat-trend ' + (diff <= 0 ? 'trend-down' : 'trend-up');
+  } else {
+    vsEl.textContent = hauls.length ? 'No prior month' : 'No spending yet';
+    vsEl.className = 'persp-stat-trend';
+    vsEl.style.color = 'var(--text-tertiary)';
+  }
+
+  // Days left (only meaningful for the current month)
+  const daysEl = document.getElementById('persp-days-left');
+  const dl = daysLeftInMonth(perspMonth);
+  if (perspMonth === currentMonthKey()) {
+    daysEl.textContent = dl + (dl === 1 ? ' day left' : ' days left');
+  } else {
+    daysEl.textContent = 'Closed month';
+  }
+  daysEl.className = 'persp-stat-trend';
+  daysEl.style.color = 'var(--text-tertiary)';
 
   const container = document.getElementById('persp-hauls-container');
   if (hauls.length === 0) {
@@ -2628,10 +2541,20 @@ function renderHome() {
   const itemsBought = hauls.reduce((s, h) => s + h.trips.reduce((t, tr) => t + tr.items, 0), 0);
   document.getElementById('home-hauls').textContent = hauls.length;
   document.getElementById('home-items-bought').textContent = itemsBought;
+  document.getElementById('home-on-sale').textContent = shoppingList.filter(i => i.onSale).length;
 
   // Quick action counts
   document.getElementById('qa-list-count').textContent = shoppingList.length + ' items';
   document.getElementById('qa-pantry-count').textContent = pantryItems.length + ' items';
+  document.getElementById('qa-nudge-count').textContent = (aiNudges && aiNudges.length) ? aiNudges.length + ' new' : 'Tap to view';
+
+  // AI badge — hide when no nudges
+  const badge = document.getElementById('ai-badge');
+  if (badge) {
+    const n = (aiNudges && aiNudges.length) ? aiNudges.length : 0;
+    badge.textContent = n;
+    badge.style.display = n > 0 ? 'flex' : 'none';
+  }
 }
 
 function openEditBudget() {
@@ -2691,7 +2614,33 @@ function showToast(msg) {
 // INIT
 // ════════════════════════════════════════════════════
 
+// One-time purge of old demo/seed data left in localStorage from earlier builds.
+// Runs once per device; after that the flag prevents it from wiping real data.
+function purgeLegacySeedData() {
+  const DATA_VERSION = 'clean-v1';
+  if (localStorage.getItem('pantry_data_version') === DATA_VERSION) return;
+
+  // Detect the old seed by its signature items, then clear app data.
+  try {
+    const list = JSON.parse(localStorage.getItem('pantry_list') || '[]');
+    const items = JSON.parse(localStorage.getItem('pantry_items') || '[]');
+    const looksLikeSeed =
+      items.some(i => i && (i.id === 101 || i.name === 'Organic Salmon')) ||
+      list.some(i => i && i.id === 1 && i.name === 'Organic Salmon');
+    if (looksLikeSeed) {
+      ['pantry_list','pantry_items','pantry_hauls','pantry_budgets'].forEach(k => localStorage.removeItem(k));
+      shoppingList = [];
+      pantryItems = [];
+      haulsData = {};
+      budgetByMonth = {};
+    }
+  } catch (e) { /* ignore parse errors */ }
+
+  localStorage.setItem('pantry_data_version', DATA_VERSION);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+  purgeLegacySeedData();
   checkMonthTurnover();
   refreshStoreDropdowns();
   renderHome();
