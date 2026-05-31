@@ -829,6 +829,150 @@
   .empty-state svg { width: 48px; height: 48px; stroke: var(--gray-200); fill: none; stroke-width: 1.5; margin-bottom: 16px; }
   .empty-state h3 { font-size: 16px; font-weight: 600; color: var(--text-primary); margin-bottom: 6px; }
   .empty-state p { font-size: 13px; color: var(--text-tertiary); line-height: 1.5; }
+
+  /* ── ONBOARDING ── */
+  .onboard {
+    display: none;
+    position: fixed;
+    inset: 0;
+    max-width: 430px;
+    margin: 0 auto;
+    background: var(--white);
+    z-index: 1000;
+    flex-direction: column;
+  }
+  .onboard.open { display: flex; }
+  .onboard-progress {
+    display: flex;
+    gap: 6px;
+    padding: 18px 24px calc(18px + env(safe-area-inset-top, 0px));
+    padding-top: max(18px, env(safe-area-inset-top, 0px));
+  }
+  .onboard-dot {
+    flex: 1;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--gray-100);
+    transition: background 0.3s;
+  }
+  .onboard-dot.active { background: var(--teal); }
+  .onboard-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 24px 24px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .onboard-step { display: none; }
+  .onboard-step.active { display: block; animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .onboard-hero-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: var(--radius-lg);
+    background: var(--teal-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+  .onboard-hero-icon svg { width: 32px; height: 32px; stroke: var(--teal); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .onboard-title { font-size: 26px; font-weight: 700; letter-spacing: -0.6px; line-height: 1.15; margin-bottom: 10px; }
+  .onboard-text { font-size: 15px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 24px; }
+  .onboard-footer {
+    padding: 16px 24px calc(20px + env(safe-area-inset-bottom, 0px));
+    border-top: 0.5px solid var(--border);
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+  .onboard-skip {
+    background: none;
+    border: none;
+    color: var(--text-tertiary);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 12px;
+  }
+  .onboard-next {
+    flex: 1;
+    background: var(--teal);
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    padding: 14px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+  }
+  .onboard-next:active { background: var(--teal-dark); transform: scale(0.98); }
+
+  .store-chip-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+  .store-chip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px;
+    border: 1.5px solid var(--border-strong);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.15s;
+    background: var(--white);
+  }
+  .store-chip.selected { border-color: var(--teal); background: var(--teal-light); color: var(--teal-dark); }
+  .store-chip-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .store-chip-check { margin-left: auto; opacity: 0; }
+  .store-chip.selected .store-chip-check { opacity: 1; }
+  .store-chip-check svg { width: 16px; height: 16px; stroke: var(--teal); fill: none; stroke-width: 3; }
+
+  .tour-card {
+    display: flex;
+    gap: 14px;
+    padding: 14px;
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-md);
+    margin-bottom: 10px;
+  }
+  .tour-card-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .tour-card-icon svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .tour-card h4 { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
+  .tour-card p { font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
+
+  .invite-row { display: flex; gap: 8px; margin-bottom: 8px; }
+  .invite-row input { flex: 1; }
+  .invite-tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--gray-100); padding: 6px 12px; border-radius: 20px;
+    font-size: 13px; margin: 0 6px 6px 0;
+  }
+  .invite-tag button { background: none; border: none; cursor: pointer; color: var(--text-tertiary); display: flex; }
+  .invite-tag svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2.5; }
+
+  /* ── SETTINGS ── */
+  .settings-section-title { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-tertiary); padding: 16px 20px 6px; }
+  .settings-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 20px; border-bottom: 0.5px solid var(--border);
+    cursor: pointer; background: var(--white); transition: background 0.12s;
+  }
+  .settings-row:active { background: var(--gray-50); }
+  .settings-row-icon { width: 32px; height: 32px; border-radius: 8px; background: var(--gray-100); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .settings-row-icon svg { width: 17px; height: 17px; stroke: var(--text-secondary); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .settings-row-label { flex: 1; }
+  .settings-row-label .t { font-size: 14px; font-weight: 500; }
+  .settings-row-label .s { font-size: 12px; color: var(--text-tertiary); margin-top: 2px; }
+  .settings-row-chevron svg { width: 16px; height: 16px; stroke: var(--gray-200); fill: none; stroke-width: 2.5; }
 </style>
 </head>
 <body>
@@ -839,7 +983,13 @@
 <div id="screen-home" class="screen active">
 
   <div class="home-header">
-    <div class="home-wordmark">Pantry<span>.</span></div>
+    <div style="display:flex; align-items:center; justify-content:space-between;">
+      <div class="home-wordmark" style="margin-bottom:0;">Pantry<span>.</span></div>
+      <button class="icon-btn" style="background:rgba(255,255,255,0.18);" onclick="openSettings()" aria-label="Settings">
+        <svg viewBox="0 0 24 24" style="stroke:white;"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      </button>
+    </div>
+    <div style="height:16px;"></div>
     <div class="budget-hero">
       <div class="budget-hero-row">
         <div onclick="openEditBudget()" style="cursor:pointer;">
@@ -1167,11 +1317,6 @@
     <div class="form-group">
       <label class="form-label">Store</label>
       <select class="form-input" id="new-item-store">
-        <option>Costco</option>
-        <option>Detweilers</option>
-        <option>Publix</option>
-        <option>Walmart</option>
-        <option>Other</option>
       </select>
     </div>
     <div style="padding: 0 20px 16px;">
@@ -1191,11 +1336,6 @@
     <div class="form-group">
       <label class="form-label">First Store</label>
       <select class="form-input" id="haul-store">
-        <option>Costco</option>
-        <option>Detweilers</option>
-        <option>Publix</option>
-        <option>Walmart</option>
-        <option>Other</option>
       </select>
     </div>
     <div style="padding: 0 20px 16px;">
@@ -1273,6 +1413,165 @@
   </div>
 </div>
 
+<!-- ═══════════════════════════════
+     ONBOARDING
+═══════════════════════════════ -->
+<div class="onboard" id="onboard">
+  <div class="onboard-progress" id="onboard-progress"></div>
+  <div class="onboard-body">
+
+    <!-- Step 0: Welcome -->
+    <div class="onboard-step active" data-step="0">
+      <div class="onboard-hero-icon">
+        <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      </div>
+      <div class="onboard-title">Welcome to Pantry.</div>
+      <div class="onboard-text">Pantry. is YNAB for groceries. Track prices, plan hauls across multiple stores, and let AI help your budget go further. Let's get your household set up — takes about a minute.</div>
+    </div>
+
+    <!-- Step 1: Household -->
+    <div class="onboard-step" data-step="1">
+      <div class="onboard-hero-icon">
+        <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+      </div>
+      <div class="onboard-title">Your household</div>
+      <div class="onboard-text">You're the household admin. Name your household and tell us who's doing the shopping.</div>
+      <div class="form-group" style="padding:0 0 16px;">
+        <label class="form-label">Household name</label>
+        <input class="form-input" id="ob-household-name" placeholder="e.g. The Rennie Family" type="text">
+      </div>
+      <div class="form-group" style="padding:0 0 16px;">
+        <label class="form-label">Your name (admin)</label>
+        <input class="form-input" id="ob-admin-name" placeholder="e.g. Jesse" type="text">
+      </div>
+    </div>
+
+    <!-- Step 2: Invite family -->
+    <div class="onboard-step" data-step="2">
+      <div class="onboard-hero-icon">
+        <svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 11h-6M19 8v6"/></svg>
+      </div>
+      <div class="onboard-title">Invite family</div>
+      <div class="onboard-text">Add family members who shop or plan with you. They'll share your list, pantry, and budget. You can always do this later.</div>
+      <div class="invite-row">
+        <input class="form-input" id="ob-invite-input" placeholder="Family member's name" type="text" onkeydown="if(event.key==='Enter')addInviteTag()">
+        <button class="btn-ghost" style="padding:11px 16px;" onclick="addInviteTag()">Add</button>
+      </div>
+      <div id="ob-invite-tags" style="margin-top:8px;"></div>
+      <div style="font-size:12px; color:var(--text-tertiary); margin-top:8px; line-height:1.5;">Note: invites are saved to your household now. Sending real invite links arrives with accounts in a future update.</div>
+    </div>
+
+    <!-- Step 3: Stores -->
+    <div class="onboard-step" data-step="3">
+      <div class="onboard-hero-icon">
+        <svg viewBox="0 0 24 24"><path d="M3 9l1-5h16l1 5M3 9h18M3 9v11a1 1 0 001 1h16a1 1 0 001-1V9M9 21v-6h6v6"/></svg>
+      </div>
+      <div class="onboard-title">Where you shop</div>
+      <div class="onboard-text">Pick the stores you shop at. These show up when you log hauls and items. You can add more anytime.</div>
+      <div class="store-chip-grid" id="ob-store-grid"></div>
+      <div class="invite-row" style="margin-top:8px;">
+        <input class="form-input" id="ob-custom-store" placeholder="Add another store" type="text" onkeydown="if(event.key==='Enter')addCustomStore()">
+        <button class="btn-ghost" style="padding:11px 16px;" onclick="addCustomStore()">Add</button>
+      </div>
+    </div>
+
+    <!-- Step 4: Budget -->
+    <div class="onboard-step" data-step="4">
+      <div class="onboard-hero-icon">
+        <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
+      </div>
+      <div class="onboard-title">Monthly budget</div>
+      <div class="onboard-text">Set your grocery budget for the month. The YNAB way: surplus isn't permission to spend — it builds your pantry buffer so you're always a little ahead.</div>
+      <div class="form-group" style="padding:0;">
+        <label class="form-label">Monthly grocery budget</label>
+        <input class="form-input" id="ob-budget" placeholder="$800" type="number" step="10" inputmode="decimal" value="800">
+      </div>
+    </div>
+
+    <!-- Step 5: Tour -->
+    <div class="onboard-step" data-step="5">
+      <div class="onboard-title" style="margin-bottom:16px;">How Pantry. works</div>
+      <div class="tour-card">
+        <div class="tour-card-icon" style="background:#E1F5EE; color:var(--teal);"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg></div>
+        <div><h4>Home</h4><p>Your budget, what's left, and the receipt scanner. Tap the budget anytime to change it.</p></div>
+      </div>
+      <div class="tour-card">
+        <div class="tour-card-icon" style="background:#E1F5EE; color:var(--teal);"><svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 012-2h2a2 2 0 012 2M9 5h6"/></svg></div>
+        <div><h4>Plan</h4><p>Your shopping list — last price paid, sale flags, and what to grab at each store.</p></div>
+      </div>
+      <div class="tour-card">
+        <div class="tour-card-icon" style="background:#FAEEDA; color:var(--amber);"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div>
+        <div><h4>Perspective</h4><p>Each month's hauls. A Costco run Sunday + Detweilers Monday count as one haul.</p></div>
+      </div>
+      <div class="tour-card">
+        <div class="tour-card-icon" style="background:#E6F1FB; color:var(--blue);"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg></div>
+        <div><h4>Pantry</h4><p>Everything you've bought, with price history and stock estimates. Add items to your list from here.</p></div>
+      </div>
+      <div class="tour-card">
+        <div class="tour-card-icon" style="background:#E1F5EE; color:var(--teal);"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 9a3 3 0 015.12 2.12C14 13 12 14 12 16M12 20h.01"/></svg></div>
+        <div><h4>AI</h4><p>Smart suggestions — what's running low, what's on sale, and how to stretch your budget.</p></div>
+      </div>
+    </div>
+
+  </div>
+  <div class="onboard-footer">
+    <button class="onboard-skip" id="onboard-skip" onclick="skipOnboarding()">Skip</button>
+    <button class="onboard-next" id="onboard-next" onclick="onboardNext()">Get started</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════
+     SETTINGS
+═══════════════════════════════ -->
+<div class="modal-overlay" id="settings-modal" onclick="closeModal('settings-modal')">
+  <div class="modal-sheet" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div style="display:flex; align-items:center; justify-content:space-between; padding:12px 20px 4px;">
+      <div class="modal-title" style="padding:0;">Settings</div>
+      <button class="icon-btn" onclick="closeModal('settings-modal')" aria-label="Close">
+        <svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <div class="settings-section-title">Household</div>
+    <div class="settings-row" onclick="editHousehold()">
+      <div class="settings-row-icon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
+      <div class="settings-row-label"><div class="t" id="set-household-name">My Household</div><div class="s" id="set-household-sub">Admin: —</div></div>
+      <div class="settings-row-chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
+    </div>
+    <div class="settings-row" onclick="manageFamily()">
+      <div class="settings-row-icon"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 11h-6"/></svg></div>
+      <div class="settings-row-label"><div class="t">Family members</div><div class="s" id="set-family-sub">No members yet</div></div>
+      <div class="settings-row-chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
+    </div>
+
+    <div class="settings-section-title">Shopping</div>
+    <div class="settings-row" onclick="manageStores()">
+      <div class="settings-row-icon"><svg viewBox="0 0 24 24"><path d="M3 9l1-5h16l1 5M3 9h18v11a1 1 0 01-1 1H4a1 1 0 01-1-1V9z"/></svg></div>
+      <div class="settings-row-label"><div class="t">Stores</div><div class="s" id="set-stores-sub">—</div></div>
+      <div class="settings-row-chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
+    </div>
+    <div class="settings-row" onclick="closeModal('settings-modal'); openEditBudget();">
+      <div class="settings-row-icon"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg></div>
+      <div class="settings-row-label"><div class="t">Monthly budget</div><div class="s" id="set-budget-sub">—</div></div>
+      <div class="settings-row-chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
+    </div>
+
+    <div class="settings-section-title">App</div>
+    <div class="settings-row" onclick="closeModal('settings-modal'); startOnboarding(true);">
+      <div class="settings-row-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3M12 17h.01"/></svg></div>
+      <div class="settings-row-label"><div class="t">Replay setup guide</div><div class="s">Walk through the tour again</div></div>
+      <div class="settings-row-chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
+    </div>
+    <div class="settings-row" onclick="resetAllData()">
+      <div class="settings-row-icon" style="background:var(--red-light);"><svg viewBox="0 0 24 24" style="stroke:var(--red);"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></div>
+      <div class="settings-row-label"><div class="t" style="color:var(--red);">Reset all data</div><div class="s">Clear everything and start over</div></div>
+      <div class="settings-row-chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
+    </div>
+    <div style="height:16px;"></div>
+  </div>
+</div>
+
 <div class="toast" id="toast-msg"></div>
 
 <script>
@@ -1280,13 +1579,57 @@
 // DATA
 // ════════════════════════════════════════════════════
 
-const STORES = {
+// Default store palette — colors cycle for custom stores
+const STORE_PALETTE = ['#E24B4A', '#1D9E75', '#378ADD', '#FAC775', '#9F77DD', '#5DCAA5', '#D85A30', '#85B7EB'];
+
+const DEFAULT_STORE_DEFS = {
   costco: { name: 'Costco', color: '#E24B4A' },
   detweilers: { name: 'Detweilers', color: '#1D9E75' },
   publix: { name: 'Publix', color: '#378ADD' },
   walmart: { name: 'Walmart', color: '#FAC775' },
   other: { name: 'Other', color: '#888780' }
 };
+
+// Household profile — created during onboarding, persisted
+let household = JSON.parse(localStorage.getItem('pantry_household') || 'null') || {
+  name: 'My Household',
+  admin: '',
+  members: [],
+  stores: ['Costco', 'Detweilers']
+};
+
+function saveHousehold() {
+  localStorage.setItem('pantry_household', JSON.stringify(household));
+}
+
+function storeKey(name) {
+  return name.toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+// STORES is derived from the household's chosen stores (+ always "Other")
+function buildStores() {
+  const map = {};
+  household.stores.forEach((name, i) => {
+    const key = storeKey(name);
+    const def = DEFAULT_STORE_DEFS[key];
+    map[key] = { name, color: def ? def.color : STORE_PALETTE[i % STORE_PALETTE.length] };
+  });
+  map.other = DEFAULT_STORE_DEFS.other;
+  return map;
+}
+
+let STORES = buildStores();
+
+// Repopulate every store <select> in the app
+function refreshStoreDropdowns() {
+  STORES = buildStores();
+  const opts = household.stores.concat(['Other'])
+    .map(s => `<option>${s}</option>`).join('');
+  const itemSel = document.getElementById('new-item-store');
+  const haulSel = document.getElementById('haul-store');
+  if (itemSel) itemSel.innerHTML = opts;
+  if (haulSel) haulSel.innerHTML = opts;
+}
 
 const CATEGORY_COLORS = {
   'Protein': '#E24B4A',
@@ -2032,6 +2375,211 @@ function fileToBase64(file) {
 }
 
 // ════════════════════════════════════════════════════
+// ONBOARDING
+// ════════════════════════════════════════════════════
+
+const ONBOARD_STEPS = 6;
+let onboardStep = 0;
+let obInvites = [];
+let obStores = [];
+let obReplayMode = false;
+
+function isOnboarded() {
+  return localStorage.getItem('pantry_onboarded') === 'true';
+}
+
+function startOnboarding(replay) {
+  obReplayMode = !!replay;
+  onboardStep = 0;
+  obInvites = replay ? [...household.members] : [];
+  obStores = replay ? [...household.stores] : ['Costco', 'Detweilers'];
+  // Pre-fill fields in replay mode
+  document.getElementById('ob-household-name').value = replay ? (household.name === 'My Household' ? '' : household.name) : '';
+  document.getElementById('ob-admin-name').value = replay ? household.admin : '';
+  document.getElementById('ob-budget').value = getBudgetForMonth(currentMonthKey());
+  buildOnboardProgress();
+  buildStoreChips();
+  renderInviteTags();
+  showOnboardStep(0);
+  document.getElementById('onboard').classList.add('open');
+}
+
+function buildOnboardProgress() {
+  const wrap = document.getElementById('onboard-progress');
+  wrap.innerHTML = Array.from({length: ONBOARD_STEPS}, (_, i) =>
+    `<div class="onboard-dot ${i === 0 ? 'active' : ''}" data-dot="${i}"></div>`).join('');
+}
+
+function showOnboardStep(n) {
+  onboardStep = n;
+  document.querySelectorAll('.onboard-step').forEach(s => s.classList.remove('active'));
+  document.querySelector(`.onboard-step[data-step="${n}"]`).classList.add('active');
+  document.querySelectorAll('.onboard-dot').forEach((d, i) => d.classList.toggle('active', i <= n));
+  const body = document.querySelector('.onboard-body');
+  if (body) body.scrollTop = 0;
+  // Button label
+  const nextBtn = document.getElementById('onboard-next');
+  const skipBtn = document.getElementById('onboard-skip');
+  nextBtn.textContent = n === 0 ? 'Get started' : (n === ONBOARD_STEPS - 1 ? "Let's go" : 'Continue');
+  skipBtn.style.display = (n === ONBOARD_STEPS - 1) ? 'none' : 'block';
+}
+
+function onboardNext() {
+  // Validate / capture per step
+  if (onboardStep === 1) {
+    const name = document.getElementById('ob-household-name').value.trim();
+    const admin = document.getElementById('ob-admin-name').value.trim();
+    if (!name) { showToast('Name your household'); return; }
+    household.name = name;
+    household.admin = admin;
+  }
+  if (onboardStep === 3) {
+    if (obStores.length === 0) { showToast('Pick at least one store'); return; }
+    household.stores = [...obStores];
+  }
+  if (onboardStep === 4) {
+    const b = parseFloat(document.getElementById('ob-budget').value);
+    if (!b || b <= 0) { showToast('Enter a budget amount'); return; }
+    budgetByMonth[currentMonthKey()] = Math.round(b);
+  }
+  if (onboardStep < ONBOARD_STEPS - 1) {
+    showOnboardStep(onboardStep + 1);
+  } else {
+    finishOnboarding();
+  }
+}
+
+function skipOnboarding() {
+  // Skipping still saves whatever defaults exist so the app is usable
+  finishOnboarding();
+}
+
+function finishOnboarding() {
+  household.members = [...obInvites];
+  if (obStores.length) household.stores = [...obStores];
+  saveHousehold();
+  saveBudgets();
+  refreshStoreDropdowns();
+  localStorage.setItem('pantry_onboarded', 'true');
+  document.getElementById('onboard').classList.remove('open');
+  renderHome();
+  switchTab('home');
+  if (obReplayMode) showToast('Settings updated');
+  else showToast('Welcome to Pantry., ' + (household.admin || 'friend') + '!');
+}
+
+// Invites
+function addInviteTag() {
+  const input = document.getElementById('ob-invite-input');
+  const val = input.value.trim();
+  if (!val) return;
+  if (!obInvites.includes(val)) obInvites.push(val);
+  input.value = '';
+  renderInviteTags();
+}
+
+function removeInviteTag(name) {
+  obInvites = obInvites.filter(n => n !== name);
+  renderInviteTags();
+}
+
+function renderInviteTags() {
+  const wrap = document.getElementById('ob-invite-tags');
+  if (!wrap) return;
+  wrap.innerHTML = obInvites.map(n =>
+    `<span class="invite-tag">${n}<button onclick="removeInviteTag('${n.replace(/'/g,"\\'")}')" aria-label="Remove"><svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button></span>`
+  ).join('') || '<span style="font-size:13px; color:var(--text-tertiary);">No one added yet</span>';
+}
+
+// Store chips
+const SUGGESTED_STORES = ['Costco', 'Detweilers', 'Publix', 'Walmart', 'Aldi', 'Trader Joe\'s', 'Whole Foods', 'Sam\'s Club'];
+
+function buildStoreChips() {
+  const grid = document.getElementById('ob-store-grid');
+  if (!grid) return;
+  const all = [...new Set([...SUGGESTED_STORES, ...obStores])];
+  grid.innerHTML = all.map((name, i) => {
+    const sel = obStores.includes(name);
+    const color = DEFAULT_STORE_DEFS[storeKey(name)]?.color || STORE_PALETTE[i % STORE_PALETTE.length];
+    return `<div class="store-chip ${sel ? 'selected' : ''}" onclick="toggleStoreChip('${name.replace(/'/g,"\\'")}')">
+      <span class="store-chip-dot" style="background:${color}"></span>
+      ${name}
+      <span class="store-chip-check"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
+    </div>`;
+  }).join('');
+}
+
+function toggleStoreChip(name) {
+  if (obStores.includes(name)) obStores = obStores.filter(s => s !== name);
+  else obStores.push(name);
+  buildStoreChips();
+}
+
+function addCustomStore() {
+  const input = document.getElementById('ob-custom-store');
+  const val = input.value.trim();
+  if (!val) return;
+  if (!obStores.includes(val)) obStores.push(val);
+  input.value = '';
+  buildStoreChips();
+}
+
+// ════════════════════════════════════════════════════
+// SETTINGS
+// ════════════════════════════════════════════════════
+
+function openSettings() {
+  const key = currentMonthKey();
+  document.getElementById('set-household-name').textContent = household.name;
+  document.getElementById('set-household-sub').textContent = 'Admin: ' + (household.admin || 'You');
+  document.getElementById('set-family-sub').textContent = household.members.length
+    ? household.members.join(', ') : 'No members yet';
+  document.getElementById('set-stores-sub').textContent = household.stores.join(', ');
+  document.getElementById('set-budget-sub').textContent = '$' + getBudgetForMonth(key).toLocaleString() + ' / ' + monthLabelFromKey(key);
+  document.getElementById('settings-modal').classList.add('open');
+}
+
+function editHousehold() {
+  const name = prompt('Household name:', household.name);
+  if (name === null) return;
+  const admin = prompt('Admin name:', household.admin);
+  if (name.trim()) household.name = name.trim();
+  if (admin !== null) household.admin = admin.trim();
+  saveHousehold();
+  openSettings();
+  showToast('Household updated');
+}
+
+function manageFamily() {
+  const current = household.members.join(', ');
+  const result = prompt('Family members (comma-separated):', current);
+  if (result === null) return;
+  household.members = result.split(',').map(s => s.trim()).filter(Boolean);
+  saveHousehold();
+  openSettings();
+  showToast('Family updated');
+}
+
+function manageStores() {
+  const current = household.stores.join(', ');
+  const result = prompt('Your stores (comma-separated):', current);
+  if (result === null) return;
+  const list = result.split(',').map(s => s.trim()).filter(Boolean);
+  if (list.length === 0) { showToast('Keep at least one store'); return; }
+  household.stores = list;
+  saveHousehold();
+  refreshStoreDropdowns();
+  openSettings();
+  showToast('Stores updated');
+}
+
+function resetAllData() {
+  if (!confirm('This clears your list, pantry, hauls, budget, and household setup. This cannot be undone. Continue?')) return;
+  ['pantry_list','pantry_items','pantry_hauls','pantry_budgets','pantry_household','pantry_onboarded','pantry_active_month'].forEach(k => localStorage.removeItem(k));
+  location.reload();
+}
+
+// ════════════════════════════════════════════════════
 // HOME / BUDGET
 // ════════════════════════════════════════════════════
 
@@ -2145,10 +2693,14 @@ function showToast(msg) {
 
 document.addEventListener('DOMContentLoaded', () => {
   checkMonthTurnover();
+  refreshStoreDropdowns();
   renderHome();
   renderPlanList();
   renderPerspective();
   renderPantry();
+  if (!isOnboarded()) {
+    startOnboarding(false);
+  }
 });
 
 // Re-check turnover when the app regains focus (e.g. left open overnight into a new month)
