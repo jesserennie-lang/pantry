@@ -1326,6 +1326,23 @@
 </nav>
 
 <!-- MODALS -->
+<div class="modal-overlay" id="api-key-modal" onclick="closeModal('api-key-modal')">
+  <div class="modal-sheet" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Anthropic API Key</div>
+    <div style="padding: 0 20px 16px;">
+      <p style="font-size:13px; color:var(--text-secondary); line-height:1.55; margin-bottom:16px;">Required for the receipt scanner and AI suggestions. Your key is stored only on this device and never sent anywhere except Anthropic's API.</p>
+      <p style="font-size:13px; color:var(--text-secondary); line-height:1.55; margin-bottom:16px;">Get a key at <strong>console.anthropic.com</strong> → API Keys.</p>
+      <label class="form-label">API Key</label>
+      <input class="form-input" id="api-key-input" placeholder="sk-ant-..." type="password" autocomplete="off" style="margin-bottom:8px; font-family:monospace; letter-spacing:0.04em;">
+      <div style="font-size:11px; color:var(--text-tertiary); margin-bottom:16px;">Starts with <code>sk-ant-</code></div>
+    </div>
+    <div style="padding: 0 20px 16px;">
+      <button class="btn-primary" onclick="saveApiKey()">Save Key</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="edit-budget-modal" onclick="closeModal('edit-budget-modal')">
   <div class="modal-sheet" onclick="event.stopPropagation()">
     <div class="modal-handle"></div>
@@ -1414,15 +1431,19 @@
       <label class="form-label">Store</label>
       <select class="form-input" id="receipt-store" style="margin-bottom:16px;"></select>
 
-      <label class="btn-primary" style="margin-bottom:12px; cursor:pointer;" id="receipt-camera-label">
+      <!-- Single input, no capture attr — iOS shows native Take Photo / Library sheet.
+           Input uses opacity:0 not display:none so iOS honours the label tap. -->
+      <input type="file" id="receipt-file-input"
+             accept="image/*"
+             style="opacity:0; position:absolute; width:0; height:0; pointer-events:none;"
+             onchange="handleReceiptUpload(this)">
+      <label for="receipt-file-input" class="btn-primary"
+             style="margin-bottom:12px; cursor:pointer; user-select:none;"
+             id="receipt-camera-label">
         <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
-        Take a Photo
-        <input type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" capture="environment" style="display:none;" onchange="handleReceiptUpload(this)">
+        Take Photo or Upload
       </label>
-      <label class="btn-ghost" style="width:100%; cursor:pointer; justify-content:center; display:flex; align-items:center;" id="receipt-library-label">
-        Upload from Library
-        <input type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" style="display:none;" onchange="handleReceiptUpload(this)">
-      </label>
+      <div id="receipt-library-label" style="display:none;"></div>
     </div>
     <div id="receipt-processing" style="display:none; padding: 0 20px 16px; text-align:center;">
       <div class="ai-spinner" style="margin:0 auto 12px;"></div>
@@ -1555,8 +1576,22 @@
       </div>
     </div>
 
-    <!-- Step 5: Tour -->
+    <!-- Step 5: API Key -->
     <div class="onboard-step" data-step="5">
+      <div class="onboard-hero-icon" style="background:var(--teal-light);">
+        <svg viewBox="0 0 24 24" style="stroke:var(--teal);"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+      </div>
+      <div class="onboard-title">Connect AI features</div>
+      <div class="onboard-text">The receipt scanner and AI suggestions run on Anthropic's API. Add your key to unlock them — it's stored only on this device. Get one free at <strong>console.anthropic.com</strong>.</div>
+      <div class="form-group" style="padding:0 0 8px;">
+        <label class="form-label">Anthropic API Key</label>
+        <input class="form-input" id="ob-api-key" placeholder="sk-ant-..." type="password" autocomplete="off" style="font-family:monospace; letter-spacing:0.04em;">
+      </div>
+      <div style="font-size:12px; color:var(--text-tertiary); line-height:1.5;">You can skip this and add it later in Settings → API key.</div>
+    </div>
+
+    <!-- Step 6: Tour -->
+    <div class="onboard-step" data-step="6">
       <div class="onboard-title" style="margin-bottom:16px;">How Pantry. works</div>
       <div class="tour-card">
         <div class="tour-card-icon" style="background:#E1F5EE; color:var(--teal);"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg></div>
@@ -1625,6 +1660,11 @@
     </div>
 
     <div class="settings-section-title">App</div>
+    <div class="settings-row" onclick="editApiKey()">
+      <div class="settings-row-icon" style="background:var(--teal-light);"><svg viewBox="0 0 24 24" style="stroke:var(--teal);"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg></div>
+      <div class="settings-row-label"><div class="t">Anthropic API key</div><div class="s" id="set-api-key-sub">Not set</div></div>
+      <div class="settings-row-chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
+    </div>
     <div class="settings-row" onclick="closeModal('settings-modal'); startOnboarding(true);">
       <div class="settings-row-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3M12 17h.01"/></svg></div>
       <div class="settings-row-label"><div class="t">Replay setup guide</div><div class="s">Walk through the tour again</div></div>
@@ -1642,6 +1682,33 @@
 <div class="toast" id="toast-msg"></div>
 
 <script>
+// ════════════════════════════════════════════════════
+// API KEY
+// ════════════════════════════════════════════════════
+
+function getApiKey() {
+  return localStorage.getItem('pantry_api_key') || '';
+}
+
+function setApiKey(key) {
+  localStorage.setItem('pantry_api_key', key.trim());
+}
+
+// Returns the required headers for every Anthropic API call
+function apiHeaders() {
+  return {
+    'Content-Type': 'application/json',
+    'x-api-key': getApiKey(),
+    'anthropic-version': '2023-06-01',
+    'anthropic-dangerous-direct-browser-access': 'true'
+  };
+}
+
+// Returns true if an API key has been set
+function hasApiKey() {
+  return getApiKey().length > 0;
+}
+
 // ════════════════════════════════════════════════════
 // DATA
 // ════════════════════════════════════════════════════
@@ -2247,9 +2314,17 @@ Return ONLY a JSON array, no markdown, no extra text:
 ]`;
 
   try {
+    if (!hasApiKey()) {
+      container.innerHTML = `<div class="ai-loading" style="padding:32px 20px;">
+        <div style="font-size:15px; font-weight:600; margin-bottom:8px; color:var(--text-primary);">API key needed</div>
+        <div style="font-size:13px; color:var(--text-secondary); line-height:1.5; margin-bottom:16px;">Add your Anthropic API key in Settings to enable AI suggestions.</div>
+        <button class="btn-primary" onclick="closeModal !== undefined && openSettings()">Open Settings</button>
+      </div>`;
+      return;
+    }
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: apiHeaders(),
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 1000,
@@ -2362,10 +2437,8 @@ function setReceiptMonth(target) {
 }
 
 function showReceiptButtons(visible) {
-  const cam = document.getElementById('receipt-camera-label');
-  const lib = document.getElementById('receipt-library-label');
-  if (cam) cam.style.display = visible ? 'flex' : 'none';
-  if (lib) lib.style.display = visible ? 'flex' : 'none';
+  const label = document.getElementById('receipt-camera-label');
+  if (label) label.style.display = visible ? 'flex' : 'none';
 }
 
 function openReceiptModal() {
@@ -2380,8 +2453,9 @@ function openReceiptModal() {
   // Populate store dropdown
   const sel = document.getElementById('receipt-store');
   sel.innerHTML = household.stores.concat(['Other']).map(s => `<option>${s}</option>`).join('');
-  // Reset processing UI
+  // Reset processing UI and file input (so re-selecting same file triggers onchange)
   document.getElementById('receipt-processing').style.display = 'none';
+  document.getElementById('receipt-file-input').value = '';
   showReceiptButtons(true);
   document.getElementById('receipt-modal').classList.add('open');
 }
@@ -2398,9 +2472,13 @@ async function handleReceiptUpload(input) {
     // Convert ANY image (incl. iPhone HEIC) to a resized JPEG the API accepts
     const base64 = await fileToJpegBase64(file);
 
+    if (!hasApiKey()) {
+      throw new Error('No API key set. Add your Anthropic API key in Settings first.');
+    }
+
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: apiHeaders(),
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 1500,
@@ -2583,7 +2661,7 @@ function fileToJpegBase64(file, maxDim = 1568) {
 // ONBOARDING
 // ════════════════════════════════════════════════════
 
-const ONBOARD_STEPS = 6;
+const ONBOARD_STEPS = 7;
 let onboardStep = 0;
 let obInvites = [];
 let obStores = [];
@@ -2602,6 +2680,7 @@ function startOnboarding(replay) {
   document.getElementById('ob-household-name').value = replay ? (household.name === 'My Household' ? '' : household.name) : '';
   document.getElementById('ob-admin-name').value = replay ? household.admin : '';
   document.getElementById('ob-budget').value = getBudgetForMonth(currentMonthKey());
+  document.getElementById('ob-api-key').value = replay ? getApiKey() : '';
   buildOnboardProgress();
   buildStoreChips();
   renderInviteTags();
@@ -2646,6 +2725,12 @@ function onboardNext() {
     const b = parseFloat(document.getElementById('ob-budget').value);
     if (!b || b <= 0) { showToast('Enter a budget amount'); return; }
     budgetByMonth[currentMonthKey()] = Math.round(b);
+  }
+  if (onboardStep === 5) {
+    // API key — optional, skip if blank
+    const k = document.getElementById('ob-api-key').value.trim();
+    if (k && k.startsWith('sk-ant-')) setApiKey(k);
+    else if (k && !k.startsWith('sk-ant-')) { showToast('Key should start with sk-ant-'); return; }
   }
   if (onboardStep < ONBOARD_STEPS - 1) {
     showOnboardStep(onboardStep + 1);
@@ -2741,7 +2826,32 @@ function openSettings() {
     ? household.members.join(', ') : 'No members yet';
   document.getElementById('set-stores-sub').textContent = household.stores.join(', ');
   document.getElementById('set-budget-sub').textContent = '$' + getBudgetForMonth(key).toLocaleString() + ' / ' + monthLabelFromKey(key);
+  // API key status
+  const storedKey = getApiKey();
+  document.getElementById('set-api-key-sub').textContent = storedKey
+    ? '••••••••' + storedKey.slice(-4) + ' · tap to change'
+    : 'Not set — required for AI features';
   document.getElementById('settings-modal').classList.add('open');
+}
+
+function editApiKey() {
+  const existing = getApiKey();
+  document.getElementById('api-key-input').value = existing;
+  document.getElementById('api-key-modal').classList.add('open');
+  setTimeout(() => document.getElementById('api-key-input').focus(), 120);
+}
+
+function saveApiKey() {
+  const val = document.getElementById('api-key-input').value.trim();
+  if (!val) { showToast('Enter your API key'); return; }
+  if (!val.startsWith('sk-ant-')) {
+    showToast('Key should start with sk-ant-');
+    return;
+  }
+  setApiKey(val);
+  closeModal('api-key-modal');
+  openSettings();
+  showToast('API key saved');
 }
 
 function editHousehold() {
