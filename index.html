@@ -756,6 +756,36 @@ html, body {
 }
 .insights-stat-val { font-size: 20px; font-weight: 700; color: var(--text-primary); }
 .insights-stat-label { font-size: 12px; color: var(--text-secondary); margin-top: 2px; font-weight: 500; }
+.wizard-overlay { position:fixed;inset:0;background:var(--bg);z-index:300;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px; }
+.wizard-overlay.hidden { display:none; }
+.wizard-logo { font-size:42px;font-weight:700;letter-spacing:-1.5px;margin-bottom:6px; }
+.wizard-tagline { font-size:15px;color:var(--text-secondary);margin-bottom:40px; }
+.wizard-card { width:100%;max-width:340px;background:var(--bg-secondary);border-radius:var(--radius-lg);padding:24px; }
+.wizard-step { display:none; }
+.wizard-step.active { display:block; }
+.wizard-step-label { font-size:12px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px; }
+.wizard-question { font-size:20px;font-weight:700;color:var(--text-primary);margin-bottom:6px;line-height:1.3; }
+.wizard-hint { font-size:13px;color:var(--text-secondary);margin-bottom:20px;line-height:1.5; }
+.wizard-input { width:100%;padding:14px;border:2px solid var(--border-strong);border-radius:var(--radius-sm);font-size:22px;font-weight:600;font-family:var(--font);background:var(--bg);color:var(--text-primary);outline:none;text-align:center; }
+.wizard-input:focus { border-color:var(--green); }
+.wizard-btn { width:100%;padding:14px;background:var(--green);color:white;border:none;border-radius:var(--radius-sm);font-size:16px;font-weight:600;font-family:var(--font);cursor:pointer;margin-top:16px; }
+.wizard-summary { background:var(--green-light);border-radius:var(--radius-md);padding:16px;margin-bottom:16px; }
+.wizard-summary-row { display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-size:14px; }
+.wizard-summary-label { color:var(--text-secondary); }
+.wizard-summary-value { font-weight:700;color:var(--text-primary); }
+.wizard-summary-big { font-size:32px;font-weight:700;color:var(--green);text-align:center;padding:12px 0 4px; }
+.wizard-summary-sub { font-size:13px;color:var(--text-secondary);text-align:center;margin-bottom:8px; }
+
+.admin-overlay { position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:400;display:none;align-items:flex-end;justify-content:center; }
+.admin-overlay.open { display:flex; }
+.admin-sheet { background:var(--bg);border-radius:20px 20px 0 0;padding:24px 20px 40px;width:100%;max-width:480px; }
+.admin-title { font-size:17px;font-weight:700;margin-bottom:4px; }
+.admin-sub { font-size:12px;color:var(--text-tertiary);margin-bottom:20px; }
+.admin-btn { width:100%;padding:13px;border:none;border-radius:var(--radius-sm);font-size:15px;font-weight:600;font-family:var(--font);cursor:pointer;margin-bottom:10px;text-align:left; }
+.admin-btn.red { background:#FDECEA;color:var(--red); }
+.admin-btn.amber { background:var(--amber-light);color:#8B5E00; }
+.admin-btn.green { background:var(--green-light);color:var(--green-dark); }
+.admin-btn.gray { background:var(--bg-secondary);color:var(--text-secondary); }
 </style>
 </head>
 <body>
@@ -770,7 +800,7 @@ html, body {
     <div class="home-header">
       <div class="home-header-top">
         <div>
-          <div class="home-greeting" id="greeting">Good morning</div>
+          <div class="home-greeting" id="greeting" onclick="handleLogoTap()" style="cursor:pointer;">Good morning</div>
           <div class="home-month" id="home-month-label" onclick="editBudget()" style="cursor:pointer;">May · 2026 ✏️</div>
         </div>
         <div class="home-header-right">
@@ -2699,6 +2729,118 @@ function renderAINudges(nudges) {
 function refreshNudges() {
   generateAINudges();
 }
+// ═══════════════════════════════════════
+// SETUP WIZARD
+// ═══════════════════════════════════════
+let _wizardBudget = 850;
+let _wizardDays = 1;
+
+function checkWizard() {
+  const done = localStorage.getItem('pantry_setup_done');
+  if(!done) {
+    document.getElementById('wizard-overlay').classList.remove('hidden');
+    const today = new Date();
+    const daysInMonth = new Date(today.getFullYear(), today.getMonth()+1, 0).getDate();
+    const daysLeft = daysInMonth - today.getDate();
+    document.getElementById('wizard-days-input').value = daysLeft;
+  }
+}
+
+function wizardStep1Next() {
+  const val = parseFloat(document.getElementById('wizard-budget-input').value);
+  if(!val || val < 0) { alert('Please enter a budget amount.'); return; }
+  _wizardBudget = val;
+  document.getElementById('wizard-step-1').classList.remove('active');
+  document.getElementById('wizard-step-2').classList.add('active');
+}
+
+function wizardStep2Next() {
+  const val = parseInt(document.getElementById('wizard-days-input').value);
+  if(isNaN(val) || val < 0 || val > 31) { alert('Please enter a valid number of days.'); return; }
+  _wizardDays = val;
+  const today = new Date();
+  const daysInMonth = new Date(today.getFullYear(), today.getMonth()+1, 0).getDate();
+  const proRated = Math.round((_wizardDays / daysInMonth) * _wizardBudget * 100) / 100;
+  const nextMonth = new Date(today.getFullYear(), today.getMonth()+1, 1).toLocaleString('default',{month:'long'});
+
+  document.getElementById('wizard-result-amount').textContent = `$${proRated.toFixed(2)}`;
+  document.getElementById('wizard-result-sub').textContent = `for the rest of ${today.toLocaleString('default',{month:'long'})}`;
+  document.getElementById('wizard-result-monthly').textContent = `$${_wizardBudget.toFixed(2)}`;
+  document.getElementById('wizard-result-days').textContent = `${_wizardDays} days`;
+  document.getElementById('wizard-result-next').textContent = `$${_wizardBudget.toFixed(2)}`;
+
+  localStorage.setItem('pantry_wizard_prorated', proRated.toFixed(2));
+
+  document.getElementById('wizard-step-2').classList.remove('active');
+  document.getElementById('wizard-step-3').classList.add('active');
+}
+
+function wizardBack() {
+  document.getElementById('wizard-step-3').classList.remove('active');
+  document.getElementById('wizard-step-2').classList.add('active');
+}
+
+function wizardFinish() {
+  localStorage.setItem('pantry_budget', _wizardBudget.toFixed(2));
+  localStorage.setItem('pantry_setup_done', 'true');
+  document.getElementById('wizard-overlay').classList.add('hidden');
+  renderHomeScreen();
+  renderInsights();
+  if(document.getElementById('budget-display')) {
+    document.getElementById('budget-display').textContent = `$${_wizardBudget.toFixed(2)}`;
+  }
+}
+
+// ═══════════════════════════════════════
+// ADMIN MODE — tap logo 5x to open
+// ═══════════════════════════════════════
+let _adminTaps = 0;
+let _adminTimer = null;
+
+function handleLogoTap() {
+  _adminTaps++;
+  clearTimeout(_adminTimer);
+  if(_adminTaps >= 5) {
+    _adminTaps = 0;
+    document.getElementById('admin-overlay').classList.add('open');
+  } else {
+    _adminTimer = setTimeout(() => { _adminTaps = 0; }, 2000);
+  }
+}
+
+function closeAdmin() {
+  document.getElementById('admin-overlay').classList.remove('open');
+}
+
+function adminAction(action) {
+  if(action === 'wizard') {
+    localStorage.removeItem('pantry_setup_done');
+    localStorage.removeItem('pantry_wizard_prorated');
+    closeAdmin();
+    document.getElementById('wizard-step-1').classList.add('active');
+    document.getElementById('wizard-step-2').classList.remove('active');
+    document.getElementById('wizard-step-3').classList.remove('active');
+    document.getElementById('wizard-overlay').classList.remove('hidden');
+  } else if(action === 'clearHauls') {
+    if(confirm('Clear all hauls?')) {
+      Object.keys(HAULS).forEach(k => delete HAULS[k]);
+      closeAdmin(); renderHomeScreen(); renderInsights();
+    }
+  } else if(action === 'clearBudget') {
+    localStorage.setItem('pantry_budget','850');
+    closeAdmin(); renderHomeScreen(); renderInsights();
+  } else if(action === 'clearAll') {
+    if(confirm('Clear everything?')) {
+      localStorage.clear();
+      Object.keys(HAULS).forEach(k => delete HAULS[k]);
+      closeAdmin(); renderHomeScreen(); renderInsights();
+    }
+  } else if(action === 'showStorage') {
+    const keys = Object.keys(localStorage);
+    const vals = keys.map(k => `${k}: ${localStorage.getItem(k)}`).join('\n');
+    alert(vals || 'localStorage is empty');
+  }
+}
 
 // ═══════════════════════════════════════
 // Initial renders
@@ -2707,7 +2849,60 @@ renderShelf();
 renderHomeScreen();
 renderInsights();
 checkSetup();
+checkWizard();
 document.getElementById('budget-display').textContent = `$${getMonthlyBudget().toFixed(2)}`;
 </script>
+<!-- SETUP WIZARD -->
+<div class="wizard-overlay hidden" id="wizard-overlay">
+  <div class="wizard-logo">Pantry.</div>
+  <div class="wizard-tagline">Let's get you set up</div>
+  <div class="wizard-card">
+
+    <div class="wizard-step active" id="wizard-step-1">
+      <div class="wizard-step-label">Step 1 of 2</div>
+      <div class="wizard-question">What's your monthly grocery budget?</div>
+      <div class="wizard-hint">This is your total for a full month. You can change it anytime.</div>
+      <input class="wizard-input" id="wizard-budget-input" type="number" placeholder="850" inputmode="decimal">
+      <button class="wizard-btn" onclick="wizardStep1Next()">Next →</button>
+    </div>
+
+    <div class="wizard-step" id="wizard-step-2">
+      <div class="wizard-step-label">Step 2 of 2</div>
+      <div class="wizard-question">How many days are left in this month?</div>
+      <div class="wizard-hint">We'll pro-rate your budget so you start with the right amount today.</div>
+      <input class="wizard-input" id="wizard-days-input" type="number" inputmode="numeric">
+      <button class="wizard-btn" onclick="wizardStep2Next()">Calculate →</button>
+    </div>
+
+    <div class="wizard-step" id="wizard-step-3">
+      <div class="wizard-step-label">You're all set</div>
+      <div class="wizard-question">Here's your starting budget</div>
+      <div class="wizard-summary">
+        <div class="wizard-summary-big" id="wizard-result-amount">$0</div>
+        <div class="wizard-summary-sub" id="wizard-result-sub"></div>
+        <div class="wizard-summary-row"><span class="wizard-summary-label">Monthly budget</span><span class="wizard-summary-value" id="wizard-result-monthly"></span></div>
+        <div class="wizard-summary-row"><span class="wizard-summary-label">Days left in month</span><span class="wizard-summary-value" id="wizard-result-days"></span></div>
+        <div class="wizard-summary-row"><span class="wizard-summary-label">Next month starts with</span><span class="wizard-summary-value" id="wizard-result-next"></span></div>
+      </div>
+      <button class="wizard-btn" onclick="wizardFinish()">Let's go →</button>
+      <div style="text-align:center;margin-top:12px;font-size:13px;color:var(--text-tertiary);cursor:pointer;" onclick="wizardBack()">← Adjust</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div class="admin-overlay" id="admin-overlay">
+  <div class="admin-sheet">
+    <div class="admin-title">🔧 Admin Mode</div>
+    <div class="admin-sub">For testing only — not visible to regular users</div>
+    <button class="admin-btn green" onclick="adminAction('wizard')">▶ Run setup wizard again</button>
+    <button class="admin-btn amber" onclick="adminAction('clearHauls')">🗑 Clear all hauls</button>
+    <button class="admin-btn amber" onclick="adminAction('clearBudget')">💸 Reset budget to $850</button>
+    <button class="admin-btn red" onclick="adminAction('clearAll')">⚠️ Clear ALL data</button>
+    <button class="admin-btn gray" onclick="adminAction('showStorage')">👁 View localStorage</button>
+    <button class="admin-btn gray" onclick="closeAdmin()">Close</button>
+  </div>
+</div>
 </body>
 </html>
