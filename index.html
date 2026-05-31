@@ -939,7 +939,7 @@ html, body {
         <div class="cart-sub" id="cart-checked-count">0 in the cart</div>
       </div>
       <div>
-        <div class="cart-est">~$196</div>
+       <div class="cart-est" id="cart-est-total">~$0</div>
         <div class="cart-est-label">estimated total</div>
       </div>
     </div>
@@ -994,10 +994,10 @@ html, body {
     </div>
 
     <div class="stats-row">
-      <div class="stat-card"><div class="stat-val">47</div><div class="stat-label">Items tracked</div></div>
-      <div class="stat-card"><div class="stat-val" id="staple-count">4</div><div class="stat-label">Staples</div></div>
-      <div class="stat-card"><div class="stat-val color-green">$117</div><div class="stat-label">Saved to date</div></div>
-    </div>
+  <div class="stat-card"><div class="stat-val" id="shelf-item-count">0</div><div class="stat-label">Items tracked</div></div>
+  <div class="stat-card"><div class="stat-val" id="staple-count">0</div><div class="stat-label">Staples</div></div>
+  <div class="stat-card"><div class="stat-val color-green" id="shelf-saved">$0</div><div class="stat-label">Saved to date</div></div>
+</div>
 
     <div id="shelf-list" style="margin-top:8px;"></div>
 
@@ -1030,8 +1030,7 @@ html, body {
 
     <div class="budget-edit-row">
       <span class="budget-edit-label">Monthly budget</span>
-      <div class="budget-edit-right">
-        <span class="budget-edit-val">$850.00</span>
+      <div class="budget-edit-        <span class="budget-edit-val" id="budget-display">$850.00</span>
         <button class="budget-edit-btn" onclick="editBudget()">Edit</button>
       </div>
     </div>
@@ -2705,6 +2704,7 @@ renderShelf();
 renderHomeScreen();
 renderInsights();
 checkSetup();
+document.getElementById('budget-display').textContent = `$${getMonthlyBudget().toFixed(2)}`;
 </script>
 </body>
 </html>
