@@ -1229,6 +1229,12 @@ html, body {
         <div style="font-size:22px;font-weight:600;" id="scan-total-amt"></div>
       </div>
       <div id="scan-items-list"></div>
+            <div style="margin-top:20px;padding-top:16px;border-top:0.5px solid var(--border);">
+        <div style="font-size:13px;font-weight:600;color:var(--text-secondary);margin-bottom:10px;">Log this haul to which month?</div>
+        <div style="display:flex;gap:10px;" id="month-picker-row"></div>
+        <div style="text-align:center;margin-top:10px;font-size:12px;color:var(--text-tertiary);cursor:pointer;text-decoration:underline;" onclick="showAllMonthsPicker()">Choose a different month ›</div>
+      </div>
+
       <button class="big-btn green" style="margin-top:16px;" onclick="confirmHaul()">
         <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
         Confirm &amp; log haul
@@ -1755,6 +1761,7 @@ function deleteCartItem(id) {
 }
 
 let cartActiveSwipe = null;
+let _selectedScanMonth = null;
 function setupCartSwipe(id, row) {
   let startX = 0, currentX = 0, dragging = false;
   const THRESHOLD = 60;
@@ -2359,6 +2366,7 @@ function showScanResult(data) {
   window._scanMatched = matched;
   window._scanUnplanned = unplanned;
   window._scanMissed = missed;
+    buildMonthPickerUI();
   document.getElementById('scan-result').classList.add('visible');
 }
 
@@ -2373,29 +2381,103 @@ function guessCat(name) {
   return 'Pantry Staples';
 }
 
-function confirmHaul(monthKey) {
+function buildMonthPickerUI() {
+  const today = new Date();
+  const currentKey = getMonthKey(today);
+  const nextKey = getNextMonthKey(currentKey);
+  const daysLeft = new Date(today.getFullYear(), today.getMonth()+1, 0).getDate() - today.getDate();
+  const currentBudget = calcMonthBudget(currentKey);
+  const currentName = new Date(currentKey+'-15').toLocaleString('default',{month:'long'});
+  const nextName = new Date(nextKey+'-15').toLocaleString('default',{month:'long'});
+  const nextAvail = MONTHLY_BUDGET_BASE + Math.max(0, currentBudget.remaining);
+
+  if(daysLeft <= 5 && _selectedScanMonth === currentKey) {
+    _selectedScanMonth = nextKey;
+  }
+
+  let html = '';
+  if(daysLeft <= 5) {
+    html = `
+      <button class="month-picker-btn${_selectedScanMonth===currentKey?' selected':''}" onclick="selectScanMonth('${currentKey}',this)" style="flex:1;padding:14px 10px;border-radius:14px;border:2px solid ${_selectedScanMonth===currentKey?'var(--green)':'var(--border-strong)'};background:${_selectedScanMonth===currentKey?'var(--green-light)':'var(--bg-secondary)'};cursor:pointer;font-family:var(--font);text-align:center;">
+        <div style="font-size:16px;font-weight:700;color:var(--text-primary);">${currentName}</div>
+        <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;">$${currentBudget.remaining.toFixed(0)} left · ${daysLeft}d to go</div>
+      </button>
+      <button class="month-picker-btn${_selectedScanMonth===nextKey?' selected':''}" onclick="selectScanMonth('${nextKey}',this)" style="flex:1;padding:14px 10px;border-radius:14px;border:2px solid ${_selectedScanMonth===nextKey?'var(--green)':'var(--border-strong)'};background:${_selectedScanMonth===nextKey?'var(--green-light)':'var(--bg-secondary)'};cursor:pointer;font-family:var(--font);text-align:center;">
+        <div style="font-size:16px;font-weight:700;color:var(--text-primary);">${nextName}</div>
+        <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;">Starts with $${nextAvail.toFixed(0)}</div>
+      </button>`;
+  } else {
+    _selectedScanMonth = currentKey;
+    html = `
+      <button class="month-picker-btn selected" onclick="selectScanMonth('${currentKey}',this)" style="flex:1;padding:14px 10px;border-radius:14px;border:2px solid var(--green);background:var(--green-light);cursor:pointer;font-family:var(--font);text-align:center;">
+        <div style="font-size:16px;font-weight:700;color:var(--text-primary);">${currentName}</div>
+        <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;">$${currentBudget.remaining.toFixed(0)} left this month</div>
+      </button>`;
+  }
+  document.getElementById('month-picker-row').innerHTML = html;
+}
+
+function selectScanMonth(monthKey, btn) {
+  _selectedScanMonth = monthKey;
+  document.querySelectorAll('#month-picker-row button').forEach(b => {
+    b.style.borderColor = 'var(--border-strong)';
+    b.style.background = 'var(--bg-secondary)';
+  });
+  if(btn) {
+    btn.style.borderColor = 'var(--green)';
+    btn.style.background = 'var(--green-light)';
+  }
+}
+
+function showAllMonthsPicker() {
+  const today = new Date();
+  const currentKey = getMonthKey(today);
+  const nextKey = getNextMonthKey(currentKey);
+  const prevKey = getPrevMonthKey(currentKey);
+  const prev2Key = getPrevMonthKey(prevKey);
+  let months = [
+    { key: nextKey,    label: new Date(nextKey+'-15').toLocaleString('default',{month:'long',year:'numeric'}) + ' — next month' },
+    { key: currentKey, label: new Date(currentKey+'-15').toLocaleString('default',{month:'long',year:'numeric'}) + ' — this month' },
+    { key: prevKey,    label: new Date(prevKey+'-15').toLocaleString('default',{month:'long',year:'numeric'}) },
+    { key: prev2Key,   label: new Date(prev2Key+'-15').toLocaleString('default',{month:'long',year:'numeric'}) },
+  ];
+  Object.values(HAULS).forEach(h => {
+    if(h.month && !months.find(m => m.key === h.month))
+      months.push({ key: h.month, label: new Date(h.month+'-15').toLocaleString('default',{month:'long',year:'numeric'}) });
+  });
+  months.sort((a,b) => b.key.localeCompare(a.key));
+
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:600;background:rgba(0,0,0,0.5);display:flex;align-items:flex-end;justify-content:center;';
+  overlay.innerHTML = `<div style="background:var(--bg);border-radius:20px 20px 0 0;padding:24px 20px 40px;width:100%;max-width:480px;max-height:70vh;overflow-y:auto;">
+    <div style="width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 20px;"></div>
+    <div style="font-size:17px;font-weight:700;margin-bottom:16px;">Choose a month</div>
+    ${months.map(m => `<div onclick="pickMonthFromOverlay('${m.key}',this.parentElement.parentElement)" style="padding:14px 16px;border-radius:12px;margin-bottom:8px;cursor:pointer;background:${_selectedScanMonth===m.key?'var(--green-light)':'var(--bg-secondary)'};border:2px solid ${_selectedScanMonth===m.key?'var(--green)':'transparent'};">
+      <div style="font-size:15px;font-weight:600;color:${_selectedScanMonth===m.key?'var(--green-dark)':'var(--text-primary)'};">${m.label}</div>
+    </div>`).join('')}
+    <button onclick="this.parentElement.parentElement.remove();" style="width:100%;padding:14px;background:none;border:1.5px solid var(--border-strong);border-radius:12px;font-size:15px;font-weight:600;margin-top:8px;cursor:pointer;font-family:var(--font);">Cancel</button>
+  </div>`;
+  document.body.appendChild(overlay);
+  overlay.addEventListener('click', e => { if(e.target===overlay) overlay.remove(); });
+}
+
+function pickMonthFromOverlay(monthKey, overlay) {
+  _selectedScanMonth = monthKey;
+  overlay.remove();
+  buildMonthPickerUI();
+}
+
+function confirmHaul() {
   const data    = window._scanData || {};
   const matched = window._scanMatched || [];
   const today   = new Date();
+  const monthKey = _selectedScanMonth || getMonthKey(today);
 
-  // If monthKey not provided, check if near end of month
-  if(!monthKey) {
-    const daysLeft = new Date(today.getFullYear(), today.getMonth()+1, 0).getDate() - today.getDate();
-    const budget = calcMonthBudget(getMonthKey(today));
-    if(daysLeft <= 5 && budget.remaining < 150) {
-      showHaulMonthModal(today);
-      return;
-    }
-    monthKey = getMonthKey(today);
-  }
-
-  // Auto-check matched items in cart
   matched.forEach(({cart}) => {
     const item = cartItems.find(i => i.id === cart.id);
     if(item) item.checked = true;
   });
 
-  // Log haul
   const haulId  = 'scan-' + Date.now();
   const dateStr = today.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
   const saved   = Math.abs((data.items||[]).filter(i=>i.price<0).reduce((s,i)=>s+i.price,0));
@@ -2414,47 +2496,11 @@ function confirmHaul(monthKey) {
 
   const toast = document.createElement('div');
   toast.style.cssText = 'position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:white;border-radius:12px;padding:12px 20px;font-size:14px;font-weight:500;z-index:600;white-space:nowrap;';
-  const monthName = getMonthName(monthKey).split(' ')[0];
+  const monthName = new Date(monthKey+'-15').toLocaleString('default',{month:'long'});
   toast.textContent = `Haul logged to ${monthName}! ${matched.length} items matched ✓`;
   document.body.appendChild(toast);
   setTimeout(() => toast.remove(), 3500);
-
   switchTab('home');
-}
-
-function showHaulMonthModal(today) {
-  const currentKey  = getMonthKey(today);
-  const nextKey     = getNextMonthKey(currentKey);
-  const currentName = getMonthName(currentKey).split(' ')[0];
-  const nextName    = getMonthName(nextKey).split(' ')[0];
-  const budget      = calcMonthBudget(currentKey);
-  const daysLeft    = new Date(today.getFullYear(), today.getMonth()+1, 0).getDate() - today.getDate();
-
-  const modal = document.createElement('div');
-  modal.id = 'month-modal';
-  modal.style.cssText = 'position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.5);display:flex;align-items:flex-end;justify-content:center;';
-  modal.innerHTML = `
-    <div style="background:var(--bg);border-radius:20px 20px 0 0;padding:28px 24px 40px;width:100%;max-width:480px;">
-      <div style="width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 24px;"></div>
-      <div style="font-size:20px;font-weight:700;margin-bottom:8px;">Which month is this haul for?</div>
-      <div style="font-size:15px;color:var(--text-secondary);margin-bottom:24px;line-height:1.5;">
-        You have <strong>$${budget.remaining.toFixed(2)}</strong> left in ${currentName} with ${daysLeft} day${daysLeft!==1?'s':''} to go.
-        Hauls counted toward ${nextName} will roll your remaining budget forward.
-      </div>
-      <div style="display:flex;flex-direction:column;gap:12px;">
-        <button onclick="document.getElementById('month-modal').remove(); confirmHaul('${nextKey}');" style="background:var(--green);color:white;border:none;border-radius:14px;padding:16px;font-size:16px;font-weight:600;cursor:pointer;">
-          Count toward ${nextName}
-          <div style="font-size:12px;font-weight:400;opacity:0.85;margin-top:3px;">${nextName} starts with $${(850 + budget.remaining).toFixed(2)}</div>
-        </button>
-        <button onclick="document.getElementById('month-modal').remove(); confirmHaul('${currentKey}');" style="background:var(--bg-secondary);color:var(--text-primary);border:none;border-radius:14px;padding:16px;font-size:16px;font-weight:600;cursor:pointer;">
-          Keep in ${currentName}
-          <div style="font-size:12px;font-weight:400;color:var(--text-secondary);margin-top:3px;">$${budget.remaining.toFixed(2)} remaining</div>
-        </button>
-        <button onclick="document.getElementById('month-modal').remove();" style="background:none;color:var(--text-tertiary);border:none;padding:8px;font-size:14px;cursor:pointer;">Cancel</button>
-      </div>
-    </div>`;
-  document.body.appendChild(modal);
-  modal.addEventListener('click', e => { if(e.target === modal) modal.remove(); });
 }
 
 // ═══════════════════════════════════════
