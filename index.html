@@ -2890,7 +2890,7 @@ function openSettings() {
   document.getElementById('set-budget-sub').textContent = '$' + getBudgetForMonth(key).toLocaleString() + ' / ' + monthLabelFromKey(key);
   // API key status
   const storedKey = getApiKey();
-  if (HARDCODED_API_KEY && HARDCODED_API_KEY.trim()) {
+  if (HARDCODED_KEY && HARDCODED_KEY.startsWith('sk-')) {
     document.getElementById('set-api-key-sub').textContent = 'Built into the app ✓';
   } else if (storedKey) {
     document.getElementById('set-api-key-sub').textContent = '••••••••' + storedKey.slice(-4) + ' · tap to change';
