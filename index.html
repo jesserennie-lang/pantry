@@ -1364,7 +1364,7 @@ function renderHomeScreen() {
   // ── Greeting ──
   const h = today.getHours();
   document.getElementById('greeting').textContent = h<12?'Good morning':'Good afternoon';
-  document.getElementById('home-month-label').textContent = `${monthName} · ${today.getFullYear()}`;
+    document.getElementById('home-month-label').innerHTML = `<span onclick="editBudget()" style="cursor:pointer;">${monthName} · ${today.getFullYear()} ✏️</span>`;
 
   // ── Budget header ──
   document.getElementById('home-remaining').textContent = `$${Math.max(0,budget.remaining).toFixed(2)} left`;
