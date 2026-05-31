@@ -1703,12 +1703,15 @@
 // │  this key. Set a monthly spend limit on the key in the       │
 // │  Anthropic console so a leak can't run up large charges.     │
 // └─────────────────────────────────────────────────────────────┘
-const HARDCODED_API_KEY = "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";
+const HARDCODED_API_KEY = "";
 
 function getApiKey() {
-  // Baked-in key wins; otherwise fall back to a key entered in Settings.
+  // Settings-entered key always wins — allows updating without redeploying the file.
+  // Falls back to the key baked into the code if nothing is set in Settings.
+  const stored = localStorage.getItem('pantry_api_key') || '';
+  if (stored) return stored;
   if (HARDCODED_API_KEY && HARDCODED_API_KEY.trim()) return HARDCODED_API_KEY.trim();
-  return localStorage.getItem('pantry_api_key') || '';
+  return '';
 }
 
 function setApiKey(key) {
@@ -1740,7 +1743,8 @@ function keyDiagnostic() {
   if (k !== k.trim()) issues.push('has leading/trailing spaces');
   if (/[\u2018\u2019\u201C\u201D]/.test(k)) issues.push('contains smart quotes');
   if (/\s/.test(k)) issues.push('contains a space or line break');
-  const source = (HARDCODED_API_KEY && HARDCODED_API_KEY.trim()) ? 'baked into code' : 'from Settings';
+  const stored = localStorage.getItem('pantry_api_key') || '';
+  const source = stored ? 'from Settings' : ((HARDCODED_API_KEY && HARDCODED_API_KEY.trim()) ? 'baked into code' : 'nowhere');
   return 'Key diagnostic — length: ' + k.length + ', looks like: ' + masked +
          ', source: ' + source +
          (issues.length ? '. PROBLEMS: ' + issues.join('; ') : '. (format looks OK)');
