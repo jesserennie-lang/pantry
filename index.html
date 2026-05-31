@@ -842,8 +842,8 @@
     <div class="home-wordmark">Pantry<span>.</span></div>
     <div class="budget-hero">
       <div class="budget-hero-row">
-        <div>
-          <div class="budget-label">May Budget</div>
+        <div onclick="openEditBudget()" style="cursor:pointer;">
+          <div class="budget-label" id="home-budget-label">May Budget <span style="opacity:0.6;">· tap to edit</span></div>
           <div class="budget-amount" id="home-budget-amt">$800</div>
           <div class="budget-remaining">
             <strong id="home-remaining">$344.20</strong> remaining · <span id="home-days">12 days</span> left
@@ -933,20 +933,20 @@
           <div style="font-size:13px; font-weight:500;">Monthly grocery target</div>
           <div style="font-size:12px; color:var(--text-tertiary); margin-top:2px;">YNAB-style rollover active</div>
         </div>
-        <div style="font-size:16px; font-weight:700;">$800</div>
+        <div style="font-size:16px; font-weight:700;" id="snap-target">$800</div>
       </div>
       <div class="card-row" style="cursor:default;">
         <div style="flex:1;">
           <div style="font-size:13px; font-weight:500; color:var(--red);">Spent so far</div>
         </div>
-        <div style="font-size:16px; font-weight:700; color:var(--red);">$455.80</div>
+        <div style="font-size:16px; font-weight:700; color:var(--red);" id="snap-spent">$455.80</div>
       </div>
       <div class="card-row" style="cursor:default;">
         <div style="flex:1;">
           <div style="font-size:13px; font-weight:500; color:var(--teal);">Remaining</div>
           <div style="font-size:12px; color:var(--text-tertiary); margin-top:2px;">Pantry buffer building 💪</div>
         </div>
-        <div style="font-size:16px; font-weight:700; color:var(--teal);">$344.20</div>
+        <div style="font-size:16px; font-weight:700; color:var(--teal);" id="snap-remaining">$344.20</div>
       </div>
     </div>
   </div>
@@ -1122,6 +1122,23 @@
 </nav>
 
 <!-- MODALS -->
+<div class="modal-overlay" id="edit-budget-modal" onclick="closeModal('edit-budget-modal')">
+  <div class="modal-sheet" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="edit-budget-title">Set May Budget</div>
+    <div class="form-group">
+      <label class="form-label">Monthly Grocery Budget</label>
+      <input class="form-input" id="edit-budget-input" placeholder="$800" type="number" step="10" inputmode="decimal">
+    </div>
+    <div style="padding: 0 20px 8px;">
+      <p style="font-size:12px; color:var(--text-tertiary); line-height:1.5;">This sets your target for the current month. YNAB-style: surplus rolls into your pantry buffer rather than inviting spending.</p>
+    </div>
+    <div style="padding: 8px 20px 16px;">
+      <button class="btn-primary" onclick="saveBudget()">Save Budget</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="add-item-modal" onclick="closeModal('add-item-modal')">
   <div class="modal-sheet" onclick="event.stopPropagation()">
     <div class="modal-handle"></div>
@@ -1282,9 +1299,54 @@ const CATEGORY_COLORS = {
   'Other': '#888780'
 };
 
+const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+// Returns 'YYYY-MM' for the actual current month (auto-turns over)
+function currentMonthKey() {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+}
+
+function monthLabelFromKey(key) {
+  const [y, m] = key.split('-').map(Number);
+  return MONTH_NAMES[m-1] + ' ' + y;
+}
+
+// Per-month budget targets, persisted. Defaults to $800 for any new month.
+let budgetByMonth = JSON.parse(localStorage.getItem('pantry_budgets') || 'null') || {
+  '2026-05': 800,
+  '2026-04': 800
+};
+const DEFAULT_BUDGET = 800;
+
+function getBudgetForMonth(key) {
+  return budgetByMonth[key] != null ? budgetByMonth[key] : DEFAULT_BUDGET;
+}
+
+function saveBudgets() {
+  localStorage.setItem('pantry_budgets', JSON.stringify(budgetByMonth));
+}
+
+// Spent for a given month = sum of all hauls in that month
+function getSpentForMonth(key) {
+  const hauls = haulsData[key] || [];
+  return hauls.reduce((s, h) => s + h.totalAmount, 0);
+}
+
+// Days remaining in a given month (only meaningful for the current month)
+function daysLeftInMonth(key) {
+  const [y, m] = key.split('-').map(Number);
+  const now = new Date();
+  const isCurrent = (now.getFullYear() === y && (now.getMonth()+1) === m);
+  const lastDay = new Date(y, m, 0).getDate();
+  if (isCurrent) return lastDay - now.getDate();
+  return 0;
+}
+
 const BUDGET = {
-  monthly: 800,
-  spent: 455.80,
+  get monthKey() { return currentMonthKey(); },
+  get monthly() { return getBudgetForMonth(currentMonthKey()); },
+  get spent() { return getSpentForMonth(currentMonthKey()); },
   get remaining() { return this.monthly - this.spent; }
 };
 
@@ -1416,7 +1478,7 @@ let haulsData = JSON.parse(localStorage.getItem('pantry_hauls') || 'null') || {
 // ════════════════════════════════════════════════════
 
 let currentTab = 'home';
-let perspMonth = '2026-05';
+let perspMonth = currentMonthKey();
 
 function switchTab(tab) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -1424,6 +1486,7 @@ function switchTab(tab) {
   document.getElementById('screen-' + tab).classList.add('active');
   document.getElementById('tab-' + tab).classList.add('active');
   currentTab = tab;
+  if (tab === 'home') renderHome();
   if (tab === 'plan') renderPlanList();
   if (tab === 'perspective') renderPerspective();
   if (tab === 'pantry') renderPantry();
@@ -1534,8 +1597,6 @@ function addItemToList() {
 // ════════════════════════════════════════════════════
 // PERSPECTIVE
 // ════════════════════════════════════════════════════
-
-const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
 function changeMonth(dir) {
   const [y, m] = perspMonth.split('-').map(Number);
@@ -1971,6 +2032,99 @@ function fileToBase64(file) {
 }
 
 // ════════════════════════════════════════════════════
+// HOME / BUDGET
+// ════════════════════════════════════════════════════
+
+function renderHome() {
+  const key = currentMonthKey();
+  const [y, m] = key.split('-').map(Number);
+  const monthName = MONTH_NAMES[m-1];
+  const monthly = getBudgetForMonth(key);
+  const spent = getSpentForMonth(key);
+  const remaining = monthly - spent;
+  const daysLeft = daysLeftInMonth(key);
+  const pct = monthly > 0 ? Math.min(100, Math.round((spent / monthly) * 100)) : 0;
+
+  // Budget hero
+  document.getElementById('home-budget-label').innerHTML = `${monthName} Budget <span style="opacity:0.6;">· tap to edit</span>`;
+  document.getElementById('home-budget-amt').textContent = '$' + monthly.toLocaleString();
+  document.getElementById('home-remaining').textContent = '$' + remaining.toFixed(2);
+  document.getElementById('home-days').textContent = daysLeft + (daysLeft === 1 ? ' day' : ' days');
+  document.getElementById('home-progress-fill').style.width = pct + '%';
+  document.getElementById('home-spent-lbl').textContent = '$' + spent.toFixed(2) + ' spent';
+  document.getElementById('home-budget-lbl').textContent = '$' + monthly.toLocaleString();
+
+  // Pace pill — are we ahead or behind the ideal burn rate?
+  const lastDay = new Date(y, m, 0).getDate();
+  const dayOfMonth = lastDay - daysLeft;
+  const idealSpent = monthly * (dayOfMonth / lastDay);
+  const pacePill = document.getElementById('home-pace-pill');
+  if (spent <= idealSpent) {
+    pacePill.textContent = 'On track';
+    pacePill.style.background = 'rgba(255,255,255,0.2)';
+  } else if (spent <= monthly) {
+    pacePill.textContent = 'Watch pace';
+    pacePill.style.background = 'rgba(186,117,23,0.55)';
+  } else {
+    pacePill.textContent = 'Over budget';
+    pacePill.style.background = 'rgba(226,75,74,0.6)';
+  }
+
+  // Snapshot card
+  document.getElementById('snap-target').textContent = '$' + monthly.toLocaleString();
+  document.getElementById('snap-spent').textContent = '$' + spent.toFixed(2);
+  document.getElementById('snap-remaining').textContent = '$' + remaining.toFixed(2);
+
+  // This-month stats
+  const hauls = haulsData[key] || [];
+  const itemsBought = hauls.reduce((s, h) => s + h.trips.reduce((t, tr) => t + tr.items, 0), 0);
+  document.getElementById('home-hauls').textContent = hauls.length;
+  document.getElementById('home-items-bought').textContent = itemsBought;
+
+  // Quick action counts
+  document.getElementById('qa-list-count').textContent = shoppingList.length + ' items';
+  document.getElementById('qa-pantry-count').textContent = pantryItems.length + ' items';
+}
+
+function openEditBudget() {
+  const key = currentMonthKey();
+  const [y, m] = key.split('-').map(Number);
+  document.getElementById('edit-budget-title').textContent = 'Set ' + MONTH_NAMES[m-1] + ' Budget';
+  document.getElementById('edit-budget-input').value = getBudgetForMonth(key);
+  document.getElementById('edit-budget-modal').classList.add('open');
+  setTimeout(() => document.getElementById('edit-budget-input').focus(), 100);
+}
+
+function saveBudget() {
+  const val = parseFloat(document.getElementById('edit-budget-input').value);
+  if (!val || val <= 0) { showToast('Enter a valid amount'); return; }
+  const key = currentMonthKey();
+  budgetByMonth[key] = Math.round(val);
+  saveBudgets();
+  closeModal('edit-budget-modal');
+  renderHome();
+  if (currentTab === 'perspective') renderPerspective();
+  showToast('Budget updated to $' + Math.round(val).toLocaleString());
+}
+
+// Detect month turnover — if the stored "active month" differs from today's,
+// roll over: carry the prior month's budget forward as the new month's default.
+function checkMonthTurnover() {
+  const key = currentMonthKey();
+  const lastActive = localStorage.getItem('pantry_active_month');
+  if (lastActive && lastActive !== key) {
+    // New month began. Seed this month's budget from the previous month if unset.
+    if (budgetByMonth[key] == null && budgetByMonth[lastActive] != null) {
+      budgetByMonth[key] = budgetByMonth[lastActive];
+      saveBudgets();
+    }
+    perspMonth = key;
+    showToast('Welcome to ' + monthLabelFromKey(key) + '!');
+  }
+  localStorage.setItem('pantry_active_month', key);
+}
+
+// ════════════════════════════════════════════════════
 // UTILITIES
 // ════════════════════════════════════════════════════
 
@@ -1990,9 +2144,19 @@ function showToast(msg) {
 // ════════════════════════════════════════════════════
 
 document.addEventListener('DOMContentLoaded', () => {
+  checkMonthTurnover();
+  renderHome();
   renderPlanList();
   renderPerspective();
   renderPantry();
+});
+
+// Re-check turnover when the app regains focus (e.g. left open overnight into a new month)
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) {
+    checkMonthTurnover();
+    renderHome();
+  }
 });
 </script>
 </body>
