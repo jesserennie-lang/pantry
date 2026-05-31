@@ -276,6 +276,32 @@
   .form-input:focus { outline: 2px solid var(--teal); outline-offset: -1px; border-color: transparent; }
   select.form-input { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888780' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
 
+  /* Segmented toggle (YNAB-style month switch) */
+  .seg-toggle {
+    display: flex;
+    background: var(--gray-100);
+    border-radius: var(--radius-md);
+    padding: 3px;
+    gap: 3px;
+  }
+  .seg-btn {
+    flex: 1;
+    border: none;
+    background: none;
+    padding: 9px 12px;
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .seg-btn.active {
+    background: var(--white);
+    color: var(--teal);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+  }
+
   /* ============================================================
      HOME TAB
   ============================================================ */
@@ -1148,13 +1174,21 @@
 ═══════════════════════════════ -->
 <div id="screen-perspective" class="screen">
   <div class="persp-header">
-    <div style="font-size:22px; font-weight:700; letter-spacing:-0.4px;">Perspective</div>
-    <div style="font-size:12px; color:var(--text-tertiary); margin-top:2px;">Monthly shopping view</div>
+    <div style="display:flex; align-items:center; justify-content:space-between;">
+      <div>
+        <div style="font-size:22px; font-weight:700; letter-spacing:-0.4px;">Perspective</div>
+        <div style="font-size:12px; color:var(--text-tertiary); margin-top:2px;">Monthly shopping view</div>
+      </div>
+      <button class="btn-ghost" style="padding:7px 14px; font-size:13px;" onclick="jumpToMonth('current')" id="persp-today-btn">Today</button>
+    </div>
     <div class="month-nav">
       <button class="month-btn" onclick="changeMonth(-1)">
         <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
       </button>
-      <div class="month-label" id="persp-month-label">May 2026</div>
+      <div style="flex:1; text-align:center;">
+        <div class="month-label" id="persp-month-label" style="text-align:center;">May 2026</div>
+        <div id="persp-month-tag" style="font-size:11px; font-weight:600; margin-top:1px; display:none;"></div>
+      </div>
       <button class="month-btn" onclick="changeMonth(1)">
         <svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
       </button>
@@ -1349,7 +1383,17 @@
     <div class="modal-handle"></div>
     <div class="modal-title">Scan Receipt</div>
     <div style="padding: 0 20px 16px;">
-      <p style="font-size:14px; color:var(--text-secondary); margin-bottom:16px; line-height:1.5;">Take a photo or upload an image of your receipt. AI will extract all items and prices automatically.</p>
+      <p style="font-size:14px; color:var(--text-secondary); margin-bottom:16px; line-height:1.5;">Take a photo or upload a receipt. AI extracts the items and logs them as a completed haul.</p>
+
+      <label class="form-label">Add to month</label>
+      <div class="seg-toggle" id="receipt-month-toggle" style="margin-bottom:16px;">
+        <button class="seg-btn active" data-month="current" onclick="setReceiptMonth('current')" id="seg-current">This month</button>
+        <button class="seg-btn" data-month="next" onclick="setReceiptMonth('next')" id="seg-next">Next month</button>
+      </div>
+
+      <label class="form-label">Store</label>
+      <select class="form-input" id="receipt-store" style="margin-bottom:16px;"></select>
+
       <input type="file" id="receipt-file-input" accept="image/*" capture="environment" style="display:none" onchange="handleReceiptUpload(this)">
       <button class="btn-primary" style="margin-bottom:12px;" onclick="document.getElementById('receipt-file-input').click()">
         <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
@@ -1834,9 +1878,40 @@ function changeMonth(dir) {
   renderPerspective();
 }
 
+// Jump straight to the current ('current') or next ('next') month
+function jumpToMonth(which) {
+  const now = new Date();
+  let y = now.getFullYear(), m = now.getMonth() + 1;
+  if (which === 'next') { m += 1; if (m > 12) { m = 1; y++; } }
+  perspMonth = `${y}-${String(m).padStart(2,'0')}`;
+  renderPerspective();
+}
+
+// Compare two month keys: -1 if a<b, 0 if equal, 1 if a>b
+function compareMonthKeys(a, b) {
+  return a === b ? 0 : (a < b ? -1 : 1);
+}
+
 function renderPerspective() {
   const [y, m] = perspMonth.split('-').map(Number);
   document.getElementById('persp-month-label').textContent = MONTH_NAMES[m-1] + ' ' + y;
+
+  // Month status tag: Current / Upcoming / Closed
+  const cmp = compareMonthKeys(perspMonth, currentMonthKey());
+  const tag = document.getElementById('persp-month-tag');
+  if (cmp === 0) {
+    tag.textContent = 'Current month';
+    tag.style.color = 'var(--teal)';
+    tag.style.display = 'block';
+  } else if (cmp > 0) {
+    tag.textContent = 'Upcoming · planning ahead';
+    tag.style.color = 'var(--amber)';
+    tag.style.display = 'block';
+  } else {
+    tag.textContent = 'Closed month';
+    tag.style.color = 'var(--text-tertiary)';
+    tag.style.display = 'block';
+  }
 
   const hauls = haulsData[perspMonth] || [];
   const total = hauls.reduce((s, h) => s + h.totalAmount, 0);
@@ -1866,8 +1941,10 @@ function renderPerspective() {
   // Days left (only meaningful for the current month)
   const daysEl = document.getElementById('persp-days-left');
   const dl = daysLeftInMonth(perspMonth);
-  if (perspMonth === currentMonthKey()) {
+  if (cmp === 0) {
     daysEl.textContent = dl + (dl === 1 ? ' day left' : ' days left');
+  } else if (cmp > 0) {
+    daysEl.textContent = 'Upcoming';
   } else {
     daysEl.textContent = 'Closed month';
   }
@@ -1876,10 +1953,13 @@ function renderPerspective() {
 
   const container = document.getElementById('persp-hauls-container');
   if (hauls.length === 0) {
+    const upcoming = cmp > 0;
     container.innerHTML = `<div class="empty-state">
       <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18"/></svg>
-      <h3>No hauls yet</h3>
-      <p>Start a new haul to track your shopping trips this month.</p>
+      <h3>${upcoming ? 'Planning ' + MONTH_NAMES[m-1] : 'No hauls yet'}</h3>
+      <p>${upcoming
+        ? 'Get a jump on next month. Log a receipt here or start a haul to begin tracking ' + MONTH_NAMES[m-1] + ' early.'
+        : 'Start a new haul to track your shopping trips this month.'}</p>
     </div>`;
     return;
   }
@@ -2223,7 +2303,42 @@ function sendAiMessage(msg) {
 // RECEIPT
 // ════════════════════════════════════════════════════
 
+let receiptMonthTarget = 'current';
+
+// Returns the month key for the receipt target (current or next month)
+function receiptTargetKey() {
+  const now = new Date();
+  let y = now.getFullYear();
+  let m = now.getMonth() + 1; // 1-12
+  if (receiptMonthTarget === 'next') {
+    m += 1;
+    if (m > 12) { m = 1; y += 1; }
+  }
+  return `${y}-${String(m).padStart(2,'0')}`;
+}
+
+function setReceiptMonth(target) {
+  receiptMonthTarget = target;
+  document.getElementById('seg-current').classList.toggle('active', target === 'current');
+  document.getElementById('seg-next').classList.toggle('active', target === 'next');
+}
+
 function openReceiptModal() {
+  // Reset to current month each time
+  setReceiptMonth('current');
+  // Label the toggle buttons with actual month names
+  const now = new Date();
+  const curName = MONTH_NAMES[now.getMonth()];
+  const nextName = MONTH_NAMES[(now.getMonth() + 1) % 12];
+  document.getElementById('seg-current').textContent = curName;
+  document.getElementById('seg-next').textContent = nextName;
+  // Populate store dropdown
+  const sel = document.getElementById('receipt-store');
+  sel.innerHTML = household.stores.concat(['Other']).map(s => `<option>${s}</option>`).join('');
+  // Reset processing UI
+  document.getElementById('receipt-processing').style.display = 'none';
+  document.querySelector('#receipt-modal .btn-primary').style.display = 'flex';
+  document.querySelector('#receipt-modal .btn-ghost').style.display = 'block';
   document.getElementById('receipt-modal').classList.add('open');
 }
 
@@ -2234,6 +2349,9 @@ async function handleReceiptUpload(input) {
   document.querySelector('#receipt-modal .btn-primary').style.display = 'none';
   document.querySelector('#receipt-modal .btn-ghost').style.display = 'none';
 
+  const targetKey = receiptTargetKey();
+  const store = document.getElementById('receipt-store').value;
+
   try {
     const base64 = await fileToBase64(file);
     const res = await fetch('https://api.anthropic.com/v1/messages', {
@@ -2241,7 +2359,7 @@ async function handleReceiptUpload(input) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
+        max_tokens: 1500,
         messages: [{
           role: 'user',
           content: [
@@ -2255,27 +2373,77 @@ async function handleReceiptUpload(input) {
     const text = data.content.map(c => c.text || '').join('');
     const clean = text.replace(/```json|```/g, '').trim();
     const items = JSON.parse(clean);
-    items.forEach(item => {
-      shoppingList.push({
-        id: Date.now() + Math.random(),
-        name: item.name,
-        category: item.category || 'Other',
-        lastPrice: item.price,
-        store: 'Scanned',
-        onSale: false,
-        checked: false,
-        qty: 1
-      });
-    });
-    saveList();
+    logReceiptAsHaul(items, targetKey, store);
     closeModal('receipt-modal');
-    switchTab('plan');
-    showToast(`${items.length} items added from receipt!`);
+    showToast(`${items.length} items logged to ${monthLabelFromKey(targetKey)}`);
+    // Jump to Perspective on the month it landed in
+    perspMonth = targetKey;
+    switchTab('perspective');
   } catch (e) {
     showToast('Could not read receipt. Try again.');
     document.getElementById('receipt-processing').style.display = 'none';
+    document.querySelector('#receipt-modal .btn-primary').style.display = 'flex';
+    document.querySelector('#receipt-modal .btn-ghost').style.display = 'block';
   }
   input.value = '';
+}
+
+// Turn a scanned receipt into a completed haul + update the pantry
+function logReceiptAsHaul(items, monthKey, store) {
+  const total = items.reduce((s, it) => s + (Number(it.price) || 0), 0);
+  const today = new Date().toISOString().split('T')[0];
+  const sKey = storeKey(store);
+
+  if (!haulsData[monthKey]) haulsData[monthKey] = [];
+
+  // Add as a new trip within a new haul (or the user can merge later)
+  haulsData[monthKey].push({
+    id: 'haul-' + Date.now(),
+    name: store + ' receipt',
+    totalAmount: Math.round(total * 100) / 100,
+    trips: [{
+      store: store,
+      storeKey: sKey,
+      date: today,
+      amount: Math.round(total * 100) / 100,
+      items: items.length
+    }]
+  });
+  localStorage.setItem('pantry_hauls', JSON.stringify(haulsData));
+
+  // Update the pantry with price history for each item
+  items.forEach(it => {
+    const name = it.name;
+    const price = Number(it.price) || 0;
+    const existing = pantryItems.find(p => p.name.toLowerCase() === name.toLowerCase());
+    if (existing) {
+      existing.priceHistory.push({ price, store, date: today });
+      existing.stockPct = 100; // just bought it
+    } else {
+      pantryItems.push({
+        id: Date.now() + Math.random(),
+        name,
+        emoji: emojiFor(it.category),
+        category: it.category || 'Other',
+        priceHistory: [{ price, store, date: today }],
+        stockPct: 100,
+        avgDaysBetween: 30
+      });
+    }
+  });
+  localStorage.setItem('pantry_items', JSON.stringify(pantryItems));
+
+  renderHome();
+  renderPantry();
+}
+
+function emojiFor(category) {
+  const map = {
+    'Protein': '🥩', 'Produce': '🥦', 'Dairy': '🥛',
+    'Pantry Staples': '🥫', 'Snacks': '🍪', 'Beverages': '🥤',
+    'Frozen': '🧊', 'Other': '🛒'
+  };
+  return map[category] || '🛒';
 }
 
 function fileToBase64(file) {
