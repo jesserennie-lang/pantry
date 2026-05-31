@@ -1526,7 +1526,10 @@ function renderInsights(monthKey) {
   const allMonthKeys = [...new Set(Object.values(HAULS).map(h=>h.month).filter(Boolean))];
   // Add current month even if no hauls yet
   const currentKey = getMonthKey(today);
-  if(!allMonthKeys.includes(currentKey)) allMonthKeys.push(currentKey);
+const nextKey = getNextMonthKey(currentKey);
+if(!allMonthKeys.includes(currentKey)) allMonthKeys.push(currentKey);
+if(!allMonthKeys.includes(nextKey)) allMonthKeys.push(nextKey);
+
   // Sort descending
   allMonthKeys.sort((a,b) => b.localeCompare(a));
 
