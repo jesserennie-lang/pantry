@@ -1124,6 +1124,16 @@
         </div>
         <div style="font-size:16px; font-weight:700; color:var(--teal);" id="snap-remaining">$0.00</div>
       </div>
+      <div class="card-row" id="snap-next-row" style="cursor:pointer; display:none;" onclick="editNextMonthBudget()">
+        <div style="flex:1;">
+          <div style="font-size:13px; font-weight:500;" id="snap-next-label">Next month budget</div>
+          <div style="font-size:12px; color:var(--text-tertiary); margin-top:2px;">Tap to plan ahead</div>
+        </div>
+        <div style="display:flex; align-items:center; gap:6px;">
+          <div style="font-size:16px; font-weight:700;" id="snap-next-amt">$800</div>
+          <svg viewBox="0 0 24 24" style="width:14px; height:14px; stroke:var(--text-tertiary); fill:none; stroke-width:2.5;"><path d="M9 18l6-6-6-6"/></svg>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -1202,10 +1212,20 @@
         <div class="persp-stat-lbl">Total spent</div>
         <div class="persp-stat-trend trend-down" id="persp-vs-last">No spending yet</div>
       </div>
-      <div class="persp-stat">
+      <div class="persp-stat" onclick="openEditBudget(perspMonth)" style="cursor:pointer;">
         <div class="persp-stat-val" id="persp-remaining">$0.00</div>
         <div class="persp-stat-lbl">Budget left</div>
         <div class="persp-stat-trend trend-down" id="persp-days-left">—</div>
+      </div>
+    </div>
+    <div onclick="openEditBudget(perspMonth)" style="cursor:pointer; margin-top:10px; background:var(--white); border:0.5px solid var(--border); border-radius:var(--radius-md); padding:12px 14px; display:flex; align-items:center; justify-content:space-between;">
+      <div>
+        <div style="font-size:13px; font-weight:500;" id="persp-budget-month-label">Month budget</div>
+        <div style="font-size:11px; color:var(--text-tertiary); margin-top:2px;">Tap to set this month's target</div>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <div style="font-size:17px; font-weight:700;" id="persp-budget-target">$800</div>
+        <svg viewBox="0 0 24 24" style="width:15px; height:15px; stroke:var(--text-tertiary); fill:none; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round;"><path d="M9 18l6-6-6-6"/></svg>
       </div>
     </div>
   </div>
@@ -1694,6 +1714,14 @@ function currentMonthKey() {
   return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
 }
 
+// Returns 'YYYY-MM' for next month
+function nextMonthKey() {
+  const now = new Date();
+  let y = now.getFullYear(), m = now.getMonth() + 2; // +1 for next, +1 because getMonth is 0-based
+  if (m > 12) { m -= 12; y += 1; }
+  return `${y}-${String(m).padStart(2,'0')}`;
+}
+
 function monthLabelFromKey(key) {
   const [y, m] = key.split('-').map(Number);
   return MONTH_NAMES[m-1] + ' ' + y;
@@ -1916,9 +1944,16 @@ function renderPerspective() {
   const hauls = haulsData[perspMonth] || [];
   const total = hauls.reduce((s, h) => s + h.totalAmount, 0);
   const monthBudget = getBudgetForMonth(perspMonth);
+  const isSet = budgetByMonth[perspMonth] != null;
 
   document.getElementById('persp-total').textContent = '$' + total.toFixed(2);
   document.getElementById('persp-remaining').textContent = '$' + Math.max(0, monthBudget - total).toFixed(2);
+
+  // Budget target row
+  document.getElementById('persp-budget-target').textContent = '$' + monthBudget.toLocaleString();
+  const bml = document.getElementById('persp-budget-month-label');
+  const tagWord = cmp === 0 ? 'This month' : cmp > 0 ? MONTH_NAMES[m-1] + ' (upcoming)' : MONTH_NAMES[m-1];
+  bml.textContent = (isSet ? '' : 'Default · ') + tagWord + ' budget';
 
   // Compare to previous month
   let pm = m - 1, py = y;
@@ -2704,6 +2739,15 @@ function renderHome() {
   document.getElementById('snap-spent').textContent = '$' + spent.toFixed(2);
   document.getElementById('snap-remaining').textContent = '$' + remaining.toFixed(2);
 
+  // Next month budget row — always shown so it's distinct from this month
+  const nextKey = nextMonthKey();
+  const [ny, nm] = nextKey.split('-').map(Number);
+  const nextBudget = getBudgetForMonth(nextKey);
+  const nextSet = budgetByMonth[nextKey] != null;
+  document.getElementById('snap-next-row').style.display = 'flex';
+  document.getElementById('snap-next-label').textContent = MONTH_NAMES[nm-1] + ' budget' + (nextSet ? '' : ' (default)');
+  document.getElementById('snap-next-amt').textContent = '$' + nextBudget.toLocaleString();
+
   // This-month stats
   const hauls = haulsData[key] || [];
   const itemsBought = hauls.reduce((s, h) => s + h.trips.reduce((t, tr) => t + tr.items, 0), 0);
@@ -2725,10 +2769,15 @@ function renderHome() {
   }
 }
 
-function openEditBudget() {
-  const key = currentMonthKey();
+let editingBudgetKey = null;
+
+function openEditBudget(monthKey) {
+  const key = monthKey || currentMonthKey();
+  editingBudgetKey = key;
   const [y, m] = key.split('-').map(Number);
-  document.getElementById('edit-budget-title').textContent = 'Set ' + MONTH_NAMES[m-1] + ' Budget';
+  const cmp = compareMonthKeys(key, currentMonthKey());
+  const tag = cmp === 0 ? ' (current)' : cmp > 0 ? ' (upcoming)' : '';
+  document.getElementById('edit-budget-title').textContent = 'Set ' + MONTH_NAMES[m-1] + ' ' + y + ' Budget' + tag;
   document.getElementById('edit-budget-input').value = getBudgetForMonth(key);
   document.getElementById('edit-budget-modal').classList.add('open');
   setTimeout(() => document.getElementById('edit-budget-input').focus(), 100);
@@ -2737,13 +2786,18 @@ function openEditBudget() {
 function saveBudget() {
   const val = parseFloat(document.getElementById('edit-budget-input').value);
   if (!val || val <= 0) { showToast('Enter a valid amount'); return; }
-  const key = currentMonthKey();
+  const key = editingBudgetKey || currentMonthKey();
   budgetByMonth[key] = Math.round(val);
   saveBudgets();
   closeModal('edit-budget-modal');
   renderHome();
   if (currentTab === 'perspective') renderPerspective();
-  showToast('Budget updated to $' + Math.round(val).toLocaleString());
+  const [y, m] = key.split('-').map(Number);
+  showToast(MONTH_NAMES[m-1] + ' budget set to $' + Math.round(val).toLocaleString());
+}
+
+function editNextMonthBudget() {
+  openEditBudget(nextMonthKey());
 }
 
 // Detect month turnover — if the stored "active month" differs from today's,
