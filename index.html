@@ -1391,7 +1391,7 @@ function renderHomeScreen() {
 
   // ── End of month next-month preview ──
   const previewEl = document.getElementById('home-next-month-preview');
-  if(daysLeft <= 5 && budget.remaining > 0) {
+    if(daysLeft <= 5 && budget.spent > 0 && budget.remaining > 0) {
     const nextName = new Date(today.getFullYear(), today.getMonth()+1, 1).toLocaleString('default',{month:'long'});
       const nextAvail = getMonthlyBudget() + budget.remaining;
     document.getElementById('home-next-month-text').innerHTML =
@@ -1417,7 +1417,7 @@ function renderHomeScreen() {
   }
 
   // Surplus to assign?
-  if(budget.remaining > 20) {
+  if(budget.remaining > 20 && budget.spent > 0) {
     todos.push({
       badge: '💰', badgeClass: 'amber',
       title: `$${budget.remaining.toFixed(2)} ahead this month`,
