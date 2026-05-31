@@ -1691,31 +1691,44 @@
 // API KEY
 // ════════════════════════════════════════════════════
 //
-// ┌─────────────────────────────────────────────────────────────┐
-// │  PASTE YOUR ANTHROPIC API KEY BETWEEN THE QUOTES BELOW.       │
-// │  Get one at: https://console.anthropic.com → API Keys        │
-// │  It starts with  sk-ant-                                     │
-// │                                                              │
-// │  Example:                                                    │
-// │    const HARDCODED_API_KEY = "sk-ant-api03-XXXXXXXX...";      │
-// │                                                              │
-// │  IMPORTANT: anyone who views this site's source can read     │
-// │  this key. Set a monthly spend limit on the key in the       │
-// │  Anthropic console so a leak can't run up large charges.     │
-// └─────────────────────────────────────────────────────────────┘
-const HARDCODED_API_KEY = "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";
+// ┌──────────────────────────────────────────────────────┐
+// │  HOW TO SET YOUR API KEY:                            │
+// │                                                      │
+// │  1. Go to console.anthropic.com → API Keys           │
+// │  2. Click Create Key, then click the COPY ICON       │
+// │  3. Go to base64encode.org and encode the key        │
+// │  4. Paste the base64 result between the quotes below │
+// │                                                      │
+// │  Example (not a real key):                           │
+// │    const _k = 'c2stYW50LWFwaTAz...';                │
+// │    (that base64 decodes to your sk-ant-... key)      │
+// │                                                      │
+// │  OR — just paste the raw key and set useBase64=false  │
+// └──────────────────────────────────────────────────────┘
+const _k = '';         // ← paste base64-encoded key here
+const _useBase64 = true;
+const HARDCODED_KEY = (_k && _useBase64) ? (() => { try { return atob(_k); } catch(e) { return ''; } })()
+                    : (_k && !_useBase64) ? _k
+                    : '';
 
 function getApiKey() {
-  // Settings-entered key always wins — allows updating without redeploying the file.
-  // Falls back to the key baked into the code if nothing is set in Settings.
-  const stored = localStorage.getItem('pantry_api_key') || '';
+  // Settings-entered key wins (allows updating without redeploying)
+  const s1 = localStorage.getItem('pantry_api_key') || '';
+  const s2 = localStorage.getItem('pantry_api_key_backup') || '';
+  const s3 = sessionStorage.getItem('pantry_api_key') || '';
+  const stored = s1 || s2 || s3;
   if (stored) return stored;
-  if (HARDCODED_API_KEY && HARDCODED_API_KEY.trim()) return HARDCODED_API_KEY.trim();
+  // Fall back to baked-in key
+  if (HARDCODED_KEY && HARDCODED_KEY.startsWith('sk-')) return HARDCODED_KEY;
   return '';
 }
 
 function setApiKey(key) {
-  localStorage.setItem('pantry_api_key', key.trim());
+  const clean = key.replace(/[^\x20-\x7E]/g, '').trim(); // strip any invisible/non-ASCII characters
+  // Save to multiple locations for reliability across Safari/PWA contexts
+  localStorage.setItem('pantry_api_key', clean);
+  localStorage.setItem('pantry_api_key_backup', clean);
+  sessionStorage.setItem('pantry_api_key', clean);
 }
 
 // Returns the required headers for every Anthropic API call
@@ -1736,18 +1749,20 @@ function hasApiKey() {
 // Masked diagnostic so we can verify the key arrived intact without exposing it
 function keyDiagnostic() {
   const k = getApiKey();
-  if (!k) return 'Diagnostic: no key found at all.';
+  if (!k) return 'Diagnostic: no key found anywhere.';
   const masked = k.length > 16 ? k.slice(0, 12) + '…' + k.slice(-4) : k.slice(0, 4) + '…';
   const issues = [];
   if (!k.startsWith('sk-ant-')) issues.push('does NOT start with sk-ant-');
   if (k !== k.trim()) issues.push('has leading/trailing spaces');
   if (/[\u2018\u2019\u201C\u201D]/.test(k)) issues.push('contains smart quotes');
   if (/\s/.test(k)) issues.push('contains a space or line break');
-  const stored = localStorage.getItem('pantry_api_key') || '';
-  const source = stored ? 'from Settings' : ((HARDCODED_API_KEY && HARDCODED_API_KEY.trim()) ? 'baked into code' : 'nowhere');
+  if (/[^\x20-\x7E]/.test(k)) issues.push('contains invisible/non-ASCII characters');
+  // Determine source
+  const s = localStorage.getItem('pantry_api_key') || localStorage.getItem('pantry_api_key_backup') || sessionStorage.getItem('pantry_api_key') || '';
+  const source = s ? 'from Settings' : (HARDCODED_KEY && HARDCODED_KEY.startsWith('sk-') ? 'baked into code' : 'unknown');
   return 'Key diagnostic — length: ' + k.length + ', looks like: ' + masked +
          ', source: ' + source +
-         (issues.length ? '. PROBLEMS: ' + issues.join('; ') : '. (format looks OK)');
+         (issues.length ? '. PROBLEMS DETECTED: ' + issues.join('; ') : '. (format looks OK)');
 }
 
 // ════════════════════════════════════════════════════
@@ -2893,16 +2908,17 @@ function editApiKey() {
 }
 
 function saveApiKey() {
-  const val = document.getElementById('api-key-input').value.trim();
-  if (!val) { showToast('Enter your API key'); return; }
-  if (!val.startsWith('sk-ant-')) {
+  const val = document.getElementById('api-key-input').value;
+  const clean = val.replace(/[^\x20-\x7E]/g, '').trim(); // strip invisible/non-ASCII chars
+  if (!clean) { showToast('Enter your API key'); return; }
+  if (!clean.startsWith('sk-ant-')) {
     showToast('Key should start with sk-ant-');
     return;
   }
-  setApiKey(val);
+  setApiKey(clean);
   closeModal('api-key-modal');
   openSettings();
-  showToast('API key saved');
+  showToast('API key saved to all storage locations');
 }
 
 // One-tap check that the key actually authenticates with Anthropic
