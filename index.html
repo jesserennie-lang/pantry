@@ -474,6 +474,55 @@
   .list-item:active { background: var(--gray-50); }
   .list-item.checked { opacity: 0.55; }
 
+  /* ── Swipe-to-act wrapper ── */
+  .swipe-wrap {
+    position: relative;
+    overflow: hidden;
+    border-bottom: 0.5px solid var(--border);
+  }
+  .swipe-wrap .list-item {
+    border-bottom: none;
+    position: relative;
+    z-index: 1;
+    transition: transform 0.2s ease;
+    will-change: transform;
+    background: var(--white);
+  }
+  /* Delete panel revealed on swipe-left (right side) */
+  .swipe-action-delete {
+    position: absolute;
+    right: 0; top: 0; bottom: 0;
+    width: 80px;
+    background: var(--red);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 3px;
+    color: white;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .swipe-action-delete svg { width: 20px; height: 20px; stroke: white; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  /* Edit panel revealed on swipe-right (left side) */
+  .swipe-action-edit {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 80px;
+    background: var(--teal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 3px;
+    color: white;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .swipe-action-edit svg { width: 20px; height: 20px; stroke: white; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
   .check-circle {
     width: 24px;
     height: 24px;
@@ -1462,7 +1511,51 @@
   </div>
 </div>
 
-<div class="modal-overlay" id="new-haul-modal" onclick="closeModal('new-haul-modal')">
+<div class="modal-overlay" id="edit-item-modal" onclick="closeModal('edit-item-modal')">
+  <div class="modal-sheet" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div style="display:flex; align-items:center; justify-content:space-between; padding:12px 20px 4px;">
+      <div class="modal-title" style="padding:0;">Edit Item</div>
+      <button class="icon-btn" onclick="closeModal('edit-item-modal')">
+        <svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Item Name</label>
+      <input class="form-input" id="edit-item-name" type="text">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Category</label>
+      <select class="form-input" id="edit-item-category">
+        <option>Protein</option><option>Produce</option><option>Dairy</option>
+        <option>Pantry Staples</option><option>Snacks</option>
+        <option>Beverages</option><option>Frozen</option><option>Other</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Price</label>
+      <input class="form-input" id="edit-item-price" type="number" step="0.01" inputmode="decimal">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Store</label>
+      <select class="form-input" id="edit-item-store"></select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">On Sale?</label>
+      <select class="form-input" id="edit-item-sale">
+        <option value="no">No</option>
+        <option value="yes">Yes — on sale</option>
+      </select>
+    </div>
+    <div style="padding: 0 20px 8px;">
+      <button class="btn-primary" onclick="saveEditItem()">Save Changes</button>
+    </div>
+    <div style="padding: 0 20px 16px;">
+      <button class="btn-ghost" style="width:100%; border-color:var(--red); color:var(--red);" onclick="deleteItemFromModal()">Delete Item</button>
+    </div>
+  </div>
+</div>
+ onclick="closeModal('new-haul-modal')">
   <div class="modal-sheet" onclick="event.stopPropagation()">
     <div class="modal-handle"></div>
     <div class="modal-title">New Haul</div>
@@ -2063,21 +2156,33 @@ function renderPlanList() {
   }
 
   container.innerHTML = html;
+  attachSwipeListeners();
 }
 
 function renderListItem(item) {
-  const salePill = item.onSale ? `<span class="pill pill-teal" style="padding:1px 7px; font-size:10px;">Sale</span>` : '';
   const price = item.lastPrice ? `$${item.lastPrice.toFixed(2)}` : '–';
-  return `<div class="list-item ${item.checked ? 'checked' : ''}" onclick="toggleItem(${item.id})">
-    <div class="check-circle ${item.checked ? 'done' : ''}">
-      <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+  return `<div class="swipe-wrap" id="swipe-wrap-${item.id}">
+    <div class="swipe-action-edit" onclick="openEditItem(${item.id})">
+      <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      Edit
     </div>
-    <div class="item-info">
-      <div class="item-name">${item.name}</div>
-      <div class="item-meta">${item.store} ${salePill}</div>
+    <div class="swipe-action-delete" onclick="deleteItem(${item.id})">
+      <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+      Delete
     </div>
-    <div class="item-price-col">
-      <div class="item-price">${price}</div>
+    <div class="list-item ${item.checked ? 'checked' : ''}" id="swipe-item-${item.id}"
+         onclick="handleListItemTap(event, ${item.id})"
+         data-id="${item.id}">
+      <div class="check-circle ${item.checked ? 'done' : ''}">
+        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div class="item-info">
+        <div class="item-name">${escapeHtml(item.name)}</div>
+        <div class="item-meta">${escapeHtml(item.store)} ${salePill}</div>
+      </div>
+      <div class="item-price-col">
+        <div class="item-price">${price}</div>
+      </div>
     </div>
   </div>`;
 }
@@ -2091,8 +2196,130 @@ function toggleItem(id) {
   }
 }
 
+// Called by swipe-item tap — only toggles if item isn't in a swiped state
+function handleListItemTap(e, id) {
+  const el = document.getElementById('swipe-item-' + id);
+  if (el && Math.abs(el._swipeX || 0) > 5) return; // mid-swipe, don't toggle
+  toggleItem(id);
+}
+
 function saveList() {
   localStorage.setItem('pantry_list', JSON.stringify(shoppingList));
+}
+
+// ── Swipe gestures ──
+function attachSwipeListeners() {
+  document.querySelectorAll('.swipe-wrap').forEach(wrap => {
+    const el = wrap.querySelector('.list-item');
+    if (!el || el._swipeAttached) return;
+    el._swipeAttached = true;
+    el._swipeX = 0;
+    let startX = 0, startY = 0, dragging = false;
+    const THRESHOLD = 60;
+
+    el.addEventListener('touchstart', e => {
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      dragging = true;
+      el.style.transition = 'none';
+    }, { passive: true });
+
+    el.addEventListener('touchmove', e => {
+      if (!dragging) return;
+      const dx = e.touches[0].clientX - startX;
+      const dy = e.touches[0].clientY - startY;
+      // Let vertical scroll win
+      if (Math.abs(dy) > Math.abs(dx) + 5) { dragging = false; return; }
+      e.preventDefault();
+      const clamped = Math.max(-THRESHOLD - 10, Math.min(THRESHOLD + 10, dx));
+      el._swipeX = clamped;
+      el.style.transform = `translateX(${clamped}px)`;
+    }, { passive: false });
+
+    el.addEventListener('touchend', () => {
+      if (!dragging) return;
+      dragging = false;
+      el.style.transition = 'transform 0.2s ease';
+      const x = el._swipeX || 0;
+      if (x < -THRESHOLD) {
+        // Snap to reveal delete
+        el.style.transform = `translateX(-80px)`;
+        el._swipeX = -80;
+      } else if (x > THRESHOLD) {
+        // Snap to reveal edit
+        el.style.transform = `translateX(80px)`;
+        el._swipeX = 80;
+      } else {
+        // Snap back
+        el.style.transform = 'translateX(0)';
+        el._swipeX = 0;
+      }
+    });
+
+    // Tap anywhere else to close
+    document.addEventListener('touchstart', function closer(e) {
+      if (!wrap.contains(e.target) && (el._swipeX !== 0)) {
+        el.style.transition = 'transform 0.2s ease';
+        el.style.transform = 'translateX(0)';
+        el._swipeX = 0;
+      }
+    }, { passive: true });
+  });
+}
+
+// ── Edit item ──
+let editingItemId = null;
+
+function openEditItem(id) {
+  // Reset swipe position first
+  const el = document.getElementById('swipe-item-' + id);
+  if (el) { el.style.transition = 'transform 0.2s ease'; el.style.transform = 'translateX(0)'; el._swipeX = 0; }
+
+  const item = shoppingList.find(i => i.id === id);
+  if (!item) return;
+  editingItemId = id;
+  document.getElementById('edit-item-name').value = item.name;
+  document.getElementById('edit-item-category').value = item.category || 'Other';
+  document.getElementById('edit-item-price').value = item.lastPrice || '';
+  document.getElementById('edit-item-sale').value = item.onSale ? 'yes' : 'no';
+  // Populate store dropdown
+  const storeSel = document.getElementById('edit-item-store');
+  storeSel.innerHTML = household.stores.concat(['Other']).map(s =>
+    `<option ${s === item.store ? 'selected' : ''}>${escapeHtml(s)}</option>`).join('');
+  document.getElementById('edit-item-modal').classList.add('open');
+}
+
+function saveEditItem() {
+  const item = shoppingList.find(i => i.id === editingItemId);
+  if (!item) return;
+  item.name = document.getElementById('edit-item-name').value.trim() || item.name;
+  item.category = document.getElementById('edit-item-category').value;
+  item.lastPrice = parseFloat(document.getElementById('edit-item-price').value) || null;
+  item.store = document.getElementById('edit-item-store').value;
+  item.onSale = document.getElementById('edit-item-sale').value === 'yes';
+  saveList();
+  closeModal('edit-item-modal');
+  editingItemId = null;
+  renderPlanList();
+  showToast('Item updated');
+}
+
+// ── Delete item ──
+function deleteItem(id) {
+  // Reset swipe
+  const el = document.getElementById('swipe-item-' + id);
+  if (el) { el.style.transform = 'translateX(0)'; el._swipeX = 0; }
+  shoppingList = shoppingList.filter(i => i.id !== id);
+  saveList();
+  renderPlanList();
+  showToast('Item removed');
+}
+
+function deleteItemFromModal() {
+  if (!editingItemId) return;
+  deleteItem(editingItemId);
+  closeModal('edit-item-modal');
+  editingItemId = null;
 }
 
 function openAddItem() {
@@ -2115,6 +2342,7 @@ function addItemToList() {
   renderPlanList();
   showToast('Added to list');
 }
+
 
 // ════════════════════════════════════════════════════
 // PERSPECTIVE
