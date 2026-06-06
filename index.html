@@ -91,7 +91,7 @@
   .scan-zone:active { background: var(--teal-light); }
 
   /* ── Live scanner view ── */
-  .scanner-view { display: none; position: fixed; inset: 0; z-index: 600; background: #000; flex-direction: column; max-width: 430px; margin: 0 auto; }
+  .scanner-view { display: none; position: fixed; inset: 0; z-index: 600; background: #000; flex-direction: column; }
   .scanner-view.open { display: flex; }
   .scanner-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
   .scanner-canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
@@ -1470,19 +1470,54 @@ async function openScanner() {
   document.getElementById('sc-month').value='current';
   const scStore=document.getElementById('sc-store');
   scStore.innerHTML=household.stores.concat(['Other']).map(s=>`<option>${s}</option>`).join('');
+
+  // Show the scanner view immediately with a loading state
+  document.getElementById('scanner-view').classList.add('open');
+  document.getElementById('scanner-hint').textContent='Starting camera...';
+
   try {
-    scannerStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1080}},audio:false});
-    const video=document.getElementById('scanner-video');
-    video.srcObject=scannerStream;
-    await video.play();
-    const track=scannerStream.getVideoTracks()[0];
-    const caps=track.getCapabilities?track.getCapabilities():{};
-    document.getElementById('torch-btn').style.display=caps.torch?'flex':'none';
-    document.getElementById('torch-placeholder').style.display=caps.torch?'none':'block';
-    document.getElementById('scanner-view').classList.add('open');
-    setTimeout(()=>{drawScannerFrame();startScanLine();},300);
+    // Request camera — use simpler constraints first (iOS is picky)
+    try {
+      scannerStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: 'environment' } }, audio: false
+      });
+    } catch(e1) {
+      // Retry with just video:true (most permissive fallback)
+      scannerStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+    }
+
+    const video = document.getElementById('scanner-video');
+    video.srcObject = scannerStream;
+
+    // Draw frame once video actually has dimensions
+    const onReady = () => {
+      drawScannerFrame();
+      startScanLine();
+      document.getElementById('scanner-hint').textContent = 'Align receipt inside the frame';
+      // Torch support
+      const track = scannerStream.getVideoTracks()[0];
+      const caps = track.getCapabilities ? track.getCapabilities() : {};
+      document.getElementById('torch-btn').style.display = caps.torch ? 'flex' : 'none';
+      document.getElementById('torch-placeholder').style.display = caps.torch ? 'none' : 'block';
+    };
+
+    if (video.readyState >= 2) {
+      onReady();
+    } else {
+      video.addEventListener('canplay', onReady, { once: true });
+    }
+
+    // iOS requires play() to be called — but don't await it (breaks gesture chain)
+    const playPromise = video.play();
+    if (playPromise) playPromise.catch(() => {}); // ignore play errors, autoplay handles it
+
   } catch(e) {
+    // Camera access denied or unavailable
+    document.getElementById('scanner-view').classList.remove('open');
     stopScanner();
+    if (e.name === 'NotAllowedError' || e.name === 'PermissionDeniedError') {
+      showToast('Camera permission denied — using photo picker instead');
+    }
     openFallbackReceiptModal();
   }
 }
@@ -1533,17 +1568,21 @@ function startScanLine() {
 }
 
 function captureReceipt() {
-  const video=document.getElementById('scanner-video');
-  const flash=document.getElementById('scanner-flash');
-  flash.style.animation='none'; flash.offsetHeight;
-  flash.style.animation='shutterFlash 0.35s ease-out forwards';
-  const c=document.createElement('canvas');
-  c.width=video.videoWidth||1280; c.height=video.videoHeight||720;
-  c.getContext('2d').drawImage(video,0,0,c.width,c.height);
-  const base64=c.toDataURL('image/jpeg',0.92).split(',')[1];
-  const store=document.getElementById('sc-store').value;
-  const monthTarget=document.getElementById('sc-month').value;
-  setTimeout(()=>{stopScanner();processReceiptBase64(base64,monthTarget,store);},200);
+  const video = document.getElementById('scanner-video');
+  if (!video.videoWidth) { showToast('Camera not ready yet — wait a moment'); return; }
+
+  const flash = document.getElementById('scanner-flash');
+  flash.style.animation = 'none'; flash.offsetHeight;
+  flash.style.animation = 'shutterFlash 0.35s ease-out forwards';
+
+  const c = document.createElement('canvas');
+  c.width = video.videoWidth; c.height = video.videoHeight;
+  c.getContext('2d').drawImage(video, 0, 0, c.width, c.height);
+  const base64 = c.toDataURL('image/jpeg', 0.92).split(',')[1];
+  const store = document.getElementById('sc-store').value;
+  const monthTarget = document.getElementById('sc-month').value;
+
+  setTimeout(() => { stopScanner(); processReceiptBase64(base64, monthTarget, store); }, 250);
 }
 
 async function toggleTorch() {
