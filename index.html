@@ -1380,29 +1380,134 @@ async function handleReceiptUpload(input) {
   try {
     const base64=await fileToJpegBase64(file);
     if(!hasApiKey())throw new Error('No API key set. Add your Anthropic API key in Settings first.');
-    const listForMatch=shoppingList.map((it,i)=>({i,name:it.name}));
+
+    // Build pantry history context — teach Claude what you normally buy
+    const pantryContext = pantryItems.length
+      ? pantryItems.map(it => `  - "${it.name}" (${it.category}), bought ${it.priceHistory.length}x at ${it.priceHistory[it.priceHistory.length-1]?.store||store}`).join('\n')
+      : '  (no pantry history yet)';
+
+    // Build abbreviation memory — confirmed mappings from past corrections
+    const abbrevMap = getAbbrevMap();
+    const abbrevContext = Object.keys(abbrevMap).length
+      ? Object.entries(abbrevMap).map(([raw, clean]) => `  "${raw}" → "${clean}"`).join('\n')
+      : '  (none yet)';
+
+    // Shopping list for matching
+    const listForMatch = shoppingList.map((it,i) => ({i, name:it.name}));
     const matchPart = listForMatch.length
-      ? '- Shopping list to match against (JSON): ' + JSON.stringify(listForMatch) + '\n- If a receipt item clearly matches a list item, set matchIndex to that item\'s i value. Otherwise set matchIndex to null.'
-      : '- Set matchIndex to null for all items.';
-    const promptText = 'You are a receipt parser for a grocery tracking app. Extract ONLY grocery and household consumable items.\n\n'
-      + 'INCLUDE:\n- Food and beverages of any kind\n- Household consumables (paper towels, toilet paper, dish soap, laundry detergent, trash bags)\n- Personal care items used regularly (shampoo, toothpaste)\n- Pet food and pet supplies\n\n'
-      + 'DO NOT INCLUDE (skip entirely):\n- Membership or club fees (Costco Executive, Sam\'s Club membership, etc.)\n- Electronics, appliances, tools, clothing, furniture, tires, toys, books, media\n- Pharmacy or prescription items\n- Gift cards, store credit\n- Tax lines, bottle deposits, bag fees, service charges\n- Subtotals, totals, discounts, coupons, savings lines\n- Gas or fuel\n- Any non-consumable you would not buy again next month\n\n'
-      + 'RULES:\n- Clean up abbreviated names (e.g. "KS ORG SLMN ATL" becomes "Organic Salmon", "CHKN BRST BNS/SKN" becomes "Boneless Chicken Breast")\n- Use one of these categories exactly: Protein, Produce, Dairy, Pantry Staples, Snacks, Beverages, Frozen, Other\n'
-      + matchPart + '\n\n'
-      + 'Return ONLY a valid JSON array, no markdown:\n[{"name":"Organic Salmon","price":12.99,"category":"Protein","matchIndex":null}]\n\nIf you cannot read the receipt at all, return: []';
-    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:apiHeaders(),body:JSON.stringify({model:'claude-sonnet-4-5-20250929',max_tokens:2000,messages:[{role:'user',content:[{type:'image',source:{type:'base64',media_type:'image/jpeg',data:base64}},{type:'text',text:promptText}]}]})});
+      ? 'SHOPPING LIST (match receipt items to these where possible, set matchIndex to the item\'s i):\n' + JSON.stringify(listForMatch)
+      : 'No shopping list — set matchIndex to null for all items.';
+
+    // Store-specific abbreviation knowledge
+    const storeKey_lower = store.toLowerCase();
+    const storeKnowledge = storeKey_lower.includes('costco') ? `
+COSTCO-SPECIFIC ABBREVIATIONS (critical for decoding this receipt):
+- KS = Kirkland Signature (Costco's own brand)
+- ORG = Organic
+- A2 = A2 protein type (applies to milk)
+- PR or PK = Pack (multi-pack item)
+- WHL = Whole
+- BNLS = Boneless
+- SKNLS = Skinless
+- MDM = Mediterranean
+- PREV = Probiotic/Preview
+- FF = Fat Free
+- LF = Low Fat
+- GF = Gluten Free
+- ATL = Atlantic
+- PLN = Plain
+- VAN = Vanilla
+- CHKN or CKN = Chicken
+- SLMN = Salmon
+- GRND = Ground
+- BRST = Breast
+- TNDRLNS = Tenderloins
+- BLND = Blend
+- UNSLTD = Unsalted
+- EXIT MARK: Costco employees draw a diagonal line across receipts at the exit door. 
+  This line frequently covers part of item descriptions. When you see partial text,
+  reason about what the full item likely is using Costco product knowledge and context.
+  Example: "RG A2 PR" is likely "ORG A2 PR" = Kirkland Organic A2 Milk Pack` :
+      storeKey_lower.includes('detweiler') ? 'DETWEILERS: Local Pennsylvania grocery known for fresh meats, produce, and Amish goods.' :
+      storeKey_lower.includes('publix') ? 'PUBLIX: Southeast US grocery chain.' :
+      storeKey_lower.includes('walmart') ? 'WALMART: Large general merchandise store — focus on food and household items only.' :
+      storeKey_lower.includes('aldi') ? 'ALDI: Discount grocery, many store-brand items.' : '';
+
+    const promptText = `You are an expert grocery receipt decoder for the Pantry. app. Your job is to extract items from a ${store} receipt and make intelligent guesses about what each item is — even when text is abbreviated, partial, or partially obscured.
+
+${storeKnowledge}
+
+ITEMS PREVIOUSLY PURCHASED (use this to recognize familiar items from partial text):
+${pantryContext}
+
+CONFIRMED ABBREVIATION MAPPINGS (from past user corrections — trust these completely):
+${abbrevContext}
+
+YOUR REASONING APPROACH:
+1. Read the raw text on each line EXACTLY as it appears
+2. Cross-reference with: store abbreviations above, pantry history, confirmed mappings, and your knowledge of common products sold at ${store}
+3. Make your best full product name — even if text is partially obscured, infer the most likely item
+4. Note your confidence and quantity/size when visible
+5. If text is cut off or obscured, describe what IS visible and make a logical inference
+
+INCLUDE ONLY:
+- Food, beverages, household consumables, personal care items, pet food
+
+SKIP ENTIRELY:
+- Membership fees, electronics, clothing, pharmacy, gift cards, tax, subtotals, totals, discounts, fuel
+
+${matchPart}
+
+Return ONLY a valid JSON array, no markdown, no explanation:
+[{
+  "rawText": "exact text from receipt line",
+  "name": "Your best full product name guess",
+  "price": 0.00,
+  "quantity": "size or pack count if visible, else null",
+  "category": "Protein|Produce|Dairy|Pantry Staples|Snacks|Beverages|Frozen|Other",
+  "confidence": "high|medium|low",
+  "matchIndex": null
+}]
+
+confidence meanings: high=certain, medium=good guess, low=partial text or unclear
+
+If you cannot read the receipt at all, return: []`;
+
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:apiHeaders(),body:JSON.stringify({model:'claude-sonnet-4-5-20250929',max_tokens:2500,messages:[{role:'user',content:[{type:'image',source:{type:'base64',media_type:'image/jpeg',data:base64}},{type:'text',text:promptText}]}]})});
     const data=await res.json();
     if(data.error){const msg=data.error.message||JSON.stringify(data.error);if(/authentication|api[\s_-]?key|credential|401/i.test(msg)||res.status===401)throw new Error(msg+'\n\n'+keyDiagnostic());throw new Error(msg);}
     if(!data.content||!Array.isArray(data.content))throw new Error('Unexpected response from the server.');
     const text=data.content.map(c=>c.text||'').join('');
     const rawItems=extractJsonArray(text);
     if(!rawItems||rawItems.length===0)throw new Error("Couldn't read any items. Try a clearer, well-lit photo.");
-    const items=rawItems.filter(it=>it&&typeof it.name==='string'&&it.name.trim().length>0).map(it=>({name:it.name.trim(),price:Number(it.price)||0,category:it.category||'Other',matchIndex:(it.matchIndex!==null&&it.matchIndex!==undefined&&!isNaN(Number(it.matchIndex)))?Number(it.matchIndex):null}));
+    const items=rawItems
+      .filter(it=>it&&typeof it.name==='string'&&it.name.trim().length>0)
+      .map(it=>({
+        rawText: (it.rawText||'').trim(),
+        name: it.name.trim(),
+        price: Number(it.price)||0,
+        quantity: it.quantity||null,
+        category: it.category||'Other',
+        confidence: it.confidence||'medium',
+        matchIndex: (it.matchIndex!==null&&it.matchIndex!==undefined&&!isNaN(Number(it.matchIndex)))?Number(it.matchIndex):null
+      }));
     if(items.length===0)throw new Error("Receipt scanned but no items could be read.");
     closeModal('receipt-modal'); openRecon(items,targetKey,store);
   } catch(e){showReceiptError(e&&e.message?e.message:'Could not read receipt. Try again.');}
   input.value='';
 }
+
+// ── Abbreviation memory — learns from user corrections ──
+function getAbbrevMap() {
+  try { return JSON.parse(localStorage.getItem('pantry_abbrev_map')||'{}'); } catch(e) { return {}; }
+}
+function saveAbbrevMapping(rawText, cleanName) {
+  if (!rawText || !cleanName || rawText === cleanName) return;
+  const map = getAbbrevMap();
+  map[rawText.toUpperCase()] = cleanName;
+  localStorage.setItem('pantry_abbrev_map', JSON.stringify(map));
+}
+
 
 // ── Reconciliation ──
 let reconState = null;
@@ -1413,97 +1518,95 @@ function openRecon(items,targetKey,store) {
 
 function renderRecon() {
   const{items,targetKey,store}=reconState;
-  document.getElementById('recon-sub').textContent=`${store} · ${monthLabelFromKey(targetKey)} · tap pencil to edit, link to match`;
+  const lowConf = items.filter(it=>it.confidence==='low').length;
+  document.getElementById('recon-sub').textContent=store+' · '+monthLabelFromKey(targetKey)+(lowConf?' · '+lowConf+' item'+(lowConf>1?'s':'')+' need review ⚠️':'');
   const matchedListIdx=new Set(items.map(it=>it.matchIndex).filter(i=>i!==null));
   let html='';
   items.forEach((it,idx)=>{
     const matched=it.matchIndex!==null; const listItem=matched?shoppingList[it.matchIndex]:null;
-    html+=`<div class="recon-row ${matched?'matched':''}">
-      <div class="recon-cell scanned" style="cursor:pointer;" onclick="openReconEdit(${idx})">
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:4px;">
-          <div>
-            <div class="recon-cell-name">${escapeHtml(it.name)}</div>
-            <div class="recon-cell-meta">$${(Number(it.price)||0).toFixed(2)} · ${it.category||'Other'}</div>
-          </div>
-          <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:var(--text-tertiary);fill:none;stroke-width:2;flex-shrink:0;margin-top:2px;"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-        </div>
-      </div>
-      <div class="recon-link" onclick="cycleMatch(${idx})"><div class="recon-link-dot"><svg viewBox="0 0 24 24">${matched?'<polyline points="20 6 9 17 4 12"/>':`<path d="M12 5v14M5 12h14"/>`}</svg></div></div>
-      ${matched
-        ?`<div class="recon-cell"><div class="recon-cell-name">${escapeHtml(listItem.name)}</div><div class="recon-cell-meta">on your list</div></div>`
-        :`<div class="recon-cell empty" onclick="pickMatch(${idx})">tap + to match</div>`}
-    </div>`;
+    const confColor=it.confidence==='high'?'var(--teal)':it.confidence==='low'?'var(--red)':'var(--amber)';
+    const confLabel=it.confidence==='high'?'✓':it.confidence==='low'?'?':'~';
+    const quantStr=it.quantity?' · '+escapeHtml(it.quantity):'';
+    const rawStr=it.rawText?'<div style="font-size:10px;color:var(--text-tertiary);margin-top:2px;font-family:monospace;">'+escapeHtml(it.rawText)+'</div>':'';
+    html+='<div class="recon-row '+(matched?'matched':'')+'">'+
+      '<div class="recon-cell scanned" style="cursor:pointer;" onclick="openReconEdit('+idx+')">'+
+        '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:4px;">'+
+          '<div style="flex:1;min-width:0;">'+
+            '<div style="display:flex;align-items:center;gap:5px;">'+
+              '<span style="width:14px;height:14px;border-radius:50%;background:'+confColor+';color:white;font-size:8px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">'+confLabel+'</span>'+
+              '<div class="recon-cell-name">'+escapeHtml(it.name)+'</div>'+
+            '</div>'+rawStr+
+            '<div class="recon-cell-meta">$'+(Number(it.price)||0).toFixed(2)+quantStr+' · '+(it.category||'Other')+'</div>'+
+          '</div>'+
+          '<svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:var(--text-tertiary);fill:none;stroke-width:2;flex-shrink:0;margin-top:2px;"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>'+
+        '</div>'+
+      '</div>'+
+      '<div class="recon-link" onclick="cycleMatch('+idx+')"><div class="recon-link-dot"><svg viewBox="0 0 24 24">'+(matched?'<polyline points="20 6 9 17 4 12"/>':'<path d="M12 5v14M5 12h14"/>')+'</svg></div></div>'+
+      (matched?'<div class="recon-cell"><div class="recon-cell-name">'+escapeHtml(listItem.name)+'</div><div class="recon-cell-meta">on your list</div></div>':
+               '<div class="recon-cell empty" onclick="pickMatch('+idx+')">tap + to match</div>')+
+    '</div>';
   });
-
-  // Unmatched list items
   const unboughtIdx=shoppingList.map((_,i)=>i).filter(i=>!matchedListIdx.has(i)&&!shoppingList[i].checked);
   if(unboughtIdx.length){
-    html+=`<div class="recon-section-label">Still on your list (not on this receipt)</div>`;
-    unboughtIdx.forEach(i=>{html+=`<div class="recon-row"><div class="recon-cell empty" style="border-style:solid;background:var(--gray-50);color:var(--text-tertiary);">—</div><div class="recon-link"></div><div class="recon-cell"><div class="recon-cell-name" style="color:var(--text-secondary);">${escapeHtml(shoppingList[i].name)}</div><div class="recon-cell-meta">not bought</div></div></div>`;});
+    html+='<div class="recon-section-label">Still on your list (not on this receipt)</div>';
+    unboughtIdx.forEach(i=>{html+='<div class="recon-row"><div class="recon-cell empty" style="border-style:solid;background:var(--gray-50);color:var(--text-tertiary);">—</div><div class="recon-link"></div><div class="recon-cell"><div class="recon-cell-name" style="color:var(--text-secondary);">'+escapeHtml(shoppingList[i].name)+'</div><div class="recon-cell-meta">not bought</div></div></div>';});
   }
-
-  // Add missed item button
-  html += `<div style="padding:12px 4px 4px;">
-    <button onclick="openReconAddItem()" style="width:100%;background:none;border:1.5px dashed var(--border-strong);border-radius:var(--radius-md);padding:10px;color:var(--text-secondary);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
-      <svg viewBox="0 0 24 24" style="width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;"><path d="M12 5v14M5 12h14"/></svg>
-      Add item the scanner missed
-    </button>
-  </div>`;
-
+  html+='<div style="padding:10px 4px 6px;display:flex;gap:12px;align-items:center;font-size:10px;color:var(--text-tertiary);">'+
+    '<span><span style="display:inline-block;width:11px;height:11px;border-radius:50%;background:var(--teal);margin-right:3px;vertical-align:middle;"></span>Certain</span>'+
+    '<span><span style="display:inline-block;width:11px;height:11px;border-radius:50%;background:var(--amber);margin-right:3px;vertical-align:middle;"></span>Best guess</span>'+
+    '<span><span style="display:inline-block;width:11px;height:11px;border-radius:50%;background:var(--red);margin-right:3px;vertical-align:middle;"></span>Needs review</span>'+
+  '</div>';
+  html+='<div style="padding:4px 4px 4px;"><button onclick="openReconAddItem()" style="width:100%;background:none;border:1.5px dashed var(--border-strong);border-radius:var(--radius-md);padding:10px;color:var(--text-secondary);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;"><svg viewBox="0 0 24 24" style="width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;"><path d="M12 5v14M5 12h14"/></svg>Add item the scanner missed</button></div>';
   const matchCount=items.filter(it=>it.matchIndex!==null).length;
-  html=`<div class="recon-summary"><strong>${items.length}</strong> items scanned · <strong>${matchCount}</strong> matched · tap ✏️ to edit any item</div>`+html;
+  html='<div class="recon-summary"><strong>'+items.length+'</strong> items scanned · <strong>'+matchCount+'</strong> matched · tap ✏️ to correct</div>'+html;
   document.getElementById('recon-body').innerHTML=html;
 }
 
 // ── Recon item editing ──
-let reconEditIdx = null; // null = new item
+let reconEditIdx = null;
 
 function openReconEdit(idx) {
-  reconEditIdx = idx;
-  const it = reconState.items[idx];
-  document.getElementById('recon-edit-title').textContent = 'Edit Item';
-  document.getElementById('recon-edit-name').value = it.name;
-  document.getElementById('recon-edit-price').value = it.price || '';
-  document.getElementById('recon-edit-category').value = it.category || 'Other';
-  document.getElementById('recon-edit-delete-wrap').style.display = 'block';
+  reconEditIdx=idx;
+  const it=reconState.items[idx];
+  document.getElementById('recon-edit-title').textContent='Edit Item';
+  document.getElementById('recon-edit-name').value=it.name;
+  document.getElementById('recon-edit-price').value=it.price||'';
+  document.getElementById('recon-edit-category').value=it.category||'Other';
+  document.getElementById('recon-edit-delete-wrap').style.display='block';
   document.getElementById('recon-edit-modal').classList.add('open');
 }
 
 function openReconAddItem() {
-  reconEditIdx = null;
-  document.getElementById('recon-edit-title').textContent = 'Add Missed Item';
-  document.getElementById('recon-edit-name').value = '';
-  document.getElementById('recon-edit-price').value = '';
-  document.getElementById('recon-edit-category').value = 'Other';
-  document.getElementById('recon-edit-delete-wrap').style.display = 'none';
+  reconEditIdx=null;
+  document.getElementById('recon-edit-title').textContent='Add Missed Item';
+  document.getElementById('recon-edit-name').value='';
+  document.getElementById('recon-edit-price').value='';
+  document.getElementById('recon-edit-category').value='Other';
+  document.getElementById('recon-edit-delete-wrap').style.display='none';
   document.getElementById('recon-edit-modal').classList.add('open');
-  setTimeout(() => document.getElementById('recon-edit-name').focus(), 120);
+  setTimeout(()=>document.getElementById('recon-edit-name').focus(),120);
 }
 
 function saveReconEdit() {
-  const name = document.getElementById('recon-edit-name').value.trim();
-  if (!name) { showToast('Enter an item name'); return; }
-  const price = parseFloat(document.getElementById('recon-edit-price').value) || 0;
-  const category = document.getElementById('recon-edit-category').value;
-  if (reconEditIdx !== null) {
-    // Editing existing item
-    reconState.items[reconEditIdx].name = name;
-    reconState.items[reconEditIdx].price = price;
-    reconState.items[reconEditIdx].category = category;
+  const name=document.getElementById('recon-edit-name').value.trim();
+  if(!name){showToast('Enter an item name');return;}
+  const price=parseFloat(document.getElementById('recon-edit-price').value)||0;
+  const category=document.getElementById('recon-edit-category').value;
+  if(reconEditIdx!==null){
+    const existing=reconState.items[reconEditIdx];
+    // If user corrected the name, save the abbreviation mapping for future scans
+    if(existing.rawText&&existing.name!==name) saveAbbrevMapping(existing.rawText,name);
+    existing.name=name; existing.price=price; existing.category=category; existing.confidence='high';
   } else {
-    // Adding new missed item
-    reconState.items.push({ name, price, category, matchIndex: null });
+    reconState.items.push({rawText:'',name,price,quantity:null,category,confidence:'high',matchIndex:null});
   }
-  closeModal('recon-edit-modal');
-  renderRecon();
+  closeModal('recon-edit-modal'); renderRecon();
 }
 
 function deleteReconItem() {
-  if (reconEditIdx === null) return;
-  reconState.items.splice(reconEditIdx, 1);
-  closeModal('recon-edit-modal');
-  reconEditIdx = null;
-  renderRecon();
+  if(reconEditIdx===null)return;
+  reconState.items.splice(reconEditIdx,1);
+  closeModal('recon-edit-modal'); reconEditIdx=null; renderRecon();
 }
 
 function cycleMatch(idx) { if(reconState.items[idx].matchIndex!==null){reconState.items[idx].matchIndex=null;renderRecon();}else{pickMatch(idx);} }
