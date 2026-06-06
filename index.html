@@ -89,6 +89,25 @@
   .qa-sub { font-size: 11px; color: var(--text-tertiary); margin-top: 2px; }
   .scan-zone { margin: 0 20px 16px; background: var(--white); border: 1.5px dashed var(--teal-mid); border-radius: var(--radius-lg); padding: 28px 20px; display: flex; flex-direction: column; align-items: center; gap: 10px; cursor: pointer; transition: background 0.15s; }
   .scan-zone:active { background: var(--teal-light); }
+
+  /* ── Live scanner view ── */
+  .scanner-view { display: none; position: fixed; inset: 0; z-index: 600; background: #000; flex-direction: column; max-width: 430px; margin: 0 auto; }
+  .scanner-view.open { display: flex; }
+  .scanner-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .scanner-canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  .scanner-line { position: absolute; left: 20px; right: 20px; height: 2px; background: linear-gradient(to right, transparent 0%, var(--teal) 20%, rgba(255,255,255,0.9) 50%, var(--teal) 80%, transparent 100%); box-shadow: 0 0 12px 3px rgba(29,158,117,0.6); pointer-events: none; opacity: 0; transition: opacity 0.3s; }
+  .scanner-top-bar { position: absolute; top: 0; left: 0; right: 0; padding: max(52px, env(safe-area-inset-top, 52px)) 16px 12px; display: flex; align-items: center; justify-content: space-between; gap: 10px; background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, transparent 100%); z-index: 2; }
+  .scanner-top-bar select { background: rgba(0,0,0,0.55); color: white; border: 1px solid rgba(255,255,255,0.3); border-radius: var(--radius-md); padding: 7px 28px 7px 10px; font-size: 13px; font-weight: 600; flex: 1; appearance: none; -webkit-appearance: none; }
+  .scanner-bottom-bar { position: absolute; bottom: 0; left: 0; right: 0; padding: 20px 24px max(32px, env(safe-area-inset-bottom, 32px)); display: flex; align-items: center; justify-content: space-between; background: linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 100%); z-index: 2; }
+  .scanner-shutter { width: 72px; height: 72px; border-radius: 50%; background: rgba(255,255,255,0.15); border: 3px solid white; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.1s, background 0.15s; position: relative; flex-shrink: 0; }
+  .scanner-shutter:active { transform: scale(0.92); background: rgba(255,255,255,0.3); }
+  .scanner-shutter-inner { width: 52px; height: 52px; border-radius: 50%; background: white; transition: transform 0.1s; }
+  .scanner-shutter:active .scanner-shutter-inner { transform: scale(0.88); }
+  .scanner-side-btn { color: white; background: none; border: none; cursor: pointer; font-size: 13px; font-weight: 600; padding: 8px; opacity: 0.85; display: flex; flex-direction: column; align-items: center; gap: 4px; width: 64px; }
+  .scanner-side-btn svg { width: 24px; height: 24px; stroke: white; fill: none; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+  .scanner-hint { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); margin-top: 48%; color: rgba(255,255,255,0.8); font-size: 12px; font-weight: 500; text-align: center; pointer-events: none; z-index: 2; background: rgba(0,0,0,0.4); padding: 6px 14px; border-radius: 20px; white-space: nowrap; }
+  @keyframes shutterFlash { 0%{opacity:0} 20%{opacity:0.6} 100%{opacity:0} }
+  .scanner-flash { position: absolute; inset: 0; background: white; opacity: 0; pointer-events: none; z-index: 3; }
   .scan-icon { width: 56px; height: 56px; background: var(--teal-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
   .scan-icon svg { width: 28px; height: 28px; stroke: var(--teal); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
   .scan-label { font-size: 15px; font-weight: 600; color: var(--text-primary); }
@@ -734,6 +753,50 @@
   </div>
 </div>
 
+
+<!-- ── Live Scanner View ── -->
+<div class="scanner-view" id="scanner-view">
+  <video id="scanner-video" playsinline muted autoplay style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;"></video>
+  <canvas id="scanner-canvas" class="scanner-canvas"></canvas>
+  <div id="scanner-line" class="scanner-line"></div>
+  <div class="scanner-flash" id="scanner-flash"></div>
+
+  <!-- Top bar: month + store -->
+  <div class="scanner-top-bar">
+    <div style="display:flex;flex-direction:column;gap:6px;flex:1;">
+      <div style="display:flex;gap:8px;">
+        <select id="sc-month" style="flex:1;background:rgba(0,0,0,0.55);color:white;border:1px solid rgba(255,255,255,0.3);border-radius:var(--radius-md);padding:7px 10px;font-size:13px;font-weight:600;appearance:none;-webkit-appearance:none;">
+          <option value="current" id="sc-month-current">This month</option>
+          <option value="next" id="sc-month-next">Next month</option>
+        </select>
+        <select id="sc-store" style="flex:1;background:rgba(0,0,0,0.55);color:white;border:1px solid rgba(255,255,255,0.3);border-radius:var(--radius-md);padding:7px 10px;font-size:13px;font-weight:600;appearance:none;-webkit-appearance:none;"></select>
+      </div>
+    </div>
+    <button onclick="closeScanner()" style="color:white;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.3);border-radius:var(--radius-md);padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;">✕ Cancel</button>
+  </div>
+
+  <div class="scanner-hint" id="scanner-hint">Align receipt inside the frame</div>
+
+  <!-- Bottom bar: library | shutter | torch -->
+  <div class="scanner-bottom-bar">
+    <button class="scanner-side-btn" onclick="scannerPickFromLibrary()">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      Library
+    </button>
+    <button class="scanner-shutter" id="scanner-shutter-btn" onclick="captureReceipt()">
+      <div class="scanner-shutter-inner"></div>
+    </button>
+    <button class="scanner-side-btn" onclick="toggleTorch()" id="torch-btn" style="display:none;">
+      <svg viewBox="0 0 24 24"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0018 8 6 6 0 006 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 019.09 14"/></svg>
+      Torch
+    </button>
+    <!-- placeholder when torch hidden -->
+    <div style="width:64px;" id="torch-placeholder"></div>
+  </div>
+  <!-- Hidden file input for library fallback -->
+  <input type="file" id="scanner-library-input" accept="image/*" style="display:none;" onchange="handleScannerLibraryUpload(this)">
+</div>
+
 <div class="toast" id="toast-msg"></div>
 
 <script>
@@ -1368,133 +1431,176 @@ function receiptTargetKey() { const n=new Date(); let y=n.getFullYear(),m=n.getM
 function setReceiptMonth(target) { receiptMonthTarget=target; document.getElementById('seg-current').classList.toggle('active',target==='current'); document.getElementById('seg-next').classList.toggle('active',target==='next'); }
 function showReceiptButtons(visible) { const l=document.getElementById('receipt-camera-label'); if(l)l.style.display=visible?'flex':'none'; }
 function openReceiptModal() {
+  if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+    openScanner();
+  } else {
+    openFallbackReceiptModal();
+  }
+}
+
+function openFallbackReceiptModal() {
   setReceiptMonth('current');
   const n=new Date(); document.getElementById('seg-current').textContent=MONTH_NAMES[n.getMonth()]; document.getElementById('seg-next').textContent=MONTH_NAMES[(n.getMonth()+1)%12];
   const sel=document.getElementById('receipt-store'); sel.innerHTML=household.stores.concat(['Other']).map(s=>`<option>${s}</option>`).join('');
   document.getElementById('receipt-processing').style.display='none'; document.getElementById('receipt-file-input').value=''; showReceiptButtons(true);
   document.getElementById('receipt-modal').classList.add('open');
 }
+
+// Old fallback handler — used by receipt-modal file input
 async function handleReceiptUpload(input) {
-  if(!input.files[0])return; const file=input.files[0];
-  showReceiptProcessing('Reading your receipt...'); const targetKey=receiptTargetKey(); const store=document.getElementById('receipt-store').value;
+  if(!input.files[0])return;
+  const file=input.files[0];
+  const base64=await fileToJpegBase64(file);
+  const store=document.getElementById('receipt-store').value;
+  const monthTarget=receiptMonthTarget;
+  closeModal('receipt-modal');
+  processReceiptBase64(base64, monthTarget, store);
+  input.value='';
+}
+
+// ════════════════════════════════════════════════════
+// LIVE SCANNER
+// ════════════════════════════════════════════════════
+let scannerStream=null, scannerAnimFrame=null, torchOn=false;
+
+async function openScanner() {
+  const now=new Date();
+  document.getElementById('sc-month-current').textContent=MONTH_NAMES[now.getMonth()];
+  document.getElementById('sc-month-next').textContent=MONTH_NAMES[(now.getMonth()+1)%12];
+  document.getElementById('sc-month').value='current';
+  const scStore=document.getElementById('sc-store');
+  scStore.innerHTML=household.stores.concat(['Other']).map(s=>`<option>${s}</option>`).join('');
   try {
-    const base64=await fileToJpegBase64(file);
-    if(!hasApiKey())throw new Error('No API key set. Add your Anthropic API key in Settings first.');
+    scannerStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1080}},audio:false});
+    const video=document.getElementById('scanner-video');
+    video.srcObject=scannerStream;
+    await video.play();
+    const track=scannerStream.getVideoTracks()[0];
+    const caps=track.getCapabilities?track.getCapabilities():{};
+    document.getElementById('torch-btn').style.display=caps.torch?'flex':'none';
+    document.getElementById('torch-placeholder').style.display=caps.torch?'none':'block';
+    document.getElementById('scanner-view').classList.add('open');
+    setTimeout(()=>{drawScannerFrame();startScanLine();},300);
+  } catch(e) {
+    stopScanner();
+    openFallbackReceiptModal();
+  }
+}
 
-    // Build pantry history context — teach Claude what you normally buy
-    const pantryContext = pantryItems.length
-      ? pantryItems.map(it => `  - "${it.name}" (${it.category}), bought ${it.priceHistory.length}x at ${it.priceHistory[it.priceHistory.length-1]?.store||store}`).join('\n')
-      : '  (no pantry history yet)';
+function getScannerFrameRect() {
+  const c=document.getElementById('scanner-canvas');
+  const margin=Math.round(c.width*0.05);
+  const fw=c.width-margin*2;
+  const fh=Math.min(Math.round(fw*2.3),c.height-200);
+  const fx=margin, fy=Math.round((c.height-fh)/2)-20;
+  return {fx,fy,fw,fh};
+}
 
-    // Build abbreviation memory — confirmed mappings from past corrections
-    const abbrevMap = getAbbrevMap();
-    const abbrevContext = Object.keys(abbrevMap).length
-      ? Object.entries(abbrevMap).map(([raw, clean]) => `  "${raw}" → "${clean}"`).join('\n')
-      : '  (none yet)';
+function drawScannerFrame() {
+  const canvas=document.getElementById('scanner-canvas');
+  canvas.width=canvas.offsetWidth; canvas.height=canvas.offsetHeight;
+  const ctx=canvas.getContext('2d');
+  const{fx,fy,fw,fh}=getScannerFrameRect();
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle='rgba(0,0,0,0.52)';
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.clearRect(fx,fy,fw,fh);
+  ctx.strokeStyle='rgba(255,255,255,0.12)'; ctx.lineWidth=1;
+  ctx.strokeRect(fx,fy,fw,fh);
+  const cl=Math.round(Math.min(fw,fh)*0.1);
+  ctx.strokeStyle='#1D9E75'; ctx.lineWidth=3; ctx.lineCap='round';
+  [[fx,fy,1,1],[fx+fw,fy,-1,1],[fx,fy+fh,1,-1],[fx+fw,fy+fh,-1,-1]].forEach(([x,y,dx,dy])=>{
+    ctx.beginPath(); ctx.moveTo(x,y+dy*cl); ctx.lineTo(x,y); ctx.lineTo(x+dx*cl,y); ctx.stroke();
+  });
+  const line=document.getElementById('scanner-line');
+  line.style.left=fx+'px'; line.style.width=fw+'px';
+  const hint=document.getElementById('scanner-hint');
+  hint.style.top=(fy+fh+14)+'px'; hint.style.left=fx+'px';
+  hint.style.width=fw+'px'; hint.style.transform='none';
+}
 
-    // Shopping list for matching
-    const listForMatch = shoppingList.map((it,i) => ({i, name:it.name}));
-    const matchPart = listForMatch.length
-      ? 'SHOPPING LIST (match receipt items to these where possible, set matchIndex to the item\'s i):\n' + JSON.stringify(listForMatch)
-      : 'No shopping list — set matchIndex to null for all items.';
+function startScanLine() {
+  const line=document.getElementById('scanner-line'); line.style.opacity='1';
+  const{fy,fh}=getScannerFrameRect(); const dur=2200; let t0=null;
+  function animate(ts){
+    if(!t0)t0=ts;
+    const e=(ts-t0)%(dur*2);
+    const p=e<dur?e/dur:(dur*2-e)/dur;
+    line.style.top=(fy+8+p*(fh-16))+'px';
+    scannerAnimFrame=requestAnimationFrame(animate);
+  }
+  scannerAnimFrame=requestAnimationFrame(animate);
+}
 
-    // Store-specific abbreviation knowledge
-    const storeKey_lower = store.toLowerCase();
-    const storeKnowledge = storeKey_lower.includes('costco') ? `
-COSTCO-SPECIFIC ABBREVIATIONS (critical for decoding this receipt):
-- KS = Kirkland Signature (Costco's own brand)
-- ORG = Organic
-- A2 = A2 protein type (applies to milk)
-- PR or PK = Pack (multi-pack item)
-- WHL = Whole
-- BNLS = Boneless
-- SKNLS = Skinless
-- MDM = Mediterranean
-- PREV = Probiotic/Preview
-- FF = Fat Free
-- LF = Low Fat
-- GF = Gluten Free
-- ATL = Atlantic
-- PLN = Plain
-- VAN = Vanilla
-- CHKN or CKN = Chicken
-- SLMN = Salmon
-- GRND = Ground
-- BRST = Breast
-- TNDRLNS = Tenderloins
-- BLND = Blend
-- UNSLTD = Unsalted
-- EXIT MARK: Costco employees draw a diagonal line across receipts at the exit door. 
-  This line frequently covers part of item descriptions. When you see partial text,
-  reason about what the full item likely is using Costco product knowledge and context.
-  Example: "RG A2 PR" is likely "ORG A2 PR" = Kirkland Organic A2 Milk Pack` :
-      storeKey_lower.includes('detweiler') ? 'DETWEILERS: Local Pennsylvania grocery known for fresh meats, produce, and Amish goods.' :
-      storeKey_lower.includes('publix') ? 'PUBLIX: Southeast US grocery chain.' :
-      storeKey_lower.includes('walmart') ? 'WALMART: Large general merchandise store — focus on food and household items only.' :
-      storeKey_lower.includes('aldi') ? 'ALDI: Discount grocery, many store-brand items.' : '';
+function captureReceipt() {
+  const video=document.getElementById('scanner-video');
+  const flash=document.getElementById('scanner-flash');
+  flash.style.animation='none'; flash.offsetHeight;
+  flash.style.animation='shutterFlash 0.35s ease-out forwards';
+  const c=document.createElement('canvas');
+  c.width=video.videoWidth||1280; c.height=video.videoHeight||720;
+  c.getContext('2d').drawImage(video,0,0,c.width,c.height);
+  const base64=c.toDataURL('image/jpeg',0.92).split(',')[1];
+  const store=document.getElementById('sc-store').value;
+  const monthTarget=document.getElementById('sc-month').value;
+  setTimeout(()=>{stopScanner();processReceiptBase64(base64,monthTarget,store);},200);
+}
 
-    const promptText = `You are an expert grocery receipt decoder for the Pantry. app. Your job is to extract items from a ${store} receipt and make intelligent guesses about what each item is — even when text is abbreviated, partial, or partially obscured.
+async function toggleTorch() {
+  if(!scannerStream)return;
+  const track=scannerStream.getVideoTracks()[0];
+  if(!track||!track.applyConstraints)return;
+  torchOn=!torchOn;
+  try{await track.applyConstraints({advanced:[{torch:torchOn}]});}catch(e){}
+  document.getElementById('torch-btn').style.opacity=torchOn?'1':'0.75';
+}
 
-${storeKnowledge}
+function stopScanner() {
+  if(scannerAnimFrame){cancelAnimationFrame(scannerAnimFrame);scannerAnimFrame=null;}
+  if(scannerStream){scannerStream.getTracks().forEach(t=>t.stop());scannerStream=null;}
+  const line=document.getElementById('scanner-line');
+  if(line)line.style.opacity='0';
+  document.getElementById('scanner-view').classList.remove('open');
+}
 
-ITEMS PREVIOUSLY PURCHASED (use this to recognize familiar items from partial text):
-${pantryContext}
+function closeScanner(){stopScanner();}
+function scannerPickFromLibrary(){document.getElementById('scanner-library-input').click();}
+function handleScannerLibraryUpload(input) {
+  if(!input.files[0])return;
+  const file=input.files[0], store=document.getElementById('sc-store').value, mt=document.getElementById('sc-month').value;
+  stopScanner();
+  fileToJpegBase64(file).then(b64=>processReceiptBase64(b64,mt,store)).catch(e=>showToast(e.message||'Could not read image'));
+  input.value='';
+}
 
-CONFIRMED ABBREVIATION MAPPINGS (from past user corrections — trust these completely):
-${abbrevContext}
-
-YOUR REASONING APPROACH:
-1. Read the raw text on each line EXACTLY as it appears
-2. Cross-reference with: store abbreviations above, pantry history, confirmed mappings, and your knowledge of common products sold at ${store}
-3. Make your best full product name — even if text is partially obscured, infer the most likely item
-4. Note your confidence and quantity/size when visible
-5. If text is cut off or obscured, describe what IS visible and make a logical inference
-
-INCLUDE ONLY:
-- Food, beverages, household consumables, personal care items, pet food
-
-SKIP ENTIRELY:
-- Membership fees, electronics, clothing, pharmacy, gift cards, tax, subtotals, totals, discounts, fuel
-
-${matchPart}
-
-Return ONLY a valid JSON array, no markdown, no explanation:
-[{
-  "rawText": "exact text from receipt line",
-  "name": "Your best full product name guess",
-  "price": 0.00,
-  "quantity": "size or pack count if visible, else null",
-  "category": "Protein|Produce|Dairy|Pantry Staples|Snacks|Beverages|Frozen|Other",
-  "confidence": "high|medium|low",
-  "matchIndex": null
-}]
-
-confidence meanings: high=certain, medium=good guess, low=partial text or unclear
-
-If you cannot read the receipt at all, return: []`;
-
-    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:apiHeaders(),body:JSON.stringify({model:'claude-sonnet-4-5-20250929',max_tokens:2500,messages:[{role:'user',content:[{type:'image',source:{type:'base64',media_type:'image/jpeg',data:base64}},{type:'text',text:promptText}]}]})});
+// Core receipt processing — used by both scanner and file input paths
+async function processReceiptBase64(base64, monthTarget, store) {
+  receiptMonthTarget=monthTarget||'current';
+  const targetKey=receiptTargetKey();
+  document.getElementById('receipt-modal').classList.add('open');
+  showReceiptProcessing('Reading your receipt...');
+  if(!hasApiKey()){showReceiptError('No API key set. Add your Anthropic API key in Settings first.');return;}
+  const listForMatch=shoppingList.map((it,i)=>({i,name:it.name}));
+  const pantryCtx=pantryItems.length?pantryItems.map(it=>'  - "'+it.name+'" ('+it.category+'), bought '+it.priceHistory.length+'x').join('\n'):'  (no pantry history yet)';
+  const abbrevMap=getAbbrevMap();
+  const abbrevCtx=Object.keys(abbrevMap).length?Object.entries(abbrevMap).map(([r,c])=>'  "'+r+'" → "'+c+'"').join('\n'):'  (none yet)';
+  const matchPart=listForMatch.length?'SHOPPING LIST:\n'+JSON.stringify(listForMatch):'No shopping list — set matchIndex to null.';
+  const sk=store.toLowerCase();
+  const storeK=sk.includes('costco')?'\nCOSTCO ABBREVIATIONS: KS=Kirkland Signature, ORG=Organic, A2=A2 protein, PR/PK=Pack, WHL=Whole, BNLS=Boneless, SKNLS=Skinless, GRND=Ground, BRST=Breast, SLMN=Salmon, CHKN=Chicken, ATL=Atlantic, PLN=Plain, VAN=Vanilla, FF=Fat Free, LF=Low Fat, GF=Gluten Free.\nEXIT MARK: staff draw a diagonal line at exit — this partially obscures text. Reason through partial text using Costco product knowledge and pantry history.':'';
+  const prompt='You are an expert receipt decoder. STORE: '+store+storeK+'\n\nPANTRY HISTORY:\n'+pantryCtx+'\n\nCONFIRMED ABBREVIATION MAPPINGS (trust completely):\n'+abbrevCtx+'\n\nFor each grocery line item: extract exact text, make best full product name guess (using store knowledge, pantry history, confirmed mappings), infer quantity/size where visible.\n\nSKIP: membership fees, electronics, clothing, pharmacy, gift cards, tax, subtotals, totals, discounts.\n\n'+matchPart+'\n\nReturn ONLY valid JSON:\n[{"rawText":"KS ORG A2 PR","name":"Kirkland Organic A2 Whole Milk","price":18.99,"quantity":"3-pack","category":"Dairy","confidence":"high","matchIndex":null}]\n\nconfidence: high=certain, medium=best guess, low=partial/unclear. If unreadable: []';
+  try {
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:apiHeaders(),body:JSON.stringify({model:'claude-sonnet-4-5-20250929',max_tokens:2500,messages:[{role:'user',content:[{type:'image',source:{type:'base64',media_type:'image/jpeg',data:base64}},{type:'text',text:prompt}]}]})});
     const data=await res.json();
     if(data.error){const msg=data.error.message||JSON.stringify(data.error);if(/authentication|api[\s_-]?key|credential|401/i.test(msg)||res.status===401)throw new Error(msg+'\n\n'+keyDiagnostic());throw new Error(msg);}
-    if(!data.content||!Array.isArray(data.content))throw new Error('Unexpected response from the server.');
+    if(!data.content||!Array.isArray(data.content))throw new Error('Unexpected response.');
     const text=data.content.map(c=>c.text||'').join('');
     const rawItems=extractJsonArray(text);
-    if(!rawItems||rawItems.length===0)throw new Error("Couldn't read any items. Try a clearer, well-lit photo.");
-    const items=rawItems
-      .filter(it=>it&&typeof it.name==='string'&&it.name.trim().length>0)
-      .map(it=>({
-        rawText: (it.rawText||'').trim(),
-        name: it.name.trim(),
-        price: Number(it.price)||0,
-        quantity: it.quantity||null,
-        category: it.category||'Other',
-        confidence: it.confidence||'medium',
-        matchIndex: (it.matchIndex!==null&&it.matchIndex!==undefined&&!isNaN(Number(it.matchIndex)))?Number(it.matchIndex):null
-      }));
-    if(items.length===0)throw new Error("Receipt scanned but no items could be read.");
-    closeModal('receipt-modal'); openRecon(items,targetKey,store);
+    if(!rawItems||rawItems.length===0)throw new Error("Couldn't read any items. Try again with better lighting.");
+    const items=rawItems.filter(it=>it&&typeof it.name==='string'&&it.name.trim().length>0).map(it=>({rawText:(it.rawText||'').trim(),name:it.name.trim(),price:Number(it.price)||0,quantity:it.quantity||null,category:it.category||'Other',confidence:it.confidence||'medium',matchIndex:(it.matchIndex!==null&&it.matchIndex!==undefined&&!isNaN(Number(it.matchIndex)))?Number(it.matchIndex):null}));
+    if(items.length===0)throw new Error('Receipt scanned but no grocery items found.');
+    closeModal('receipt-modal');
+    openRecon(items,targetKey,store);
   } catch(e){showReceiptError(e&&e.message?e.message:'Could not read receipt. Try again.');}
-  input.value='';
 }
 
 // ── Abbreviation memory — learns from user corrections ──
