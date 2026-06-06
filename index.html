@@ -2234,31 +2234,33 @@ function attachSwipeListeners() {
     if (!el || el._swipeAttached) return;
     el._swipeAttached = true;
     el._swipeX = 0;
-    let startX = 0, startY = 0, dragging = false;
-    const THRESHOLD = 60;
+    let startX = 0, startY = 0, startTime = 0;
+    let swiping = false;
+    const THRESHOLD = 55;
 
     el.addEventListener('touchstart', e => {
       startX = e.touches[0].clientX;
       startY = e.touches[0].clientY;
-      dragging = true;
+      startTime = Date.now();
+      swiping = false;
       el.style.transition = 'none';
     }, { passive: true });
 
     el.addEventListener('touchmove', e => {
-      if (!dragging) return;
       const dx = e.touches[0].clientX - startX;
       const dy = e.touches[0].clientY - startY;
-      if (Math.abs(dy) > Math.abs(dx) + 5) { dragging = false; return; }
-      e.preventDefault();
-      const clamped = Math.max(-THRESHOLD - 10, Math.min(THRESHOLD + 10, dx));
+      // Only engage horizontal swipe if clearly horizontal
+      if (!swiping && Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
+      if (!swiping && Math.abs(dy) > Math.abs(dx)) return; // vertical — ignore
+      swiping = true;
+      const clamped = Math.max(-THRESHOLD - 16, Math.min(THRESHOLD + 16, dx));
       el._swipeX = clamped;
       el.style.transform = `translateX(${clamped}px)`;
-    }, { passive: false });
+    }, { passive: true }); // passive:true — never blocks clicks or scroll
 
-    el.addEventListener('touchend', () => {
-      if (!dragging) return;
-      dragging = false;
-      el.style.transition = 'transform 0.2s ease';
+    el.addEventListener('touchend', e => {
+      if (!swiping) return;
+      el.style.transition = 'transform 0.22s ease';
       const x = el._swipeX || 0;
       if (x < -THRESHOLD) {
         el.style.transform = 'translateX(-80px)';
@@ -2270,7 +2272,8 @@ function attachSwipeListeners() {
         el.style.transform = 'translateX(0)';
         el._swipeX = 0;
       }
-    });
+      swiping = false;
+    }, { passive: true });
   });
 }
 
