@@ -127,13 +127,11 @@
   .list-item { display: flex; align-items: center; padding: 12px 16px; gap: 12px; background: var(--white); border-bottom: 0.5px solid var(--border); cursor: pointer; transition: background 0.12s; }
   .list-item:active { background: var(--gray-50); }
   .list-item.checked { opacity: 0.55; }
-  /* Swipe */
-  .swipe-wrap { position: relative; overflow: hidden; border-bottom: 0.5px solid var(--border); }
-  .swipe-wrap .list-item { border-bottom: none; position: relative; z-index: 1; transition: transform 0.2s ease; will-change: transform; background: var(--white); }
-  .swipe-action-delete { position: absolute; right: 0; top: 0; bottom: 0; width: 80px; background: var(--red); display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 3px; color: white; font-size: 11px; font-weight: 600; cursor: pointer; }
-  .swipe-action-delete svg { width: 20px; height: 20px; stroke: white; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-  .swipe-action-edit { position: absolute; left: 0; top: 0; bottom: 0; width: 80px; background: var(--teal); display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 3px; color: white; font-size: 11px; font-weight: 600; cursor: pointer; }
-  .swipe-action-edit svg { width: 20px; height: 20px; stroke: white; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  /* Swipe — YNAB style: delete reveals from right, grows with swipe */
+  .swipe-wrap { position: relative; overflow: hidden; border-bottom: 0.5px solid var(--border); background: var(--red); }
+  .swipe-wrap .list-item { border-bottom: none; position: relative; z-index: 1; will-change: transform; background: var(--white); }
+  .swipe-action-delete { position: absolute; right: 0; top: 0; bottom: 0; min-width: 90px; width: 90px; background: var(--red); display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; font-weight: 700; letter-spacing: 0.01em; cursor: pointer; user-select: none; }
+  /* Edit action removed from swipe — edit via tap on item */
   .check-circle { width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--gray-200); flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
   .check-circle.done { background: var(--teal); border-color: var(--teal); }
   .check-circle.done svg { display: block; }
@@ -951,12 +949,7 @@ function renderListItem(item) {
   const salePill = item.onSale ? `<span class="pill pill-teal" style="padding:1px 7px;font-size:10px;">Sale</span>` : '';
   const price = item.lastPrice ? `$${item.lastPrice.toFixed(2)}` : '–';
   return `<div class="swipe-wrap" id="swipe-wrap-${item.id}">
-    <div class="swipe-action-edit" onclick="openEditItem(${item.id})">
-      <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Edit
-    </div>
-    <div class="swipe-action-delete" onclick="deleteItem(${item.id})">
-      <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>Delete
-    </div>
+    <div class="swipe-action-delete" id="swipe-del-${item.id}" onclick="deleteItem(${item.id})">Delete</div>
     <div class="list-item ${item.checked?'checked':''}" id="swipe-item-${item.id}" onclick="handleListItemTap(event,${item.id})" data-id="${item.id}">
       <div class="check-circle ${item.checked?'done':''}"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
       <div class="item-info">
@@ -972,7 +965,7 @@ function handleListItemTap(e,id) { const el=document.getElementById('swipe-item-
 function toggleItem(id) { const item=shoppingList.find(i=>i.id===id); if(item){item.checked=!item.checked;saveList();renderPlanList();} }
 function saveList() { localStorage.setItem('pantry_list',JSON.stringify(shoppingList)); }
 
-// ── Swipe gestures — iOS-style drag-to-reveal-delete ──
+// ── Swipe gestures — YNAB-style ──
 let _swipeCloseListenerAdded = false;
 function ensureSwipeCloseListener() {
   if (_swipeCloseListenerAdded) return;
@@ -981,14 +974,18 @@ function ensureSwipeCloseListener() {
     document.querySelectorAll('.swipe-wrap .list-item').forEach(el => {
       if (el._swipeX && Math.abs(el._swipeX) > 5) {
         const wrap = el.closest('.swipe-wrap');
-        if (wrap && !wrap.contains(e.target)) {
-          el.style.transition = 'transform 0.22s ease';
-          el.style.transform = 'translateX(0)';
-          el._swipeX = 0;
-        }
+        if (wrap && !wrap.contains(e.target)) snapSwipeBack(el, wrap);
       }
     });
   }, { passive: true });
+}
+
+function snapSwipeBack(el, wrap) {
+  el.style.transition = 'transform 0.22s cubic-bezier(0.25,0.46,0.45,0.94)';
+  el.style.transform = 'translateX(0)';
+  el._swipeX = 0;
+  const del = wrap.querySelector('.swipe-action-delete');
+  if (del) { del.style.transition = 'width 0.22s cubic-bezier(0.25,0.46,0.45,0.94)'; del.style.width = '90px'; }
 }
 
 function attachSwipeListeners() {
@@ -998,41 +995,56 @@ function attachSwipeListeners() {
     if (!el || el._swipeAttached) return;
     el._swipeAttached = true;
     el._swipeX = 0;
-    let startX = 0, startY = 0, swiping = false;
-    const SNAP_THRESHOLD = 50;    // snap open to show delete button
-    const DELETE_THRESHOLD = 220; // full swipe = instant delete
+    let startX = 0, startY = 0;
+    let lastX = 0, lastTime = 0, velocity = 0;
+    let swiping = false, direction = null;
+    const SNAP_PX = 90;
+    const SNAP_THRESHOLD = 35;
+    const DELETE_THRESHOLD = Math.round(window.innerWidth * 0.55);
 
     el.addEventListener('touchstart', e => {
-      startX = e.touches[0].clientX;
+      startX = lastX = e.touches[0].clientX;
       startY = e.touches[0].clientY;
-      swiping = false;
+      lastTime = Date.now();
+      velocity = 0; swiping = false; direction = null;
       el.style.transition = 'none';
+      const del = wrap.querySelector('.swipe-action-delete');
+      if (del) del.style.transition = 'none';
     }, { passive: true });
 
     el.addEventListener('touchmove', e => {
-      const dx = e.touches[0].clientX - startX;
-      const dy = e.touches[0].clientY - startY;
-      if (!swiping && Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
-      if (!swiping && Math.abs(dy) > Math.abs(dx)) return; // vertical scroll wins
+      const cx = e.touches[0].clientX;
+      const cy = e.touches[0].clientY;
+      const dx = cx - startX;
+      const dy = cy - startY;
+      if (!direction && (Math.abs(dx) > 4 || Math.abs(dy) > 4)) {
+        direction = Math.abs(dx) > Math.abs(dy) ? 'h' : 'v';
+      }
+      if (direction !== 'h') return;
       swiping = true;
-      // Only left swipe — right swipe snaps back
-      if (dx > 0 && el._swipeX === 0) return;
-      const raw = (el._swipeX || 0) + (dx - (el._lastDx || dx));
-      el._lastDx = dx;
-      const clamped = Math.min(0, Math.max(-(DELETE_THRESHOLD + 40), raw));
+      const now = Date.now();
+      if (now > lastTime) velocity = (cx - lastX) / (now - lastTime);
+      lastX = cx; lastTime = now;
+      // Drag relative to where we started this touch (base position + current drag)
+      const base = el._swipeX || 0;
+      const raw = base + dx;
+      const clamped = Math.min(0, Math.max(-(DELETE_THRESHOLD + 50), raw));
       el._swipeX = clamped;
-      el.style.transform = `translateX(${clamped}px)`;
+      el.style.transform = 'translateX(' + clamped + 'px)';
+      // Delete button grows to fill revealed space
+      const del = wrap.querySelector('.swipe-action-delete');
+      if (del) del.style.width = Math.max(90, -clamped) + 'px';
     }, { passive: true });
 
-    el.addEventListener('touchend', e => {
-      el._lastDx = 0;
+    el.addEventListener('touchend', () => {
       if (!swiping) return;
       swiping = false;
       const x = el._swipeX || 0;
       const id = parseInt(el.dataset.id, 10);
+      const isFlick = velocity < -0.4; // fast leftward flick
 
-      if (x < -DELETE_THRESHOLD) {
-        // Full swipe — animate off screen then collapse & delete
+      if (x < -DELETE_THRESHOLD || isFlick) {
+        // Full swipe or fast flick — instant delete, no confirmation
         el.style.transition = 'transform 0.15s ease-in';
         el.style.transform = 'translateX(-110vw)';
         el._swipeX = -9999;
@@ -1042,51 +1054,21 @@ function attachSwipeListeners() {
           wrap.style.overflow = 'hidden';
           wrap.style.transition = 'height 0.2s ease, opacity 0.15s ease';
           requestAnimationFrame(() => { wrap.style.height = '0'; wrap.style.opacity = '0'; });
-          setTimeout(() => {
-            shoppingList = shoppingList.filter(i => i.id !== id);
-            saveList();
-            renderPlanList();
-            showToast('Item deleted');
-          }, 210);
-        }, 140);
+          setTimeout(() => { shoppingList = shoppingList.filter(i => i.id !== id); saveList(); renderPlanList(); showToast('Item deleted'); }, 220);
+        }, 150);
       } else if (x < -SNAP_THRESHOLD) {
-        // Snap to reveal delete button (80px)
+        // Snap to reveal delete button
         el.style.transition = 'transform 0.22s cubic-bezier(0.25,0.46,0.45,0.94)';
-        el.style.transform = 'translateX(-80px)';
-        el._swipeX = -80;
+        el.style.transform = 'translateX(-' + SNAP_PX + 'px)';
+        el._swipeX = -SNAP_PX;
+        const del = wrap.querySelector('.swipe-action-delete');
+        if (del) { del.style.transition = 'width 0.22s cubic-bezier(0.25,0.46,0.45,0.94)'; del.style.width = SNAP_PX + 'px'; }
       } else {
-        // Snap back
-        el.style.transition = 'transform 0.22s cubic-bezier(0.25,0.46,0.45,0.94)';
-        el.style.transform = 'translateX(0)';
-        el._swipeX = 0;
+        snapSwipeBack(el, wrap);
       }
+      velocity = 0;
     }, { passive: true });
   });
-}
-
-// ── Edit / Delete item ──
-let editingItemId = null;
-function openEditItem(id) {
-  const el=document.getElementById('swipe-item-'+id);
-  if(el){el.style.transition='transform 0.2s ease';el.style.transform='translateX(0)';el._swipeX=0;}
-  const item=shoppingList.find(i=>i.id===id); if(!item)return;
-  editingItemId=id;
-  document.getElementById('edit-item-name').value=item.name;
-  document.getElementById('edit-item-category').value=item.category||'Other';
-  document.getElementById('edit-item-price').value=item.lastPrice||'';
-  document.getElementById('edit-item-sale').value=item.onSale?'yes':'no';
-  const storeSel=document.getElementById('edit-item-store');
-  storeSel.innerHTML=household.stores.concat(['Other']).map(s=>`<option ${s===item.store?'selected':''}>${escapeHtml(s)}</option>`).join('');
-  document.getElementById('edit-item-modal').classList.add('open');
-}
-function saveEditItem() {
-  const item=shoppingList.find(i=>i.id===editingItemId); if(!item)return;
-  item.name=document.getElementById('edit-item-name').value.trim()||item.name;
-  item.category=document.getElementById('edit-item-category').value;
-  item.lastPrice=parseFloat(document.getElementById('edit-item-price').value)||null;
-  item.store=document.getElementById('edit-item-store').value;
-  item.onSale=document.getElementById('edit-item-sale').value==='yes';
-  saveList(); closeModal('edit-item-modal'); editingItemId=null; renderPlanList(); showToast('Item updated');
 }
 function deleteItem(id) {
   const el=document.getElementById('swipe-item-'+id); if(el){el.style.transform='translateX(0)';el._swipeX=0;}
