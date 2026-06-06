@@ -285,31 +285,30 @@
   .settings-row-label .s { font-size: 12px; color: var(--text-tertiary); margin-top: 2px; }
   .settings-row-chevron svg { width: 16px; height: 16px; stroke: var(--gray-200); fill: none; stroke-width: 2.5; }
   /* RECONCILIATION */
-  .recon-modal { display: none; position: fixed; inset: 0; z-index: 400; background: var(--white); max-width: 430px; margin: 0 auto; flex-direction: column; }
+  .recon-modal { display: none; position: fixed; inset: 0; z-index: 400; background: var(--gray-50); max-width: 430px; margin: 0 auto; flex-direction: column; }
   .recon-modal.open { display: flex; }
-  .recon-header { padding: max(16px, env(safe-area-inset-top, 0px)) 20px 12px; border-bottom: 0.5px solid var(--border); background: var(--white); }
+  .recon-header { padding: max(52px, env(safe-area-inset-top, 52px)) 20px 12px; border-bottom: 0.5px solid var(--border); background: var(--white); }
   .recon-title { font-size: 20px; font-weight: 700; letter-spacing: -0.4px; }
   .recon-sub { font-size: 12px; color: var(--text-tertiary); margin-top: 3px; }
-  .recon-cols-head { display: flex; padding: 10px 12px 6px; gap: 8px; }
-  .recon-cols-head > div { flex: 1; font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-tertiary); }
-  .recon-cols-head > div:last-child { text-align: right; }
-  .recon-body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 4px 12px 12px; }
-  .recon-row { display: flex; align-items: stretch; gap: 8px; margin-bottom: 8px; }
-  .recon-cell { flex: 1; min-width: 0; border-radius: var(--radius-md); padding: 10px; font-size: 12px; border: 1px solid var(--border); background: var(--white); display: flex; flex-direction: column; justify-content: center; }
-  .recon-cell.scanned { background: var(--gray-50); }
-  .recon-cell-name { font-weight: 600; line-height: 1.25; word-break: break-word; }
-  .recon-cell-meta { font-size: 11px; color: var(--text-tertiary); margin-top: 2px; }
-  .recon-cell.empty { border-style: dashed; align-items: center; color: var(--text-tertiary); font-size: 11px; }
-  .recon-link { width: 34px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-  .recon-link-dot { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1.5px solid var(--border-strong); background: var(--white); transition: all 0.15s; }
-  .recon-link-dot svg { width: 15px; height: 15px; stroke: var(--text-tertiary); fill: none; stroke-width: 2.5; }
-  .recon-row.matched .recon-cell { border-color: var(--teal); }
-  .recon-row.matched .recon-link-dot { background: var(--teal); border-color: var(--teal); }
-  .recon-row.matched .recon-link-dot svg { stroke: white; }
-  .recon-section-label { font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-tertiary); padding: 14px 4px 6px; }
-  .recon-footer { padding: 12px 20px calc(16px + env(safe-area-inset-bottom, 0px)); border-top: 0.5px solid var(--border); background: var(--white); display: flex; gap: 10px; }
-  .recon-summary { font-size: 12px; color: var(--text-tertiary); padding: 0 4px 8px; }
-  .recon-summary strong { color: var(--text-primary); }
+  .recon-body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 12px 16px 20px; }
+  .recon-footer { padding: 12px 16px max(24px, env(safe-area-inset-bottom, 24px)); border-top: 0.5px solid var(--border); background: var(--white); }
+  /* Review cards */
+  .review-card { background: var(--white); border-radius: var(--radius-lg); margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.07); overflow: hidden; }
+  .review-card-main { display: flex; align-items: flex-start; gap: 10px; padding: 14px 14px 10px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .review-card-main:active { background: var(--gray-50); }
+  .review-conf-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+  .review-card-body { flex: 1; min-width: 0; }
+  .review-item-name { font-size: 15px; font-weight: 600; color: var(--text-primary); line-height: 1.3; }
+  .review-item-raw { font-size: 10px; font-family: monospace; color: var(--text-tertiary); margin-top: 3px; letter-spacing: 0.02em; }
+  .review-item-badges { display: flex; gap: 5px; margin-top: 7px; flex-wrap: wrap; }
+  .review-badge { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 20px; background: var(--gray-100); color: var(--text-secondary); }
+  .review-card-price { flex-shrink: 0; text-align: right; }
+  .review-price-num { font-size: 17px; font-weight: 700; color: var(--text-primary); }
+  .review-price-sub { font-size: 10px; color: var(--text-tertiary); margin-top: 2px; }
+  .review-card-footer { border-top: 0.5px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 7px 14px; }
+  .review-edit-hint { font-size: 11px; color: var(--text-tertiary); }
+  .review-delete-btn { width: 28px; height: 28px; border-radius: 50%; background: var(--gray-100); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .review-delete-btn svg { width: 14px; height: 14px; stroke: var(--text-secondary); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 </style>
 </head>
 <body>
@@ -717,12 +716,18 @@
 </div>
 
 <div class="recon-modal" id="recon-modal">
-  <div class="recon-header"><div class="recon-title">Match your receipt</div><div class="recon-sub" id="recon-sub">Confirm which scanned items are on your list</div></div>
-  <div class="recon-cols-head"><div>Scanned receipt</div><div>Your list</div></div>
+  <div class="recon-header">
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <div>
+        <div class="recon-title">Review Items</div>
+        <div class="recon-sub" id="recon-sub">Tap any item to correct it</div>
+      </div>
+      <button onclick="cancelRecon()" style="background:none;border:none;font-size:13px;font-weight:600;color:var(--text-secondary);padding:8px;cursor:pointer;">Cancel</button>
+    </div>
+  </div>
   <div class="recon-body" id="recon-body"></div>
   <div class="recon-footer">
-    <button class="btn-ghost" style="flex:0 0 auto;padding:13px 18px;" onclick="cancelRecon()">Cancel</button>
-    <button class="btn-primary" style="flex:1;" onclick="confirmRecon()" id="recon-confirm-btn">Confirm &amp; Log Haul</button>
+    <button class="btn-primary" onclick="confirmRecon()" id="recon-confirm-btn">Log items to Pantry</button>
   </div>
 </div>
 
@@ -1681,180 +1686,139 @@ function openRecon(items,targetKey,store) {
 }
 
 function renderRecon() {
-  const{items,targetKey,store}=reconState;
-  const lowConf = items.filter(it=>it.confidence==='low').length;
-  document.getElementById('recon-sub').textContent=store+' · '+monthLabelFromKey(targetKey)+(lowConf?' · '+lowConf+' item'+(lowConf>1?'s':'')+' need review ⚠️':'');
-  const matchedListIdx=new Set(items.map(it=>it.matchIndex).filter(i=>i!==null));
-  let html='';
-  items.forEach((it,idx)=>{
-    const matched=it.matchIndex!==null; const listItem=matched?shoppingList[it.matchIndex]:null;
-    const confColor=it.confidence==='high'?'var(--teal)':it.confidence==='low'?'var(--red)':'var(--amber)';
-    const confLabel=it.confidence==='high'?'✓':it.confidence==='low'?'?':'~';
-    const quantStr=it.quantity?' · '+escapeHtml(it.quantity):'';
-    const rawStr=it.rawText?'<div style="font-size:10px;color:var(--text-tertiary);margin-top:2px;font-family:monospace;">'+escapeHtml(it.rawText)+'</div>':'';
-    html+='<div class="recon-row '+(matched?'matched':'')+'">'+
-      '<div class="recon-cell scanned" style="cursor:pointer;" onclick="openReconEdit('+idx+')">'+
-        '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:4px;">'+
-          '<div style="flex:1;min-width:0;">'+
-            '<div style="display:flex;align-items:center;gap:5px;">'+
-              '<span style="width:14px;height:14px;border-radius:50%;background:'+confColor+';color:white;font-size:8px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">'+confLabel+'</span>'+
-              '<div class="recon-cell-name">'+escapeHtml(it.name)+'</div>'+
-            '</div>'+rawStr+
-            '<div class="recon-cell-meta">$'+(Number(it.price)||0).toFixed(2)+quantStr+' · '+(it.category||'Other')+'</div>'+
-          '</div>'+
-          '<svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:var(--text-tertiary);fill:none;stroke-width:2;flex-shrink:0;margin-top:2px;"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>'+
-        '</div>'+
-      '</div>'+
-      '<div class="recon-link" onclick="cycleMatch('+idx+')"><div class="recon-link-dot"><svg viewBox="0 0 24 24">'+(matched?'<polyline points="20 6 9 17 4 12"/>':'<path d="M12 5v14M5 12h14"/>')+'</svg></div></div>'+
-      (matched?'<div class="recon-cell"><div class="recon-cell-name">'+escapeHtml(listItem.name)+'</div><div class="recon-cell-meta">on your list ✓</div></div>':
-               '<div class="recon-cell empty" onclick="openMatchPicker('+idx+')" style="cursor:pointer;font-size:11px;text-align:center;padding:10px 6px;">🔍 Tap to<br>search list</div>')+
+  const { items, store, targetKey } = reconState;
+  const low = items.filter(i => i.confidence === 'low').length;
+  const sub = store + ' · ' + monthLabelFromKey(targetKey) +
+    (low ? ' · ' + low + ' item' + (low > 1 ? 's' : '') + ' need review' : ' · looking good');
+  document.getElementById('recon-sub').textContent = sub;
+  document.getElementById('recon-confirm-btn').textContent = 'Log ' + items.length + ' item' + (items.length !== 1 ? 's' : '') + ' to Pantry';
+
+  const CONF_COLOR = { high: 'var(--teal)', medium: 'var(--amber)', low: 'var(--red)' };
+
+  let html = '';
+  items.forEach((it, idx) => {
+    const dot   = CONF_COLOR[it.confidence] || CONF_COLOR.medium;
+    const price = it.price ? '$' + Number(it.price).toFixed(2) : '—';
+    const catColor = CATEGORY_COLORS[it.category] || '#888780';
+
+    html += '<div class="review-card" id="review-card-' + idx + '">' +
+      '<div class="review-card-main" onclick="openReconEdit(' + idx + ')">' +
+        '<div class="review-conf-dot" style="background:' + dot + ';"></div>' +
+        '<div class="review-card-body">' +
+          '<div class="review-item-name">' + escapeHtml(it.name) + '</div>' +
+          (it.rawText ? '<div class="review-item-raw">' + escapeHtml(it.rawText) + '</div>' : '') +
+          '<div class="review-item-badges">' +
+            '<span class="review-badge" style="background:' + catColor + '22;color:' + catColor + ';">' + escapeHtml(it.category || 'Other') + '</span>' +
+            (it.quantity ? '<span class="review-badge">' + escapeHtml(it.quantity) + '</span>' : '') +
+          '</div>' +
+        '</div>' +
+        '<div class="review-card-price">' +
+          '<div class="review-price-num">' + price + '</div>' +
+          (it.confidence === 'low' ? '<div class="review-price-sub" style="color:var(--red);">Check</div>' : '') +
+        '</div>' +
+      '</div>' +
+      '<div class="review-card-footer">' +
+        '<span class="review-edit-hint">Tap to edit name or price</span>' +
+        '<button class="review-delete-btn" onclick="deleteReconItem(' + idx + ')" title="Remove">' +
+          '<svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>' +
+        '</button>' +
+      '</div>' +
     '</div>';
   });
-  const unboughtIdx=shoppingList.map((_,i)=>i).filter(i=>!matchedListIdx.has(i)&&!shoppingList[i].checked);
-  if(unboughtIdx.length){
-    html+='<div class="recon-section-label">Still on your list (not on this receipt)</div>';
-    unboughtIdx.forEach(i=>{html+='<div class="recon-row"><div class="recon-cell empty" style="border-style:solid;background:var(--gray-50);color:var(--text-tertiary);">—</div><div class="recon-link"></div><div class="recon-cell"><div class="recon-cell-name" style="color:var(--text-secondary);">'+escapeHtml(shoppingList[i].name)+'</div><div class="recon-cell-meta">not bought</div></div></div>';});
-  }
-  html+='<div style="padding:10px 4px 6px;display:flex;gap:12px;align-items:center;font-size:10px;color:var(--text-tertiary);">'+
-    '<span><span style="display:inline-block;width:11px;height:11px;border-radius:50%;background:var(--teal);margin-right:3px;vertical-align:middle;"></span>Certain</span>'+
-    '<span><span style="display:inline-block;width:11px;height:11px;border-radius:50%;background:var(--amber);margin-right:3px;vertical-align:middle;"></span>Best guess</span>'+
-    '<span><span style="display:inline-block;width:11px;height:11px;border-radius:50%;background:var(--red);margin-right:3px;vertical-align:middle;"></span>Needs review</span>'+
+
+  // Add missed item button
+  html += '<button onclick="openReconAddItem()" style="width:100%;background:var(--white);border:1.5px dashed var(--border-strong);border-radius:var(--radius-lg);padding:14px;color:var(--text-secondary);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 1px 3px rgba(0,0,0,0.05);">' +
+    '<svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;"><path d="M12 5v14M5 12h14"/></svg>' +
+    'Add item scanner missed' +
+  '</button>';
+
+  // Confidence legend
+  html += '<div style="display:flex;gap:14px;align-items:center;padding:12px 2px 4px;font-size:10px;color:var(--text-tertiary);">' +
+    '<span style="display:flex;align-items:center;gap:4px;"><span style="width:8px;height:8px;border-radius:50%;background:var(--teal);display:inline-block;"></span>Certain</span>' +
+    '<span style="display:flex;align-items:center;gap:4px;"><span style="width:8px;height:8px;border-radius:50%;background:var(--amber);display:inline-block;"></span>Best guess</span>' +
+    '<span style="display:flex;align-items:center;gap:4px;"><span style="width:8px;height:8px;border-radius:50%;background:var(--red);display:inline-block;"></span>Needs review</span>' +
   '</div>';
-  // Add missed item — prominent button
-  html+='<div style="padding:4px 4px 16px;">'+
-    '<button onclick="openReconAddItem()" style="width:100%;background:var(--teal-light);border:1.5px solid var(--teal-mid);border-radius:var(--radius-md);padding:12px;color:var(--teal-dark);font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">'+
-    '<svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;"><path d="M12 5v14M5 12h14"/></svg>'+
-    'Add item the scanner missed'+
-    '</button>'+
-  '</div>';
-  const matchCount=items.filter(it=>it.matchIndex!==null).length;
-  html='<div class="recon-summary"><strong>'+items.length+'</strong> items scanned · <strong>'+matchCount+'</strong> matched · tap ✏️ to correct</div>'+html;
-  document.getElementById('recon-body').innerHTML=html;
+
+  document.getElementById('recon-body').innerHTML = html;
 }
 
 // ── Recon item editing ──
 let reconEditIdx = null;
 
 function openReconEdit(idx) {
-  reconEditIdx=idx;
-  const it=reconState.items[idx];
-  document.getElementById('recon-edit-title').textContent='Edit Item';
-  document.getElementById('recon-edit-name').value=it.name;
-  document.getElementById('recon-edit-price').value=it.price||'';
-  document.getElementById('recon-edit-category').value=it.category||'Other';
-  document.getElementById('recon-edit-delete-wrap').style.display='block';
+  reconEditIdx = idx;
+  const it = reconState.items[idx];
+  document.getElementById('recon-edit-title').textContent = 'Edit Item';
+  document.getElementById('recon-edit-name').value = it.name;
+  document.getElementById('recon-edit-price').value = it.price || '';
+  document.getElementById('recon-edit-category').value = it.category || 'Other';
+  document.getElementById('recon-edit-delete-wrap').style.display = 'none'; // delete via card button now
   document.getElementById('recon-edit-modal').classList.add('open');
+  setTimeout(() => document.getElementById('recon-edit-name').focus(), 120);
 }
 
 function openReconAddItem() {
-  reconEditIdx=null;
-  document.getElementById('recon-edit-title').textContent='Add Missed Item';
-  document.getElementById('recon-edit-name').value='';
-  document.getElementById('recon-edit-price').value='';
-  document.getElementById('recon-edit-category').value='Other';
-  document.getElementById('recon-edit-delete-wrap').style.display='none';
+  reconEditIdx = null;
+  document.getElementById('recon-edit-title').textContent = 'Add Missed Item';
+  document.getElementById('recon-edit-name').value = '';
+  document.getElementById('recon-edit-price').value = '';
+  document.getElementById('recon-edit-category').value = 'Other';
+  document.getElementById('recon-edit-delete-wrap').style.display = 'none';
   document.getElementById('recon-edit-modal').classList.add('open');
-  setTimeout(()=>document.getElementById('recon-edit-name').focus(),120);
+  setTimeout(() => document.getElementById('recon-edit-name').focus(), 120);
 }
 
 function saveReconEdit() {
-  const name=document.getElementById('recon-edit-name').value.trim();
-  if(!name){showToast('Enter an item name');return;}
-  const price=parseFloat(document.getElementById('recon-edit-price').value)||0;
-  const category=document.getElementById('recon-edit-category').value;
-  if(reconEditIdx!==null){
-    const existing=reconState.items[reconEditIdx];
-    // If user corrected the name, save the abbreviation mapping for future scans
-    if(existing.rawText&&existing.name!==name) saveAbbrevMapping(existing.rawText,name);
-    existing.name=name; existing.price=price; existing.category=category; existing.confidence='high';
+  const name = document.getElementById('recon-edit-name').value.trim();
+  if (!name) { showToast('Enter an item name'); return; }
+  const price = parseFloat(document.getElementById('recon-edit-price').value) || 0;
+  const category = document.getElementById('recon-edit-category').value;
+  if (reconEditIdx !== null) {
+    const existing = reconState.items[reconEditIdx];
+    if (existing.rawText && existing.name !== name) saveAbbrevMapping(existing.rawText, name);
+    existing.name = name; existing.price = price; existing.category = category; existing.confidence = 'high';
   } else {
-    reconState.items.push({rawText:'',name,price,quantity:null,category,confidence:'high',matchIndex:null});
+    reconState.items.push({ rawText: '', name, price, quantity: null, category, confidence: 'high', matchIndex: null });
   }
-  closeModal('recon-edit-modal'); renderRecon();
-}
-
-function deleteReconItem() {
-  if(reconEditIdx===null)return;
-  reconState.items.splice(reconEditIdx,1);
-  closeModal('recon-edit-modal'); reconEditIdx=null; renderRecon();
-}
-
-function cycleMatch(idx) {
-  if (reconState.items[idx].matchIndex !== null) {
-    // Already matched — tap link to unmatch
-    reconState.items[idx].matchIndex = null;
-    renderRecon();
-  } else {
-    openMatchPicker(idx);
-  }
-}
-
-// Searchable picker for matching a scanned item to a list item
-let matchPickerIdx = null;
-function openMatchPicker(idx) {
-  matchPickerIdx = idx;
-  const it = reconState.items[idx];
-  document.getElementById('recon-match-title').textContent = 'Match "' + it.name + '" to your list';
-  document.getElementById('recon-match-search').value = '';
-  renderMatchPicker('');
-  document.getElementById('recon-match-modal').classList.add('open');
-  setTimeout(() => document.getElementById('recon-match-search').focus(), 150);
-}
-
-function filterMatchPicker(q) { renderMatchPicker(q); }
-
-function renderMatchPicker(q) {
-  const taken = new Set(
-    reconState.items.map((it, i) => i !== matchPickerIdx ? it.matchIndex : null).filter(v => v !== null)
-  );
-  const candidates = shoppingList
-    .map((li, i) => ({ li, i }))
-    .filter(({ li, i }) => !taken.has(i) && !li.checked);
-  const filtered = q
-    ? candidates.filter(({ li }) => li.name.toLowerCase().includes(q.toLowerCase()))
-    : candidates;
-
-  let html = '';
-  if (filtered.length === 0) {
-    html = '<div style="padding:24px;text-align:center;color:var(--text-tertiary);font-size:14px;">' +
-      (q ? 'No items match "' + escapeHtml(q) + '"' : 'No unmatched items on your list') + '</div>';
-  } else {
-    filtered.forEach(({ li, i }) => {
-      const color = CATEGORY_COLORS[li.category] || '#888780';
-      const price = li.lastPrice ? ' · $' + li.lastPrice.toFixed(2) : '';
-      html += '<div onclick="selectMatch(' + i + ')" style="display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:0.5px solid var(--border);cursor:pointer;active:background:var(--gray-50);">' +
-        '<div style="width:10px;height:10px;border-radius:50%;background:' + color + ';flex-shrink:0;"></div>' +
-        '<div style="flex:1;">' +
-          '<div style="font-size:14px;font-weight:500;">' + escapeHtml(li.name) + '</div>' +
-          '<div style="font-size:11px;color:var(--text-tertiary);margin-top:2px;">' + escapeHtml(li.store || '') + price + '</div>' +
-        '</div>' +
-        '<svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:var(--text-tertiary);fill:none;stroke-width:2;stroke-linecap:round;"><path d="M9 18l6-6-6-6"/></svg>' +
-      '</div>';
-    });
-  }
-  document.getElementById('recon-match-items').innerHTML = html;
-}
-
-function selectMatch(listIdx) {
-  if (matchPickerIdx === null) return;
-  reconState.items[matchPickerIdx].matchIndex = listIdx;
-  closeModal('recon-match-modal');
-  matchPickerIdx = null;
+  closeModal('recon-edit-modal');
   renderRecon();
 }
 
-// pickMatch kept for compatibility (now opens picker)
-function pickMatch(idx) { openMatchPicker(idx); }
+function deleteReconItem(idx) {
+  reconState.items.splice(idx, 1);
+  renderRecon();
+}
 
-function cancelRecon() { document.getElementById('recon-modal').classList.remove('open'); reconState=null; }
+function cancelRecon() { document.getElementById('recon-modal').classList.remove('open'); reconState = null; }
+
 function confirmRecon() {
-  const{items,targetKey,store}=reconState;
-  items.forEach(it=>{if(it.matchIndex!==null&&shoppingList[it.matchIndex])shoppingList[it.matchIndex].checked=true;});
-  saveList(); logReceiptAsHaul(items,targetKey,store);
+  const { items, targetKey, store } = reconState;
+
+  // Auto-match to shopping list by name similarity — no manual matching needed
+  const listCopy = shoppingList.filter(li => !li.checked);
+  items.forEach(it => {
+    const nameLower = it.name.toLowerCase();
+    const words = nameLower.split(' ').filter(w => w.length > 3);
+    const match = listCopy.find(li => {
+      const liLower = li.name.toLowerCase();
+      return liLower === nameLower ||
+        liLower.includes(nameLower) ||
+        nameLower.includes(liLower) ||
+        words.some(w => liLower.includes(w));
+    });
+    if (match) { match.checked = true; it._autoMatched = match.name; }
+  });
+
+  saveList();
+  logReceiptAsHaul(items, targetKey, store);
   document.getElementById('recon-modal').classList.remove('open');
-  const matched=items.filter(it=>it.matchIndex!==null).length;
-  reconState=null; showToast(`${items.length} logged${matched?`, ${matched} checked off`:''}`);
-  perspMonth=targetKey; switchTab('perspective');
+
+  const checked = items.filter(i => i._autoMatched).length;
+  const msg = items.length + ' items logged to Pantry' + (checked ? ' · ' + checked + ' checked off your list' : '');
+  reconState = null;
+  showToast(msg);
+  perspMonth = targetKey;
+  switchTab('perspective');
 }
 
 function escapeHtml(s) { return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
