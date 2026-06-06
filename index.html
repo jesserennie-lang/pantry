@@ -1638,32 +1638,121 @@ function handleScannerLibraryUpload(input) {
 
 // Core receipt processing — used by both scanner and file input paths
 async function processReceiptBase64(base64, monthTarget, store) {
-  receiptMonthTarget=monthTarget||'current';
-  const targetKey=receiptTargetKey();
+  receiptMonthTarget = monthTarget || 'current';
+  const targetKey = receiptTargetKey();
   document.getElementById('receipt-modal').classList.add('open');
   showReceiptProcessing('Reading your receipt...');
-  if(!hasApiKey()){showReceiptError('No API key set. Add your Anthropic API key in Settings first.');return;}
-  const listForMatch=shoppingList.map((it,i)=>({i,name:it.name}));
-  const pantryCtx=pantryItems.length?pantryItems.map(it=>'  - "'+it.name+'" ('+it.category+'), bought '+it.priceHistory.length+'x').join('\n'):'  (no pantry history yet)';
-  const abbrevMap=getAbbrevMap();
-  const abbrevCtx=Object.keys(abbrevMap).length?Object.entries(abbrevMap).map(([r,c])=>'  "'+r+'" → "'+c+'"').join('\n'):'  (none yet)';
-  const matchPart=listForMatch.length?'SHOPPING LIST:\n'+JSON.stringify(listForMatch):'No shopping list — set matchIndex to null.';
-  const sk=store.toLowerCase();
-  const storeK=sk.includes('costco')?'\nCOSTCO ABBREVIATIONS: KS=Kirkland Signature, ORG=Organic, A2=A2 protein, PR/PK=Pack, WHL=Whole, BNLS=Boneless, SKNLS=Skinless, GRND=Ground, BRST=Breast, SLMN=Salmon, CHKN=Chicken, ATL=Atlantic, PLN=Plain, VAN=Vanilla, FF=Fat Free, LF=Low Fat, GF=Gluten Free.\nEXIT MARK: staff draw a diagonal line at exit — this partially obscures text. Reason through partial text using Costco product knowledge and pantry history.':'';
-  const prompt='You are an expert receipt decoder. STORE: '+store+storeK+'\n\nPANTRY HISTORY:\n'+pantryCtx+'\n\nCONFIRMED ABBREVIATION MAPPINGS (trust completely):\n'+abbrevCtx+'\n\nFor each grocery line item: extract exact text, make best full product name guess (using store knowledge, pantry history, confirmed mappings), infer quantity/size where visible.\n\nSKIP: membership fees, electronics, clothing, pharmacy, gift cards, tax, subtotals, totals, discounts.\n\n'+matchPart+'\n\nReturn ONLY valid JSON:\n[{"rawText":"KS ORG A2 PR","name":"Kirkland Organic A2 Whole Milk","price":18.99,"quantity":"3-pack","category":"Dairy","confidence":"high","matchIndex":null}]\n\nconfidence: high=certain, medium=best guess, low=partial/unclear. If unreadable: []';
+  if (!hasApiKey()) { showReceiptError('No API key set. Add your Anthropic API key in Settings first.'); return; }
+
+  // Abbreviation memory (learned from past corrections)
+  const abbrevMap = getAbbrevMap();
+  const abbrevLines = Object.keys(abbrevMap).length
+    ? Object.entries(abbrevMap).map(([r,c]) => '"' + r + '" = ' + c).join(', ')
+    : '';
+
+  // Shopping list for optional matching
+  const listForMatch = shoppingList.map((it, i) => ({ i, name: it.name }));
+
+  const sk = store.toLowerCase();
+  const isCostco = sk.includes('costco');
+
+  const prompt = [
+    'You are scanning a ' + store + ' receipt. Extract EVERY purchased product.',
+    '',
+    '━━━ YOUR MOST IMPORTANT JOB ━━━',
+    'Read the receipt image carefully line by line. For EVERY product line item, output a JSON entry.',
+    'Do NOT skip items just because they have discounts, sale prices, or are hard to read.',
+    '',
+    '━━━ HANDLING DISCOUNTS (CRITICAL) ━━━',
+    'Costco and many stores print instant discounts as a SEPARATE line directly below the item:',
+    '  OLIPOP          19.99',
+    '  -Instant Svgs    -5.00',
+    'In this case: record OLIPOP at the NET price (19.99 - 5.00 = 14.99). Mark onSale: true.',
+    'The discount line itself is NOT a separate item — it belongs to the product above it.',
+    'NEVER skip a product because it has a discount. ALWAYS capture the product at its net price.',
+    '',
+    isCostco ? [
+      '━━━ COSTCO RECEIPT ABBREVIATIONS ━━━',
+      'KS=Kirkland Signature, ORG=Organic, A2=A2 protein milk, PR/PK=Pack/multi-pack,',
+      'WHL=Whole, BNLS=Boneless, SKNLS=Skinless, GRND=Ground, BRST=Breast,',
+      'SLMN=Salmon, CHKN/CKN=Chicken, TNDRLNS=Tenderloins, ATL=Atlantic,',
+      'PLN=Plain, VAN=Vanilla, FF=Fat Free, LF=Low Fat, GF=Gluten Free,',
+      'UNSLTD=Unsalted, BLND=Blend, MDM=Mediterranean, PREV=Probiotic.',
+      'EXIT MARK: A diagonal line is drawn across the receipt at the exit door.',
+      'This line covers part of text. If you see partial text, infer the full word from context.',
+      'Example: "LIPOP" → OLIPOP, "RG A2 PR" → KS ORG A2 PR (Kirkland Organic A2 Milk Pack).',
+    ].join('\n') : '',
+    abbrevLines ? '━━━ CONFIRMED ITEM NAMES (from past corrections) ━━━\n' + abbrevLines : '',
+    '',
+    '━━━ INCLUDE ━━━',
+    'ALL food, beverages (including Olipop, sparkling water, juice, soda, etc.), snacks,',
+    'dairy, meat, produce, frozen items, pantry staples, household consumables (paper',
+    'towels, soap, detergent), personal care items, and pet food.',
+    '',
+    '━━━ SKIP ONLY THESE ━━━',
+    '- Store membership / club fees (not a product)',
+    '- Tax amount lines',
+    '- Grand total / subtotal lines',
+    '- Cash back or credit lines',
+    '- Bottle deposit fees',
+    '',
+    listForMatch.length
+      ? '━━━ SHOPPING LIST (match items where obvious) ━━━\n' + JSON.stringify(listForMatch) + '\nSet matchIndex to the matching item\'s i, or null.'
+      : '',
+    '',
+    '━━━ OUTPUT FORMAT ━━━',
+    'Return ONLY a valid JSON array. No markdown, no explanation.',
+    '[',
+    '  {"rawText":"OLIPOP","name":"Olipop Sparkling Tonic","price":14.99,"originalPrice":19.99,"onSale":true,"quantity":"8-pack","category":"Beverages","confidence":"high","matchIndex":null},',
+    '  {"rawText":"KS ORG A2 PR","name":"Kirkland Organic A2 Whole Milk","price":18.99,"originalPrice":null,"onSale":false,"quantity":"3-pack","category":"Dairy","confidence":"high","matchIndex":null}',
+    ']',
+    '',
+    'confidence: "high"=clearly readable, "medium"=good guess, "low"=partially obscured.',
+    'If the receipt is completely unreadable, return: []',
+  ].filter(l => l !== '').join('\n');
+
   try {
-    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:apiHeaders(),body:JSON.stringify({model:'claude-sonnet-4-5-20250929',max_tokens:2500,messages:[{role:'user',content:[{type:'image',source:{type:'base64',media_type:'image/jpeg',data:base64}},{type:'text',text:prompt}]}]})});
-    const data=await res.json();
-    if(data.error){const msg=data.error.message||JSON.stringify(data.error);if(/authentication|api[\s_-]?key|credential|401/i.test(msg)||res.status===401)throw new Error(msg+'\n\n'+keyDiagnostic());throw new Error(msg);}
-    if(!data.content||!Array.isArray(data.content))throw new Error('Unexpected response.');
-    const text=data.content.map(c=>c.text||'').join('');
-    const rawItems=extractJsonArray(text);
-    if(!rawItems||rawItems.length===0)throw new Error("Couldn't read any items. Try again with better lighting.");
-    const items=rawItems.filter(it=>it&&typeof it.name==='string'&&it.name.trim().length>0).map(it=>({rawText:(it.rawText||'').trim(),name:it.name.trim(),price:Number(it.price)||0,quantity:it.quantity||null,category:it.category||'Other',confidence:it.confidence||'medium',matchIndex:(it.matchIndex!==null&&it.matchIndex!==undefined&&!isNaN(Number(it.matchIndex)))?Number(it.matchIndex):null}));
-    if(items.length===0)throw new Error('Receipt scanned but no grocery items found.');
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: apiHeaders(),
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-5-20250929',
+        max_tokens: 4000,
+        messages: [{ role: 'user', content: [
+          { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: base64 } },
+          { type: 'text', text: prompt }
+        ]}]
+      })
+    });
+    const data = await res.json();
+    if (data.error) {
+      const msg = data.error.message || JSON.stringify(data.error);
+      if (/authentication|api[\s_-]?key|credential|401/i.test(msg) || res.status === 401) throw new Error(msg + '\n\n' + keyDiagnostic());
+      throw new Error(msg);
+    }
+    if (!data.content || !Array.isArray(data.content)) throw new Error('Unexpected response.');
+    const text = data.content.map(c => c.text || '').join('');
+    const rawItems = extractJsonArray(text);
+    if (!rawItems || rawItems.length === 0) throw new Error("Couldn't read any items. Try a clearer, well-lit photo.");
+    const items = rawItems
+      .filter(it => it && typeof it.name === 'string' && it.name.trim().length > 0)
+      .map(it => ({
+        rawText:       (it.rawText || '').trim(),
+        name:          it.name.trim(),
+        price:         Number(it.price) || 0,
+        originalPrice: it.originalPrice ? Number(it.originalPrice) : null,
+        onSale:        !!it.onSale,
+        quantity:      it.quantity || null,
+        category:      it.category || 'Other',
+        confidence:    it.confidence || 'medium',
+        matchIndex:    (it.matchIndex !== null && it.matchIndex !== undefined && !isNaN(Number(it.matchIndex))) ? Number(it.matchIndex) : null
+      }));
+    if (items.length === 0) throw new Error('Receipt scanned but no items found. Try again.');
     closeModal('receipt-modal');
-    openRecon(items,targetKey,store);
-  } catch(e){showReceiptError(e&&e.message?e.message:'Could not read receipt. Try again.');}
+    openRecon(items, targetKey, store);
+  } catch(e) {
+    showReceiptError(e && e.message ? e.message : 'Could not read receipt. Try again.');
+  }
 }
 
 // ── Abbreviation memory — learns from user corrections ──
@@ -1700,6 +1789,8 @@ function renderRecon() {
     const dot   = CONF_COLOR[it.confidence] || CONF_COLOR.medium;
     const price = it.price ? '$' + Number(it.price).toFixed(2) : '—';
     const catColor = CATEGORY_COLORS[it.category] || '#888780';
+    const saleBadge = it.onSale ? '<span class="review-badge" style="background:#FEF3C7;color:#92400E;">Sale</span>' : '';
+    const origPrice = it.onSale && it.originalPrice ? '<div class="review-price-sub" style="text-decoration:line-through;color:var(--text-tertiary);">$' + Number(it.originalPrice).toFixed(2) + '</div>' : '';
 
     html += '<div class="review-card" id="review-card-' + idx + '">' +
       '<div class="review-card-main" onclick="openReconEdit(' + idx + ')">' +
@@ -1710,11 +1801,13 @@ function renderRecon() {
           '<div class="review-item-badges">' +
             '<span class="review-badge" style="background:' + catColor + '22;color:' + catColor + ';">' + escapeHtml(it.category || 'Other') + '</span>' +
             (it.quantity ? '<span class="review-badge">' + escapeHtml(it.quantity) + '</span>' : '') +
+            saleBadge +
           '</div>' +
         '</div>' +
         '<div class="review-card-price">' +
           '<div class="review-price-num">' + price + '</div>' +
-          (it.confidence === 'low' ? '<div class="review-price-sub" style="color:var(--red);">Check</div>' : '') +
+          origPrice +
+          (it.confidence === 'low' ? '<div class="review-price-sub" style="color:var(--red);">Check ⚠️</div>' : '') +
         '</div>' +
       '</div>' +
       '<div class="review-card-footer">' +
