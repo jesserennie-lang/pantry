@@ -51,6 +51,7 @@
   .btn-ghost { background: none; color: var(--teal); border: 1.5px solid var(--teal); border-radius: var(--radius-md); padding: 11px 20px; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
   .btn-ghost:active { background: var(--teal-light); }
   .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 200; align-items: flex-end; }
+  #api-key-modal { z-index: 250; } /* above settings-modal so it always shows on top */
   .modal-overlay.open { display: flex; }
   .modal-sheet { background: var(--white); border-radius: var(--radius-xl) var(--radius-xl) 0 0; width: 100%; max-height: 85vh; overflow-y: auto; padding-bottom: calc(16px + var(--safe-bottom)); }
   .modal-handle { width: 36px; height: 4px; background: var(--gray-200); border-radius: 2px; margin: 12px auto 8px; }
@@ -451,11 +452,18 @@
     <div class="modal-handle"></div>
     <div class="modal-title">Anthropic API Key</div>
     <div style="padding:0 20px 16px;">
-      <p style="font-size:13px;color:var(--text-secondary);line-height:1.55;margin-bottom:16px;">Required for the receipt scanner and AI suggestions. Your key is stored only on this device.</p>
+      <p style="font-size:13px;color:var(--text-secondary);line-height:1.55;margin-bottom:16px;">Your key is stored on this device. iOS will offer to save it to your Keychain — say <strong>Yes</strong> and Face ID will fill it automatically from then on.</p>
       <p style="font-size:13px;color:var(--text-secondary);line-height:1.55;margin-bottom:16px;">Get a key at <strong>console.anthropic.com</strong> → API Keys.</p>
+      <!-- Hidden username field — required for iOS to trigger Keychain/Face ID autofill -->
+      <input type="text" autocomplete="username" value="pantry-api-key" style="display:none;" aria-hidden="true" tabindex="-1">
       <label class="form-label">API Key</label>
-      <input class="form-input" id="api-key-input" placeholder="sk-ant-..." type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-lpignore="true" style="margin-bottom:8px;font-family:monospace;letter-spacing:0.04em;">
-      <div style="font-size:11px;color:var(--text-tertiary);margin-bottom:16px;">Starts with <code>sk-ant-</code></div>
+      <input class="form-input" id="api-key-input"
+             placeholder="sk-ant-..."
+             type="password"
+             autocomplete="current-password"
+             style="margin-bottom:8px;font-family:monospace;letter-spacing:0.04em;">
+      <div style="font-size:11px;color:var(--text-tertiary);margin-bottom:4px;">Starts with <code>sk-ant-</code></div>
+      <div style="font-size:11px;color:var(--teal-dark);margin-bottom:16px;">💡 When iOS asks "Save Password?" — tap Yes. Face ID will fill it automatically next time.</div>
     </div>
     <div style="padding:0 20px 16px;"><button class="btn-primary" onclick="saveApiKey()">Save Key</button></div>
   </div>
@@ -508,10 +516,10 @@
     <div class="modal-title">Import List from Photo</div>
     <div style="padding:0 20px 16px;">
       <p style="font-size:14px;color:var(--text-secondary);line-height:1.5;margin-bottom:16px;">Take a screenshot of any list — Alexa, a grocery app, Notes, a paper list. AI reads the items and adds them to your Plan.</p>
-      <input type="file" id="list-import-file" accept="image/*" style="opacity:0;position:absolute;width:0;height:0;pointer-events:none;" onchange="handleListImport(this)">
+      <input type="file" id="list-import-file" accept="image/*" multiple style="opacity:0;position:absolute;width:0;height:0;pointer-events:none;" onchange="handleListImport(this)">
       <label for="list-import-file" class="btn-primary" style="cursor:pointer;user-select:none;" id="list-import-label">
         <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
-        Take Photo or Upload Screenshot
+        Take Photo or Select Screenshots
       </label>
     </div>
     <div id="list-import-processing" style="display:none;padding:0 20px 16px;text-align:center;">
@@ -1124,44 +1132,58 @@ function openListImport() {
 }
 
 async function handleListImport(input) {
-  if (!input.files[0]) return;
-  const file = input.files[0];
+  if (!input.files || input.files.length === 0) return;
+  const files = Array.from(input.files);
   document.getElementById('list-import-label').style.display = 'none';
   document.getElementById('list-import-processing').style.display = 'block';
+  document.getElementById('list-import-processing').innerHTML =
+    `<div class="ai-spinner" style="margin:0 auto 12px;"></div><div style="font-size:14px;color:var(--text-secondary);">Reading ${files.length} image${files.length > 1 ? 's' : ''}...</div>`;
   try {
-    const base64 = await fileToJpegBase64(file);
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: apiHeaders(),
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-5-20250929',
-        max_tokens: 1500,
-        messages: [{
-          role: 'user',
-          content: [
-            { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: base64 } },
-            { type: 'text', text: `This is a screenshot of a shopping list (could be from Alexa, a grocery app, Notes, or anywhere). Extract every item on the list.
+    // Process all images in parallel
+    const results = await Promise.all(files.map(async (file, i) => {
+      const base64 = await fileToJpegBase64(file);
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: apiHeaders(),
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-5-20250929',
+          max_tokens: 1500,
+          messages: [{
+            role: 'user',
+            content: [
+              { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: base64 } },
+              { type: 'text', text: `This is a screenshot of a shopping list (could be from Alexa, a grocery app, Notes, or anywhere). Extract every item on the list.
 
 Return ONLY a valid JSON array, no markdown, no explanation:
 [{"name":"Organic Milk","category":"Dairy"},{"name":"Chicken Breast","category":"Protein"}]
 
-Categories to use: Protein, Produce, Dairy, Pantry Staples, Snacks, Beverages, Frozen, Other
+Categories: Protein, Produce, Dairy, Pantry Staples, Snacks, Beverages, Frozen, Other
 
 If you cannot read any items, return: []` }
-          ]
-        }]
-      })
-    });
-    const data = await res.json();
-    if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
-    const text = data.content.map(c => c.text || '').join('');
-    const raw = extractJsonArray(text);
-    if (!raw || raw.length === 0) throw new Error("Couldn't read any items from that image. Try a clearer screenshot.");
-    // Filter valid items, mark all selected
-    importedItems = raw
+            ]
+          }]
+        })
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
+      const text = data.content.map(c => c.text || '').join('');
+      return extractJsonArray(text) || [];
+    }));
+
+    // Merge all results, deduplicate by name (case-insensitive)
+    const seen = new Set();
+    const allItems = results.flat()
       .filter(it => it && typeof it.name === 'string' && it.name.trim())
+      .filter(it => {
+        const key = it.name.trim().toLowerCase();
+        if (seen.has(key)) return false;
+        seen.add(key); return true;
+      })
       .map(it => ({ name: it.name.trim(), category: it.category || 'Other', selected: true }));
-    if (importedItems.length === 0) throw new Error("No items found. Try a clearer screenshot.");
+
+    if (allItems.length === 0) throw new Error("Couldn't read any items. Try clearer screenshots.");
+
+    importedItems = allItems;
     closeModal('list-import-modal');
     openListConfirm();
   } catch(e) {
@@ -1174,7 +1196,6 @@ If you cannot read any items, return: []` }
 
 function openListConfirm() {
   const alreadyOnList = new Set(shoppingList.map(i => i.name.toLowerCase()));
-  // Mark items already on the list as deselected
   importedItems.forEach(it => {
     if (alreadyOnList.has(it.name.toLowerCase())) it.selected = false;
   });
@@ -1411,16 +1432,30 @@ function openSettings() {
   document.getElementById('set-stores-sub').textContent=household.stores.join(', ');
   document.getElementById('set-budget-sub').textContent='$'+getBudgetForMonth(key).toLocaleString()+' / '+monthLabelFromKey(key);
   const storedKey=getApiKey();
-  document.getElementById('set-api-key-sub').textContent=storedKey?'••••••••'+storedKey.slice(-4)+' · tap to change':'Not set — required for AI features';
+  document.getElementById('set-api-key-sub').textContent=storedKey
+    ? '••••••••'+storedKey.slice(-4)+' · tap to change'
+    : 'Not set — required for AI features';
   document.getElementById('settings-modal').classList.add('open');
 }
-function editApiKey() { document.getElementById('api-key-input').value=getApiKey(); document.getElementById('api-key-modal').classList.add('open'); setTimeout(()=>document.getElementById('api-key-input').focus(),120); }
+
+function editApiKey() {
+  // Pre-fill with existing key if set (so user can see it's already saved)
+  // iOS will also offer Face ID autofill from Keychain if key was saved there previously
+  document.getElementById('api-key-input').value = getApiKey();
+  document.getElementById('api-key-modal').classList.add('open');
+  // Focus triggers iOS Keychain autofill suggestion
+  setTimeout(() => document.getElementById('api-key-input').focus(), 150);
+}
+
 function saveApiKey() {
-  const val=document.getElementById('api-key-input').value;
-  const clean=(val||'').replace(/[^A-Za-z0-9_-]/g,'');
-  if(!clean){showToast('Enter your API key');return;}
-  if(!clean.startsWith('sk-ant-')){showToast('Key should start with sk-ant-');return;}
-  setApiKey(clean); closeModal('api-key-modal'); openSettings(); showToast('API key saved');
+  const val = document.getElementById('api-key-input').value;
+  const clean = (val||'').replace(/[^A-Za-z0-9_-]/g, '');
+  if (!clean) { showToast('Enter your API key'); return; }
+  if (!clean.startsWith('sk-ant-')) { showToast('Key should start with sk-ant-'); return; }
+  setApiKey(clean);
+  closeModal('api-key-modal');
+  openSettings();
+  showToast('Key saved — say Yes if iOS offers to save to Keychain');
 }
 async function testConnection() {
   const sub=document.getElementById('set-test-sub');
