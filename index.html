@@ -778,7 +778,7 @@
     <button onclick="closeScanner()" style="color:white;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.3);border-radius:var(--radius-md);padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;">✕ Cancel</button>
   </div>
 
-  <div class="scanner-hint" id="scanner-hint">Align receipt inside the frame</div>
+  <div class="scanner-hint" id="scanner-hint">Align receipt inside the frame · capture the whole receipt</div>
 
   <!-- Bottom bar: library | shutter | torch -->
   <div class="scanner-bottom-bar">
@@ -1500,14 +1500,25 @@ async function openScanner() {
   document.getElementById('scanner-hint').textContent='Starting camera...';
 
   try {
-    // Request camera — use simpler constraints first (iOS is picky)
+    // Request highest available resolution — critical for reading small receipt text
     try {
       scannerStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: { ideal: 'environment' } }, audio: false
+        video: {
+          facingMode: { ideal: 'environment' },
+          width:  { ideal: 4096 },
+          height: { ideal: 3072 }
+        },
+        audio: false
       });
     } catch(e1) {
-      // Retry with just video:true (most permissive fallback)
-      scannerStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+      // Retry with just environment camera, no resolution constraint
+      try {
+        scannerStream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: 'environment' } }, audio: false
+        });
+      } catch(e2) {
+        scannerStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+      }
     }
 
     const video = document.getElementById('scanner-video');
@@ -1591,22 +1602,58 @@ function startScanLine() {
   scannerAnimFrame=requestAnimationFrame(animate);
 }
 
-function captureReceipt() {
+async function captureReceipt() {
   const video = document.getElementById('scanner-video');
-  if (!video.videoWidth) { showToast('Camera not ready yet — wait a moment'); return; }
+  if (!video.videoWidth) { showToast('Camera not ready — wait a moment'); return; }
 
+  // Disable shutter while capturing
+  const btn = document.getElementById('scanner-shutter-btn');
+  if (btn) btn.style.opacity = '0.5';
+
+  // Flash effect
   const flash = document.getElementById('scanner-flash');
   flash.style.animation = 'none'; flash.offsetHeight;
   flash.style.animation = 'shutterFlash 0.35s ease-out forwards';
 
-  const c = document.createElement('canvas');
-  c.width = video.videoWidth; c.height = video.videoHeight;
-  c.getContext('2d').drawImage(video, 0, 0, c.width, c.height);
-  const base64 = c.toDataURL('image/jpeg', 0.92).split(',')[1];
   const store = document.getElementById('sc-store').value;
   const monthTarget = document.getElementById('sc-month').value;
 
-  setTimeout(() => { stopScanner(); processReceiptBase64(base64, monthTarget, store); }, 250);
+  try {
+    let base64;
+
+    // ImageCapture API: takes a full-resolution still while video preview runs.
+    // This is far better quality than grabbing a video frame.
+    if (scannerStream && window.ImageCapture) {
+      try {
+        const track = scannerStream.getVideoTracks()[0];
+        const imageCapture = new ImageCapture(track);
+        const blob = await imageCapture.takePhoto();
+        base64 = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = e => resolve(e.target.result.split(',')[1]);
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
+      } catch(e) {
+        // ImageCapture failed — fall back to video frame
+        base64 = null;
+      }
+    }
+
+    // Fallback: grab current video frame
+    if (!base64) {
+      const c = document.createElement('canvas');
+      c.width = video.videoWidth; c.height = video.videoHeight;
+      const ctx = c.getContext('2d');
+      ctx.drawImage(video, 0, 0, c.width, c.height);
+      base64 = c.toDataURL('image/jpeg', 0.96).split(',')[1];
+    }
+
+    setTimeout(() => { stopScanner(); processReceiptBase64(base64, monthTarget, store); }, 200);
+  } catch(e) {
+    if (btn) btn.style.opacity = '1';
+    showToast('Could not capture — try again');
+  }
 }
 
 async function toggleTorch() {
@@ -1657,37 +1704,49 @@ async function processReceiptBase64(base64, monthTarget, store) {
   const isCostco = sk.includes('costco');
 
   const prompt = [
-    'Look at this ' + store + ' receipt and extract the grocery items printed on it.',
-    'Only extract items you can actually read on the receipt. Do not invent or add items.',
+    'Read this ' + store + ' receipt image carefully. Go through it line by line from top to bottom.',
     '',
-    'DISCOUNT LINES: Some stores print a discount on the line directly below an item, like:',
-    '  OLIPOP SODA        19.99',
-    '  -Instant Savings    -5.00',
-    'When you see this, record the item at the net price (19.99 - 5.00 = 14.99) and set onSale:true.',
-    'The discount line itself is not a separate product.',
+    'On a receipt, each product line has: item description on the LEFT, price on the RIGHT.',
+    'Some items span two lines (long name wraps). Treat them as one item.',
+    '',
+    'RULE — ONLY include items you can actually see printed on this receipt.',
+    'Do not add, guess, or invent any item that is not visible on the receipt.',
+    '',
+    'RULE — DISCOUNT LINES:',
+    'When a negative amount appears on the line directly after an item, it is an instant discount:',
+    '  OLIPOP SODA          19.99',
+    '  -Member Savings       -5.00  ← this belongs to OLIPOP',
+    'Record OLIPOP at the net price (14.99), set onSale:true, originalPrice:19.99.',
+    'The discount line is NOT its own product.',
     '',
     isCostco ? [
-      'COSTCO ABBREVIATIONS:',
-      'KS=Kirkland Signature, ORG=Organic, A2=A2 protein milk, PR/PK=Pack,',
-      'WHL=Whole, BNLS=Boneless, SKNLS=Skinless, GRND=Ground, BRST=Breast,',
-      'SLMN=Salmon, CHKN=Chicken, ATL=Atlantic, PLN=Plain, VAN=Vanilla.',
-      'The exit checker draws a diagonal line across the receipt — this can obscure part of text.',
-      'If text is partially covered, use context to infer the full word.',
+      'RULE — COSTCO ABBREVIATIONS (expand these in the name field):',
+      'KS → Kirkland Signature, ORG → Organic, A2 → A2 protein,',
+      'PR/PK → Pack, WHL → Whole, BNLS → Boneless, SKNLS → Skinless,',
+      'GRND → Ground, BRST → Breast, SLMN → Salmon, CHKN → Chicken,',
+      'ATL → Atlantic, PLN → Plain, VAN → Vanilla, FF → Fat Free,',
+      'LF → Low Fat, GF → Gluten Free, TNDRLNS → Tenderloins.',
+      '',
+      'RULE — EXIT MARKER: The exit checker draws a diagonal pen line across the receipt.',
+      'This may hide part of a word. Use the visible letters + context to infer the full name.',
+      'E.g. "LIPOP" is likely OLIPOP; "RG WHT MSHRM" is likely Organic White Mushrooms.',
     ].join('\n') : '',
-    abbrevLines ? 'PREVIOUSLY CONFIRMED NAMES: ' + abbrevLines : '',
+    abbrevLines ? 'CONFIRMED NAMES from past scans (trust these): ' + abbrevLines : '',
     '',
-    'INCLUDE: food, drinks, snacks, dairy, meat, produce, frozen, household consumables, personal care.',
-    'SKIP: membership fees, tax, grand total, subtotals, cash back, bottle deposits.',
+    'SKIP ONLY: store membership fees, tax, grand total, subtotal, cash back, bottle deposits.',
+    'INCLUDE everything else: all food, drinks, snacks, dairy, meat, produce, frozen,',
+    'household supplies, personal care, pet food — regardless of price.',
     '',
     listForMatch.length
-      ? 'SHOPPING LIST — match receipt items where obvious (set matchIndex to the item i):\n' + JSON.stringify(listForMatch)
+      ? 'SHOPPING LIST — if a receipt item clearly matches one of these, set matchIndex to its i:\n' + JSON.stringify(listForMatch)
       : '',
     '',
-    'Return ONLY a JSON array of items you can see on the receipt:',
-    '[{"rawText":"exact text from receipt","name":"Clean Product Name","price":14.99,"originalPrice":19.99,"onSale":true,"quantity":"8-pack","category":"Beverages","confidence":"high","matchIndex":null}]',
+    'Return ONLY a JSON array, no markdown:',
+    '[{"rawText":"OLIPOP","name":"Olipop Sparkling Tonic","price":14.99,"originalPrice":19.99,"onSale":true,"quantity":"8-pack","category":"Beverages","confidence":"high","matchIndex":null}]',
     '',
-    'confidence: "high"=clearly readable, "medium"=somewhat readable, "low"=partially obscured.',
-    'If nothing is readable, return [].',
+    'Categories: Protein, Produce, Dairy, Pantry Staples, Snacks, Beverages, Frozen, Household, Other.',
+    'confidence: "high"=clearly readable, "medium"=readable with minor uncertainty, "low"=partially obscured.',
+    'If the image is too blurry or dark to read anything, return [].',
   ].filter(Boolean).join('\n');
 
   try {
