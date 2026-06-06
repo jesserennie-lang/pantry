@@ -999,6 +999,72 @@
   .settings-row-label .t { font-size: 14px; font-weight: 500; }
   .settings-row-label .s { font-size: 12px; color: var(--text-tertiary); margin-top: 2px; }
   .settings-row-chevron svg { width: 16px; height: 16px; stroke: var(--gray-200); fill: none; stroke-width: 2.5; }
+
+  /* ── RECEIPT RECONCILIATION ── */
+  .recon-modal { display: none; position: fixed; inset: 0; z-index: 400; background: var(--white); max-width: 430px; margin: 0 auto; flex-direction: column; }
+  .recon-modal.open { display: flex; }
+  .recon-header {
+    padding: max(16px, env(safe-area-inset-top, 0px)) 20px 12px;
+    border-bottom: 0.5px solid var(--border);
+    background: var(--white);
+  }
+  .recon-title { font-size: 20px; font-weight: 700; letter-spacing: -0.4px; }
+  .recon-sub { font-size: 12px; color: var(--text-tertiary); margin-top: 3px; }
+  .recon-cols-head { display: flex; padding: 10px 12px 6px; gap: 8px; }
+  .recon-cols-head > div { flex: 1; font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-tertiary); }
+  .recon-cols-head > div:last-child { text-align: right; }
+  .recon-body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 4px 12px 12px; }
+  .recon-row {
+    display: flex;
+    align-items: stretch;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .recon-cell {
+    flex: 1;
+    min-width: 0;
+    border-radius: var(--radius-md);
+    padding: 10px;
+    font-size: 12px;
+    border: 1px solid var(--border);
+    background: var(--white);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .recon-cell.scanned { background: var(--gray-50); }
+  .recon-cell-name { font-weight: 600; line-height: 1.25; word-break: break-word; }
+  .recon-cell-meta { font-size: 11px; color: var(--text-tertiary); margin-top: 2px; }
+  .recon-cell.empty { border-style: dashed; align-items: center; color: var(--text-tertiary); font-size: 11px; }
+  .recon-link {
+    width: 34px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  .recon-link-dot {
+    width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    border: 1.5px solid var(--border-strong);
+    background: var(--white);
+    transition: all 0.15s;
+  }
+  .recon-link-dot svg { width: 15px; height: 15px; stroke: var(--text-tertiary); fill: none; stroke-width: 2.5; }
+  .recon-row.matched .recon-cell { border-color: var(--teal); }
+  .recon-row.matched .recon-link-dot { background: var(--teal); border-color: var(--teal); }
+  .recon-row.matched .recon-link-dot svg { stroke: white; }
+  .recon-section-label { font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-tertiary); padding: 14px 4px 6px; }
+  .recon-footer {
+    padding: 12px 20px calc(16px + env(safe-area-inset-bottom, 0px));
+    border-top: 0.5px solid var(--border);
+    background: var(--white);
+    display: flex;
+    gap: 10px;
+  }
+  .recon-summary { font-size: 12px; color: var(--text-tertiary); padding: 0 4px 8px; }
+  .recon-summary strong { color: var(--text-primary); }
 </style>
 </head>
 <body>
@@ -1415,6 +1481,33 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="haul-edit-modal" onclick="closeModal('haul-edit-modal')">
+  <div class="modal-sheet" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div style="display:flex; align-items:center; justify-content:space-between; padding:12px 20px 4px;">
+      <div class="modal-title" style="padding:0;">Edit Haul</div>
+      <button class="icon-btn" onclick="closeModal('haul-edit-modal')" aria-label="Close">
+        <svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Haul Name</label>
+      <input class="form-input" id="he-name" type="text">
+    </div>
+    <div class="section-label" style="padding:8px 20px 4px;">Trips</div>
+    <div id="he-trips"></div>
+    <div style="padding: 8px 20px 0;">
+      <button class="btn-ghost" style="width:100%;" onclick="heAddTrip()">+ Add a trip / store</button>
+    </div>
+    <div style="padding: 16px 20px 8px;">
+      <button class="btn-primary" onclick="saveHaulEdit()">Save Changes</button>
+    </div>
+    <div style="padding: 0 20px 16px;">
+      <button class="btn-ghost" style="width:100%; border-color:var(--red); color:var(--red);" onclick="deleteHaul()">Delete Entire Haul</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="receipt-modal" onclick="closeModal('receipt-modal')">
   <div class="modal-sheet" onclick="event.stopPropagation()">
     <div class="modal-handle"></div>
@@ -1684,6 +1777,27 @@
   </div>
 </div>
 
+<!-- ═══════════════════════════════
+     RECEIPT RECONCILIATION
+═══════════════════════════════ -->
+<div class="recon-modal" id="recon-modal">
+  <div class="recon-header">
+    <div class="recon-title">Match your receipt</div>
+    <div class="recon-sub" id="recon-sub">Confirm which scanned items are on your list</div>
+  </div>
+  <div class="recon-cols-head">
+    <div>Scanned receipt</div>
+    <div>Your list</div>
+  </div>
+  <div class="recon-body" id="recon-body">
+    <!-- rendered by JS -->
+  </div>
+  <div class="recon-footer">
+    <button class="btn-ghost" style="flex:0 0 auto; padding:13px 18px;" onclick="cancelRecon()">Cancel</button>
+    <button class="btn-primary" style="flex:1;" onclick="confirmRecon()" id="recon-confirm-btn">Confirm &amp; Log Haul</button>
+  </div>
+</div>
+
 <div class="toast" id="toast-msg"></div>
 
 <script>
@@ -1707,7 +1821,9 @@ function getApiKey() {
 }
 
 function setApiKey(key) {
-  const clean = key.replace(/[^\x20-\x7E]/g, '').trim(); // strip any invisible/non-ASCII characters
+  // API keys are ONLY letters, digits, hyphens, underscores. Strip everything else
+  // anywhere in the string — spaces, line breaks, non-breaking spaces, zero-width chars, etc.
+  const clean = (key || '').replace(/[^A-Za-z0-9_-]/g, '');
   // Save to multiple locations for reliability across Safari/PWA contexts
   localStorage.setItem('pantry_api_key', clean);
   localStorage.setItem('pantry_api_key_backup', clean);
@@ -2128,11 +2244,12 @@ function renderPerspective() {
     html += `<div class="haul-group">
       <div class="haul-label">
         <span>Haul ${haulNum} · ${storeNames}</span>
+        <span style="cursor:pointer; color:var(--teal); font-weight:600; letter-spacing:0;" onclick="openHaulEditor('${haul.id}')">Edit</span>
       </div>
-      <div class="haul-card">
+      <div class="haul-card" onclick="openHaulEditor('${haul.id}')" style="cursor:pointer;">
         <div class="haul-card-header">
           <div>
-            <div class="haul-title">${haul.name}</div>
+            <div class="haul-title">${escapeHtml(haul.name)}</div>
             <div class="haul-date">${formatDate(haul.trips[0].date)}${haul.trips.length > 1 ? ' – ' + formatDate(haul.trips[haul.trips.length-1].date) : ''}</div>
           </div>
           <div>
@@ -2175,6 +2292,104 @@ function createNewHaul() {
   renderPerspective();
   showToast('Haul created!');
 }
+
+// ── Edit / delete hauls ──
+let editingHaul = null; // a working copy of the haul being edited
+
+function findHaul(id) {
+  const hauls = haulsData[perspMonth] || [];
+  return hauls.find(h => h.id === id) || null;
+}
+
+function openHaulEditor(id) {
+  const haul = findHaul(id);
+  if (!haul) return;
+  // Work on a deep copy so Cancel discards changes
+  editingHaul = JSON.parse(JSON.stringify(haul));
+  document.getElementById('he-name').value = editingHaul.name || '';
+  renderHaulTrips();
+  document.getElementById('haul-edit-modal').classList.add('open');
+}
+
+function renderHaulTrips() {
+  const storeOpts = household.stores.concat(['Other']);
+  const html = editingHaul.trips.map((t, i) => `
+    <div style="border:0.5px solid var(--border); border-radius:var(--radius-md); padding:12px; margin:0 20px 10px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <span style="font-size:12px; font-weight:700; letter-spacing:0.05em; text-transform:uppercase; color:var(--text-tertiary);">Trip ${i+1}</span>
+        ${editingHaul.trips.length > 1 ? `<span onclick="heRemoveTrip(${i})" style="cursor:pointer; color:var(--red); font-size:12px; font-weight:600;">Remove</span>` : ''}
+      </div>
+      <label class="form-label">Store</label>
+      <select class="form-input" style="margin-bottom:10px;" onchange="heSet(${i},'store',this.value)">
+        ${storeOpts.map(s => `<option ${s===t.store?'selected':''}>${escapeHtml(s)}</option>`).join('')}
+      </select>
+      <label class="form-label">Date</label>
+      <input class="form-input" type="date" value="${t.date}" style="margin-bottom:10px;" onchange="heSet(${i},'date',this.value)">
+      <div style="display:flex; gap:10px;">
+        <div style="flex:1;">
+          <label class="form-label">Amount ($)</label>
+          <input class="form-input" type="number" step="0.01" inputmode="decimal" value="${t.amount}" onchange="heSet(${i},'amount',this.value)">
+        </div>
+        <div style="flex:1;">
+          <label class="form-label"># Items</label>
+          <input class="form-input" type="number" step="1" inputmode="numeric" value="${t.items}" onchange="heSet(${i},'items',this.value)">
+        </div>
+      </div>
+    </div>`).join('');
+  document.getElementById('he-trips').innerHTML = html;
+}
+
+function heSet(i, field, value) {
+  const t = editingHaul.trips[i];
+  if (field === 'amount') t.amount = parseFloat(value) || 0;
+  else if (field === 'items') t.items = parseInt(value, 10) || 0;
+  else if (field === 'store') { t.store = value; t.storeKey = storeKey(value); }
+  else t[field] = value;
+}
+
+function heAddTrip() {
+  const today = new Date().toISOString().split('T')[0];
+  const firstStore = household.stores[0] || 'Other';
+  editingHaul.trips.push({ store: firstStore, storeKey: storeKey(firstStore), date: today, amount: 0, items: 0 });
+  renderHaulTrips();
+}
+
+function heRemoveTrip(i) {
+  if (editingHaul.trips.length <= 1) return;
+  editingHaul.trips.splice(i, 1);
+  renderHaulTrips();
+}
+
+function saveHaulEdit() {
+  editingHaul.name = document.getElementById('he-name').value.trim() || 'Haul';
+  // Recompute total from trips
+  editingHaul.totalAmount = Math.round(editingHaul.trips.reduce((s, t) => s + (Number(t.amount) || 0), 0) * 100) / 100;
+  // Write back into haulsData
+  const hauls = haulsData[perspMonth] || [];
+  const idx = hauls.findIndex(h => h.id === editingHaul.id);
+  if (idx !== -1) hauls[idx] = editingHaul;
+  localStorage.setItem('pantry_hauls', JSON.stringify(haulsData));
+  closeModal('haul-edit-modal');
+  editingHaul = null;
+  renderPerspective();
+  renderHome();
+  showToast('Haul updated');
+}
+
+function deleteHaul() {
+  if (!editingHaul) return;
+  if (!confirm('Delete this entire haul? This removes its spending from ' + monthLabelFromKey(perspMonth) + ' and cannot be undone.')) return;
+  const hauls = haulsData[perspMonth] || [];
+  haulsData[perspMonth] = hauls.filter(h => h.id !== editingHaul.id);
+  if (haulsData[perspMonth].length === 0) delete haulsData[perspMonth];
+  localStorage.setItem('pantry_hauls', JSON.stringify(haulsData));
+  closeModal('haul-edit-modal');
+  editingHaul = null;
+  renderPerspective();
+  renderHome();
+  showToast('Haul deleted');
+}
+
 
 // ════════════════════════════════════════════════════
 // PANTRY
@@ -2514,17 +2729,35 @@ async function handleReceiptUpload(input) {
       throw new Error('No API key set. Add your Anthropic API key in Settings first.');
     }
 
+    // Build a compact view of the current shopping list for the AI to match against
+    const listForMatch = shoppingList.map((it, i) => ({ i, name: it.name }));
+    const listText = listForMatch.length
+      ? 'Here is the current shopping list (as JSON, with index i): ' + JSON.stringify(listForMatch) + '. For each receipt item, if it clearly corresponds to a list item, include "matchIndex": <i>. If it does not match any list item, use "matchIndex": null.'
+      : 'There is no shopping list to match against; set "matchIndex": null for every item.';
+
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: apiHeaders(),
       body: JSON.stringify({
         model: 'claude-sonnet-4-5-20250929',
-        max_tokens: 1500,
+        max_tokens: 2000,
         messages: [{
           role: 'user',
           content: [
             { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: base64 } },
-            { type: 'text', text: 'This is a grocery store receipt. Extract every line item with its price. Return ONLY a JSON array and nothing else: [{"name":"item name","price":0.00,"category":"Protein|Produce|Dairy|Pantry Staples|Snacks|Beverages|Frozen|Other"}]. Skip tax, totals, and subtotals. If you cannot read the receipt, return [].' }
+            { type: 'text', text: `You are a receipt parser. Extract every purchased grocery line item from this receipt image.
+
+Rules:
+- Clean up abbreviated names (e.g. "ORG SLMN ATL" → "Organic Salmon", "CHKN BRST" → "Chicken Breast")
+- Skip tax lines, subtotals, totals, discounts, and store fees
+- Use one of these categories exactly: Protein, Produce, Dairy, Pantry Staples, Snacks, Beverages, Frozen, Other
+${listForMatch.length ? `- Shopping list to match against (JSON): ${JSON.stringify(listForMatch)}
+- If a receipt item clearly matches a list item, set matchIndex to that item's i value. Otherwise set matchIndex to null.` : '- Set matchIndex to null for all items.'}
+
+Return ONLY a valid JSON array, no markdown, no explanation:
+[{"name":"Organic Salmon","price":12.99,"category":"Protein","matchIndex":null}]
+
+If you cannot read the receipt at all, return: []` }
           ]
         }]
       })
@@ -2546,21 +2779,158 @@ async function handleReceiptUpload(input) {
     }
 
     const text = data.content.map(c => c.text || '').join('');
-    const items = extractJsonArray(text);
+    const rawItems = extractJsonArray(text);
 
-    if (!items || items.length === 0) {
+    if (!rawItems || rawItems.length === 0) {
       throw new Error("Couldn't read any items. Try a clearer, well-lit photo of the full receipt.");
     }
 
-    logReceiptAsHaul(items, targetKey, store);
+    // Sanitize: filter out any items missing a name, normalise matchIndex type
+    const items = rawItems
+      .filter(it => it && typeof it.name === 'string' && it.name.trim().length > 0)
+      .map(it => ({
+        name: it.name.trim(),
+        price: Number(it.price) || 0,
+        category: it.category || 'Other',
+        matchIndex: (it.matchIndex !== null && it.matchIndex !== undefined && !isNaN(Number(it.matchIndex)))
+          ? Number(it.matchIndex) : null
+      }));
+
+    if (items.length === 0) {
+      throw new Error("Receipt scanned but no items could be read. Try a clearer, well-lit photo.");
+    }
+
+    // Hand off to the reconciliation screen instead of logging directly
     closeModal('receipt-modal');
-    showToast(`${items.length} items logged to ${monthLabelFromKey(targetKey)}`);
-    perspMonth = targetKey;
-    switchTab('perspective');
+    openRecon(items, targetKey, store);
   } catch (e) {
     showReceiptError(e && e.message ? e.message : 'Could not read receipt. Try again.');
   }
   input.value = '';
+}
+
+// ── Reconciliation: match scanned items against the shopping list ──
+let reconState = null; // { items: [{name,price,category,matchIndex}], targetKey, store }
+
+function openRecon(items, targetKey, store) {
+  // Normalize matchIndex: ensure it points at a real, currently-unchecked list item
+  items.forEach(it => {
+    let mi = (it.matchIndex === 0 || it.matchIndex) ? Number(it.matchIndex) : null;
+    if (mi === null || isNaN(mi) || mi < 0 || mi >= shoppingList.length) it.matchIndex = null;
+    else it.matchIndex = mi;
+  });
+  reconState = { items, targetKey, store };
+  renderRecon();
+  document.getElementById('recon-modal').classList.add('open');
+}
+
+function renderRecon() {
+  const { items, targetKey, store } = reconState;
+  document.getElementById('recon-sub').textContent =
+    `${store} · ${monthLabelFromKey(targetKey)} · tap the link to match or unmatch`;
+
+  // Which list items are matched to something
+  const matchedListIdx = new Set(items.map(it => it.matchIndex).filter(i => i !== null));
+
+  let html = '';
+  // Rows for each scanned item, paired with its matched list item (if any)
+  items.forEach((it, idx) => {
+    const matched = it.matchIndex !== null;
+    const listItem = matched ? shoppingList[it.matchIndex] : null;
+    html += `<div class="recon-row ${matched ? 'matched' : ''}">
+      <div class="recon-cell scanned">
+        <div class="recon-cell-name">${escapeHtml(it.name)}</div>
+        <div class="recon-cell-meta">$${(Number(it.price)||0).toFixed(2)} · ${it.category||'Other'}</div>
+      </div>
+      <div class="recon-link" onclick="cycleMatch(${idx})">
+        <div class="recon-link-dot">
+          <svg viewBox="0 0 24 24">${matched
+            ? '<polyline points="20 6 9 17 4 12"/>'
+            : '<path d="M12 5v14M5 12h14"/>'}</svg>
+        </div>
+      </div>
+      ${matched
+        ? `<div class="recon-cell"><div class="recon-cell-name">${escapeHtml(listItem.name)}</div><div class="recon-cell-meta">on your list</div></div>`
+        : `<div class="recon-cell empty" onclick="pickMatch(${idx})">tap + to match to a list item</div>`}
+    </div>`;
+  });
+
+  // Unmatched list items (things you didn't buy) — informational
+  const unboughtIdx = shoppingList.map((_, i) => i).filter(i => !matchedListIdx.has(i) && !shoppingList[i].checked);
+  if (unboughtIdx.length) {
+    html += `<div class="recon-section-label">Still on your list (not on this receipt)</div>`;
+    unboughtIdx.forEach(i => {
+      html += `<div class="recon-row">
+        <div class="recon-cell empty" style="border-style:solid; background:var(--gray-50); color:var(--text-tertiary);">—</div>
+        <div class="recon-link"></div>
+        <div class="recon-cell"><div class="recon-cell-name" style="color:var(--text-secondary);">${escapeHtml(shoppingList[i].name)}</div><div class="recon-cell-meta">not bought</div></div>
+      </div>`;
+    });
+  }
+
+  const matchCount = items.filter(it => it.matchIndex !== null).length;
+  html = `<div class="recon-summary"><strong>${items.length}</strong> items scanned · <strong>${matchCount}</strong> matched to your list</div>` + html;
+
+  document.getElementById('recon-body').innerHTML = html;
+}
+
+// Tapping the link toggles: if matched, unmatch; if not, open the picker
+function cycleMatch(idx) {
+  if (reconState.items[idx].matchIndex !== null) {
+    reconState.items[idx].matchIndex = null;
+    renderRecon();
+  } else {
+    pickMatch(idx);
+  }
+}
+
+// Simple picker: cycle to the next available unmatched list item
+function pickMatch(idx) {
+  const items = reconState.items;
+  const taken = new Set(items.map((it, i) => i !== idx ? it.matchIndex : null).filter(v => v !== null));
+  // Candidate list items not already matched and not checked
+  const candidates = shoppingList
+    .map((li, i) => ({ li, i }))
+    .filter(({ li, i }) => !taken.has(i) && !li.checked);
+  if (candidates.length === 0) { showToast('No more list items to match'); return; }
+  // Find current position and advance
+  const cur = items[idx].matchIndex;
+  let next;
+  if (cur === null) next = candidates[0].i;
+  else {
+    const pos = candidates.findIndex(c => c.i === cur);
+    next = pos === -1 || pos === candidates.length - 1 ? candidates[0].i : candidates[pos + 1].i;
+  }
+  items[idx].matchIndex = next;
+  renderRecon();
+}
+
+function cancelRecon() {
+  document.getElementById('recon-modal').classList.remove('open');
+  reconState = null;
+}
+
+function confirmRecon() {
+  const { items, targetKey, store } = reconState;
+  // Check off matched list items
+  items.forEach(it => {
+    if (it.matchIndex !== null && shoppingList[it.matchIndex]) {
+      shoppingList[it.matchIndex].checked = true;
+    }
+  });
+  saveList();
+  // Log the haul + update pantry (existing function)
+  logReceiptAsHaul(items, targetKey, store);
+  document.getElementById('recon-modal').classList.remove('open');
+  const matched = items.filter(it => it.matchIndex !== null).length;
+  reconState = null;
+  showToast(`${items.length} logged${matched ? `, ${matched} checked off` : ''}`);
+  perspMonth = targetKey;
+  switchTab('perspective');
+}
+
+function escapeHtml(s) {
+  return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
 // Show the spinner/processing state
@@ -2889,7 +3259,7 @@ function editApiKey() {
 
 function saveApiKey() {
   const val = document.getElementById('api-key-input').value;
-  const clean = val.replace(/[^\x20-\x7E]/g, '').trim(); // strip invisible/non-ASCII chars
+  const clean = (val || '').replace(/[^A-Za-z0-9_-]/g, ''); // keep only valid key characters
   if (!clean) { showToast('Enter your API key'); return; }
   if (!clean.startsWith('sk-ant-')) {
     showToast('Key should start with sk-ant-');
