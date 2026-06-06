@@ -91,23 +91,6 @@
   .scan-zone:active { background: var(--teal-light); }
 
   /* ── Live scanner view ── */
-  .scanner-view { display: none; position: fixed; inset: 0; z-index: 600; background: #000; flex-direction: column; }
-  .scanner-view.open { display: flex; }
-  .scanner-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-  .scanner-canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
-  .scanner-line { position: absolute; left: 20px; right: 20px; height: 2px; background: linear-gradient(to right, transparent 0%, var(--teal) 20%, rgba(255,255,255,0.9) 50%, var(--teal) 80%, transparent 100%); box-shadow: 0 0 12px 3px rgba(29,158,117,0.6); pointer-events: none; opacity: 0; transition: opacity 0.3s; }
-  .scanner-top-bar { position: absolute; top: 0; left: 0; right: 0; padding: max(52px, env(safe-area-inset-top, 52px)) 16px 12px; display: flex; align-items: center; justify-content: space-between; gap: 10px; background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, transparent 100%); z-index: 2; }
-  .scanner-top-bar select { background: rgba(0,0,0,0.55); color: white; border: 1px solid rgba(255,255,255,0.3); border-radius: var(--radius-md); padding: 7px 28px 7px 10px; font-size: 13px; font-weight: 600; flex: 1; appearance: none; -webkit-appearance: none; }
-  .scanner-bottom-bar { position: absolute; bottom: 0; left: 0; right: 0; padding: 20px 24px max(32px, env(safe-area-inset-bottom, 32px)); display: flex; align-items: center; justify-content: space-between; background: linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 100%); z-index: 2; }
-  .scanner-shutter { width: 72px; height: 72px; border-radius: 50%; background: rgba(255,255,255,0.15); border: 3px solid white; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.1s, background 0.15s; position: relative; flex-shrink: 0; }
-  .scanner-shutter:active { transform: scale(0.92); background: rgba(255,255,255,0.3); }
-  .scanner-shutter-inner { width: 52px; height: 52px; border-radius: 50%; background: white; transition: transform 0.1s; }
-  .scanner-shutter:active .scanner-shutter-inner { transform: scale(0.88); }
-  .scanner-side-btn { color: white; background: none; border: none; cursor: pointer; font-size: 13px; font-weight: 600; padding: 8px; opacity: 0.85; display: flex; flex-direction: column; align-items: center; gap: 4px; width: 64px; }
-  .scanner-side-btn svg { width: 24px; height: 24px; stroke: white; fill: none; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
-  .scanner-hint { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); margin-top: 48%; color: rgba(255,255,255,0.8); font-size: 12px; font-weight: 500; text-align: center; pointer-events: none; z-index: 2; background: rgba(0,0,0,0.4); padding: 6px 14px; border-radius: 20px; white-space: nowrap; }
-  @keyframes shutterFlash { 0%{opacity:0} 20%{opacity:0.6} 100%{opacity:0} }
-  .scanner-flash { position: absolute; inset: 0; background: white; opacity: 0; pointer-events: none; z-index: 3; }
   .scan-icon { width: 56px; height: 56px; background: var(--teal-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
   .scan-icon svg { width: 28px; height: 28px; stroke: var(--teal); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
   .scan-label { font-size: 15px; font-weight: 600; color: var(--text-primary); }
@@ -604,7 +587,7 @@
       </div>
       <label class="form-label">Store</label>
       <select class="form-input" id="receipt-store" style="margin-bottom:16px;"></select>
-      <input type="file" id="receipt-file-input" accept="image/*" style="opacity:0;position:absolute;width:0;height:0;pointer-events:none;" onchange="handleReceiptUpload(this)">
+      <input type="file" id="receipt-file-input" accept="image/*" capture="environment" style="opacity:0;position:absolute;width:0;height:0;pointer-events:none;" onchange="handleReceiptUpload(this)">
       <label for="receipt-file-input" class="btn-primary" style="margin-bottom:12px;cursor:pointer;user-select:none;" id="receipt-camera-label">
         <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
         Take Photo or Upload
@@ -758,48 +741,6 @@
 
 
 <!-- ── Live Scanner View ── -->
-<div class="scanner-view" id="scanner-view">
-  <video id="scanner-video" playsinline muted autoplay style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;"></video>
-  <canvas id="scanner-canvas" class="scanner-canvas"></canvas>
-  <div id="scanner-line" class="scanner-line"></div>
-  <div class="scanner-flash" id="scanner-flash"></div>
-
-  <!-- Top bar: month + store -->
-  <div class="scanner-top-bar">
-    <div style="display:flex;flex-direction:column;gap:6px;flex:1;">
-      <div style="display:flex;gap:8px;">
-        <select id="sc-month" style="flex:1;background:rgba(0,0,0,0.55);color:white;border:1px solid rgba(255,255,255,0.3);border-radius:var(--radius-md);padding:7px 10px;font-size:13px;font-weight:600;appearance:none;-webkit-appearance:none;">
-          <option value="current" id="sc-month-current">This month</option>
-          <option value="next" id="sc-month-next">Next month</option>
-        </select>
-        <select id="sc-store" style="flex:1;background:rgba(0,0,0,0.55);color:white;border:1px solid rgba(255,255,255,0.3);border-radius:var(--radius-md);padding:7px 10px;font-size:13px;font-weight:600;appearance:none;-webkit-appearance:none;"></select>
-      </div>
-    </div>
-    <button onclick="closeScanner()" style="color:white;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.3);border-radius:var(--radius-md);padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;">✕ Cancel</button>
-  </div>
-
-  <div class="scanner-hint" id="scanner-hint">Align receipt inside the frame · capture the whole receipt</div>
-
-  <!-- Bottom bar: library | shutter | torch -->
-  <div class="scanner-bottom-bar">
-    <button class="scanner-side-btn" onclick="scannerPickFromLibrary()">
-      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-      Library
-    </button>
-    <button class="scanner-shutter" id="scanner-shutter-btn" onclick="captureReceipt()">
-      <div class="scanner-shutter-inner"></div>
-    </button>
-    <button class="scanner-side-btn" onclick="toggleTorch()" id="torch-btn" style="display:none;">
-      <svg viewBox="0 0 24 24"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0018 8 6 6 0 006 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 019.09 14"/></svg>
-      Torch
-    </button>
-    <!-- placeholder when torch hidden -->
-    <div style="width:64px;" id="torch-placeholder"></div>
-  </div>
-  <!-- Hidden file input for library fallback -->
-  <input type="file" id="scanner-library-input" accept="image/*" style="display:none;" onchange="handleScannerLibraryUpload(this)">
-</div>
-
 
 <!-- Recon match picker — searchable list of shopping list items -->
 <div class="modal-overlay" id="recon-match-modal" onclick="closeModal('recon-match-modal')" style="z-index:510;">
@@ -1455,18 +1396,19 @@ function receiptTargetKey() { const n=new Date(); let y=n.getFullYear(),m=n.getM
 function setReceiptMonth(target) { receiptMonthTarget=target; document.getElementById('seg-current').classList.toggle('active',target==='current'); document.getElementById('seg-next').classList.toggle('active',target==='next'); }
 function showReceiptButtons(visible) { const l=document.getElementById('receipt-camera-label'); if(l)l.style.display=visible?'flex':'none'; }
 function openReceiptModal() {
-  if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-    openScanner();
-  } else {
-    openFallbackReceiptModal();
-  }
+  openFallbackReceiptModal();
 }
 
 function openFallbackReceiptModal() {
   setReceiptMonth('current');
-  const n=new Date(); document.getElementById('seg-current').textContent=MONTH_NAMES[n.getMonth()]; document.getElementById('seg-next').textContent=MONTH_NAMES[(n.getMonth()+1)%12];
-  const sel=document.getElementById('receipt-store'); sel.innerHTML=household.stores.concat(['Other']).map(s=>`<option>${s}</option>`).join('');
-  document.getElementById('receipt-processing').style.display='none'; document.getElementById('receipt-file-input').value=''; showReceiptButtons(true);
+  const n = new Date();
+  document.getElementById('seg-current').textContent = MONTH_NAMES[n.getMonth()];
+  document.getElementById('seg-next').textContent = MONTH_NAMES[(n.getMonth()+1)%12];
+  const sel = document.getElementById('receipt-store');
+  sel.innerHTML = household.stores.concat(['Other']).map(s=>`<option>${s}</option>`).join('');
+  document.getElementById('receipt-processing').style.display = 'none';
+  document.getElementById('receipt-file-input').value = '';
+  showReceiptButtons(true);
   document.getElementById('receipt-modal').classList.add('open');
 }
 
@@ -1483,206 +1425,8 @@ async function handleReceiptUpload(input) {
 }
 
 // ════════════════════════════════════════════════════
-// LIVE SCANNER
+// RECEIPT PROCESSING
 // ════════════════════════════════════════════════════
-let scannerStream=null, scannerAnimFrame=null, torchOn=false;
-
-async function openScanner() {
-  const now=new Date();
-  document.getElementById('sc-month-current').textContent=MONTH_NAMES[now.getMonth()];
-  document.getElementById('sc-month-next').textContent=MONTH_NAMES[(now.getMonth()+1)%12];
-  document.getElementById('sc-month').value='current';
-  const scStore=document.getElementById('sc-store');
-  scStore.innerHTML=household.stores.concat(['Other']).map(s=>`<option>${s}</option>`).join('');
-
-  // Show the scanner view immediately with a loading state
-  document.getElementById('scanner-view').classList.add('open');
-  document.getElementById('scanner-hint').textContent='Starting camera...';
-
-  try {
-    // Request highest available resolution — critical for reading small receipt text
-    try {
-      scannerStream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: { ideal: 'environment' },
-          width:  { ideal: 4096 },
-          height: { ideal: 3072 }
-        },
-        audio: false
-      });
-    } catch(e1) {
-      // Retry with just environment camera, no resolution constraint
-      try {
-        scannerStream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: { ideal: 'environment' } }, audio: false
-        });
-      } catch(e2) {
-        scannerStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-      }
-    }
-
-    const video = document.getElementById('scanner-video');
-    video.srcObject = scannerStream;
-
-    // Draw frame once video actually has dimensions
-    const onReady = () => {
-      drawScannerFrame();
-      startScanLine();
-      document.getElementById('scanner-hint').textContent = 'Align receipt inside the frame';
-      // Torch support
-      const track = scannerStream.getVideoTracks()[0];
-      const caps = track.getCapabilities ? track.getCapabilities() : {};
-      document.getElementById('torch-btn').style.display = caps.torch ? 'flex' : 'none';
-      document.getElementById('torch-placeholder').style.display = caps.torch ? 'none' : 'block';
-    };
-
-    if (video.readyState >= 2) {
-      onReady();
-    } else {
-      video.addEventListener('canplay', onReady, { once: true });
-    }
-
-    // iOS requires play() to be called — but don't await it (breaks gesture chain)
-    const playPromise = video.play();
-    if (playPromise) playPromise.catch(() => {}); // ignore play errors, autoplay handles it
-
-  } catch(e) {
-    // Camera access denied or unavailable
-    document.getElementById('scanner-view').classList.remove('open');
-    stopScanner();
-    if (e.name === 'NotAllowedError' || e.name === 'PermissionDeniedError') {
-      showToast('Camera permission denied — using photo picker instead');
-    }
-    openFallbackReceiptModal();
-  }
-}
-
-function getScannerFrameRect() {
-  const c=document.getElementById('scanner-canvas');
-  const margin=Math.round(c.width*0.05);
-  const fw=c.width-margin*2;
-  const fh=Math.min(Math.round(fw*2.3),c.height-200);
-  const fx=margin, fy=Math.round((c.height-fh)/2)-20;
-  return {fx,fy,fw,fh};
-}
-
-function drawScannerFrame() {
-  const canvas=document.getElementById('scanner-canvas');
-  canvas.width=canvas.offsetWidth; canvas.height=canvas.offsetHeight;
-  const ctx=canvas.getContext('2d');
-  const{fx,fy,fw,fh}=getScannerFrameRect();
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  ctx.fillStyle='rgba(0,0,0,0.52)';
-  ctx.fillRect(0,0,canvas.width,canvas.height);
-  ctx.clearRect(fx,fy,fw,fh);
-  ctx.strokeStyle='rgba(255,255,255,0.12)'; ctx.lineWidth=1;
-  ctx.strokeRect(fx,fy,fw,fh);
-  const cl=Math.round(Math.min(fw,fh)*0.1);
-  ctx.strokeStyle='#1D9E75'; ctx.lineWidth=3; ctx.lineCap='round';
-  [[fx,fy,1,1],[fx+fw,fy,-1,1],[fx,fy+fh,1,-1],[fx+fw,fy+fh,-1,-1]].forEach(([x,y,dx,dy])=>{
-    ctx.beginPath(); ctx.moveTo(x,y+dy*cl); ctx.lineTo(x,y); ctx.lineTo(x+dx*cl,y); ctx.stroke();
-  });
-  const line=document.getElementById('scanner-line');
-  line.style.left=fx+'px'; line.style.width=fw+'px';
-  const hint=document.getElementById('scanner-hint');
-  hint.style.top=(fy+fh+14)+'px'; hint.style.left=fx+'px';
-  hint.style.width=fw+'px'; hint.style.transform='none';
-}
-
-function startScanLine() {
-  const line=document.getElementById('scanner-line'); line.style.opacity='1';
-  const{fy,fh}=getScannerFrameRect(); const dur=2200; let t0=null;
-  function animate(ts){
-    if(!t0)t0=ts;
-    const e=(ts-t0)%(dur*2);
-    const p=e<dur?e/dur:(dur*2-e)/dur;
-    line.style.top=(fy+8+p*(fh-16))+'px';
-    scannerAnimFrame=requestAnimationFrame(animate);
-  }
-  scannerAnimFrame=requestAnimationFrame(animate);
-}
-
-async function captureReceipt() {
-  const video = document.getElementById('scanner-video');
-  if (!video.videoWidth) { showToast('Camera not ready — wait a moment'); return; }
-
-  // Disable shutter while capturing
-  const btn = document.getElementById('scanner-shutter-btn');
-  if (btn) btn.style.opacity = '0.5';
-
-  // Flash effect
-  const flash = document.getElementById('scanner-flash');
-  flash.style.animation = 'none'; flash.offsetHeight;
-  flash.style.animation = 'shutterFlash 0.35s ease-out forwards';
-
-  const store = document.getElementById('sc-store').value;
-  const monthTarget = document.getElementById('sc-month').value;
-
-  try {
-    let base64;
-
-    // ImageCapture API: takes a full-resolution still while video preview runs.
-    // This is far better quality than grabbing a video frame.
-    if (scannerStream && window.ImageCapture) {
-      try {
-        const track = scannerStream.getVideoTracks()[0];
-        const imageCapture = new ImageCapture(track);
-        const blob = await imageCapture.takePhoto();
-        base64 = await new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = e => resolve(e.target.result.split(',')[1]);
-          reader.onerror = reject;
-          reader.readAsDataURL(blob);
-        });
-      } catch(e) {
-        // ImageCapture failed — fall back to video frame
-        base64 = null;
-      }
-    }
-
-    // Fallback: grab current video frame
-    if (!base64) {
-      const c = document.createElement('canvas');
-      c.width = video.videoWidth; c.height = video.videoHeight;
-      const ctx = c.getContext('2d');
-      ctx.drawImage(video, 0, 0, c.width, c.height);
-      base64 = c.toDataURL('image/jpeg', 0.96).split(',')[1];
-    }
-
-    setTimeout(() => { stopScanner(); processReceiptBase64(base64, monthTarget, store); }, 200);
-  } catch(e) {
-    if (btn) btn.style.opacity = '1';
-    showToast('Could not capture — try again');
-  }
-}
-
-async function toggleTorch() {
-  if(!scannerStream)return;
-  const track=scannerStream.getVideoTracks()[0];
-  if(!track||!track.applyConstraints)return;
-  torchOn=!torchOn;
-  try{await track.applyConstraints({advanced:[{torch:torchOn}]});}catch(e){}
-  document.getElementById('torch-btn').style.opacity=torchOn?'1':'0.75';
-}
-
-function stopScanner() {
-  if(scannerAnimFrame){cancelAnimationFrame(scannerAnimFrame);scannerAnimFrame=null;}
-  if(scannerStream){scannerStream.getTracks().forEach(t=>t.stop());scannerStream=null;}
-  const line=document.getElementById('scanner-line');
-  if(line)line.style.opacity='0';
-  document.getElementById('scanner-view').classList.remove('open');
-}
-
-function closeScanner(){stopScanner();}
-function scannerPickFromLibrary(){document.getElementById('scanner-library-input').click();}
-function handleScannerLibraryUpload(input) {
-  if(!input.files[0])return;
-  const file=input.files[0], store=document.getElementById('sc-store').value, mt=document.getElementById('sc-month').value;
-  stopScanner();
-  fileToJpegBase64(file).then(b64=>processReceiptBase64(b64,mt,store)).catch(e=>showToast(e.message||'Could not read image'));
-  input.value='';
-}
-
 // Core receipt processing — used by both scanner and file input paths
 async function processReceiptBase64(base64, monthTarget, store) {
   receiptMonthTarget = monthTarget || 'current';
@@ -1973,7 +1717,7 @@ function logReceiptAsHaul(items,monthKey,store) {
 function emojiFor(category) { return {'Protein':'🥩','Produce':'🥦','Dairy':'🥛','Pantry Staples':'🥫','Snacks':'🍪','Beverages':'🥤','Frozen':'🧊','Other':'🛒'}[category]||'🛒'; }
 // Convert image to base64, preserving format where possible.
 // Returns { base64, mediaType }. PNG screenshots stay PNG; camera photos become JPEG.
-function fileToBase64(file, maxDim=1568) {
+function fileToBase64(file, maxDim=2000) {
   return new Promise((resolve, reject) => {
     const isPng = file.type === 'image/png' || file.name.toLowerCase().endsWith('.png');
     const reader = new FileReader();
@@ -1984,23 +1728,52 @@ function fileToBase64(file, maxDim=1568) {
         try {
           let w = img.naturalWidth, h = img.naturalHeight;
           if (!w || !h) { reject(new Error('That image looks empty.')); return; }
+
+          // Scale down if larger than maxDim on the long edge
           if (w > maxDim || h > maxDim) {
             const scale = maxDim / Math.max(w, h);
             w = Math.round(w * scale); h = Math.round(h * scale);
           }
+
           const canvas = document.createElement('canvas');
           canvas.width = w; canvas.height = h;
           const ctx = canvas.getContext('2d');
           ctx.fillStyle = '#ffffff';
           ctx.fillRect(0, 0, w, h);
           ctx.drawImage(img, 0, 0, w, h);
-          // PNG for screenshots (better text clarity), JPEG for photos
-          const outType = isPng ? 'image/png' : 'image/jpeg';
-          const quality = isPng ? undefined : 0.88;
-          const dataUrl = canvas.toDataURL(outType, quality);
-          const base64 = dataUrl.split(',')[1];
+
+          // Always JPEG for receipts/photos — far smaller than PNG.
+          // Iteratively lower quality (and dimensions if needed) until under ~7MB base64.
+          const MAX_BASE64_BYTES = 7 * 1024 * 1024; // 7MB target (well under the 10MB API limit)
+          let quality = 0.85;
+          let dataUrl = canvas.toDataURL('image/jpeg', quality);
+          let base64 = dataUrl.split(',')[1];
+
+          // Estimate byte size of base64 (~3/4 of string length)
+          const b64bytes = (str) => Math.ceil(str.length * 0.75);
+
+          // Step 1: drop quality
+          while (base64 && b64bytes(base64) > MAX_BASE64_BYTES && quality > 0.4) {
+            quality -= 0.12;
+            dataUrl = canvas.toDataURL('image/jpeg', quality);
+            base64 = dataUrl.split(',')[1];
+          }
+
+          // Step 2: if still too big, shrink dimensions and retry at moderate quality
+          let attempts = 0;
+          while (base64 && b64bytes(base64) > MAX_BASE64_BYTES && attempts < 4) {
+            attempts++;
+            w = Math.round(w * 0.8); h = Math.round(h * 0.8);
+            canvas.width = w; canvas.height = h;
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, w, h);
+            ctx.drawImage(img, 0, 0, w, h);
+            dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+            base64 = dataUrl.split(',')[1];
+          }
+
           if (!base64) { reject(new Error('Could not process that image.')); return; }
-          resolve({ base64, mediaType: isPng ? 'image/png' : 'image/jpeg' });
+          resolve({ base64, mediaType: 'image/jpeg' });
         } catch(err) {
           reject(new Error('Could not process that image. If it is an iPhone HEIC photo, go to Camera → Formats → Most Compatible.'));
         }
@@ -2012,8 +1785,8 @@ function fileToBase64(file, maxDim=1568) {
   });
 }
 
-// Legacy alias used by receipt scanner (always outputs JPEG for camera photos)
-function fileToJpegBase64(file, maxDim=1568) {
+// Legacy alias used by receipt scanner (always outputs JPEG)
+function fileToJpegBase64(file, maxDim=2000) {
   return fileToBase64(file, maxDim).then(r => r.base64);
 }
 
