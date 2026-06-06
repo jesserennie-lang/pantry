@@ -380,6 +380,7 @@
   </div>
   <div id="plan-list-container"></div>
   <div style="padding:16px 20px 8px;"><button class="btn-primary" onclick="openAddItem()"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Add Item</button></div>
+  <div style="padding:0 20px 8px;"><button class="btn-ghost" style="width:100%;" onclick="openListImport()">📷 Import from photo</button></div>
   <div style="padding:0 20px 24px;"><button class="btn-ghost" style="width:100%;" onclick="switchTab('pantry')">Browse Pantry to add</button></div>
 </div>
 
@@ -496,6 +497,42 @@
     <div class="form-group"><label class="form-label">On Sale?</label><select class="form-input" id="edit-item-sale"><option value="no">No</option><option value="yes">Yes — on sale</option></select></div>
     <div style="padding:0 20px 8px;"><button class="btn-primary" onclick="saveEditItem()">Save Changes</button></div>
     <div style="padding:0 20px 16px;"><button class="btn-ghost" style="width:100%;border-color:var(--red);color:var(--red);" onclick="deleteItemFromModal()">Delete Item</button></div>
+  </div>
+</div>
+
+
+<!-- List import from photo -->
+<div class="modal-overlay" id="list-import-modal" onclick="closeModal('list-import-modal')">
+  <div class="modal-sheet" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Import List from Photo</div>
+    <div style="padding:0 20px 16px;">
+      <p style="font-size:14px;color:var(--text-secondary);line-height:1.5;margin-bottom:16px;">Take a screenshot of any list — Alexa, a grocery app, Notes, a paper list. AI reads the items and adds them to your Plan.</p>
+      <input type="file" id="list-import-file" accept="image/*" style="opacity:0;position:absolute;width:0;height:0;pointer-events:none;" onchange="handleListImport(this)">
+      <label for="list-import-file" class="btn-primary" style="cursor:pointer;user-select:none;" id="list-import-label">
+        <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        Take Photo or Upload Screenshot
+      </label>
+    </div>
+    <div id="list-import-processing" style="display:none;padding:0 20px 16px;text-align:center;">
+      <div class="ai-spinner" style="margin:0 auto 12px;"></div>
+      <div style="font-size:14px;color:var(--text-secondary);">Reading your list...</div>
+    </div>
+  </div>
+</div>
+
+<!-- List import confirm screen -->
+<div class="modal-overlay" id="list-confirm-modal" onclick="event.stopPropagation()">
+  <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:92vh;">
+    <div class="modal-handle"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px 4px;">
+      <div class="modal-title" style="padding:0;">Add to your list</div>
+      <button class="icon-btn" onclick="closeModal('list-confirm-modal')"><svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div style="padding:4px 20px 8px;font-size:13px;color:var(--text-tertiary);" id="list-confirm-sub">Tap items to deselect any you don't want</div>
+    <div id="list-confirm-items" style="max-height:52vh;overflow-y:auto;padding:4px 0;border-top:0.5px solid var(--border);"></div>
+    <div style="padding:12px 20px 8px;"><button class="btn-primary" onclick="confirmListImport()" id="list-confirm-btn">Add Selected Items</button></div>
+    <div style="padding:0 20px 16px;"><button class="btn-ghost" style="width:100%;" onclick="closeModal('list-confirm-modal')">Cancel</button></div>
   </div>
 </div>
 
@@ -1069,6 +1106,141 @@ function addNudgeItem(itemName) {
   saveList(); showToast(itemName+' added to list!');
 }
 function sendAiMessage(msg) { generateNudges(); }
+
+// ════════════════════════════════════════════════════
+// LIST IMPORT FROM PHOTO
+// ════════════════════════════════════════════════════
+let importedItems = []; // [{name, category, selected}]
+
+function openListImport() {
+  if (!hasApiKey()) {
+    alert('Add your Anthropic API key in Settings first.');
+    return;
+  }
+  document.getElementById('list-import-processing').style.display = 'none';
+  document.getElementById('list-import-label').style.display = 'flex';
+  document.getElementById('list-import-file').value = '';
+  document.getElementById('list-import-modal').classList.add('open');
+}
+
+async function handleListImport(input) {
+  if (!input.files[0]) return;
+  const file = input.files[0];
+  document.getElementById('list-import-label').style.display = 'none';
+  document.getElementById('list-import-processing').style.display = 'block';
+  try {
+    const base64 = await fileToJpegBase64(file);
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: apiHeaders(),
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-5-20250929',
+        max_tokens: 1500,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: base64 } },
+            { type: 'text', text: `This is a screenshot of a shopping list (could be from Alexa, a grocery app, Notes, or anywhere). Extract every item on the list.
+
+Return ONLY a valid JSON array, no markdown, no explanation:
+[{"name":"Organic Milk","category":"Dairy"},{"name":"Chicken Breast","category":"Protein"}]
+
+Categories to use: Protein, Produce, Dairy, Pantry Staples, Snacks, Beverages, Frozen, Other
+
+If you cannot read any items, return: []` }
+          ]
+        }]
+      })
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
+    const text = data.content.map(c => c.text || '').join('');
+    const raw = extractJsonArray(text);
+    if (!raw || raw.length === 0) throw new Error("Couldn't read any items from that image. Try a clearer screenshot.");
+    // Filter valid items, mark all selected
+    importedItems = raw
+      .filter(it => it && typeof it.name === 'string' && it.name.trim())
+      .map(it => ({ name: it.name.trim(), category: it.category || 'Other', selected: true }));
+    if (importedItems.length === 0) throw new Error("No items found. Try a clearer screenshot.");
+    closeModal('list-import-modal');
+    openListConfirm();
+  } catch(e) {
+    document.getElementById('list-import-processing').style.display = 'none';
+    document.getElementById('list-import-label').style.display = 'flex';
+    showToast(e.message || 'Could not read list. Try again.');
+  }
+  input.value = '';
+}
+
+function openListConfirm() {
+  const alreadyOnList = new Set(shoppingList.map(i => i.name.toLowerCase()));
+  // Mark items already on the list as deselected
+  importedItems.forEach(it => {
+    if (alreadyOnList.has(it.name.toLowerCase())) it.selected = false;
+  });
+  renderListConfirm();
+  document.getElementById('list-confirm-modal').classList.add('open');
+}
+
+function renderListConfirm() {
+  const selected = importedItems.filter(i => i.selected).length;
+  const alreadyOnList = new Set(shoppingList.map(i => i.name.toLowerCase()));
+  document.getElementById('list-confirm-sub').textContent =
+    `${selected} of ${importedItems.length} selected · tap to toggle`;
+  document.getElementById('list-confirm-btn').textContent =
+    `Add ${selected} Item${selected !== 1 ? 's' : ''} to List`;
+
+  const html = importedItems.map((it, idx) => {
+    const already = alreadyOnList.has(it.name.toLowerCase());
+    const color = CATEGORY_COLORS[it.category] || '#888780';
+    return `<div onclick="toggleImportItem(${idx})" style="display:flex;align-items:center;gap:12px;padding:12px 20px;border-bottom:0.5px solid var(--border);cursor:pointer;background:${it.selected ? 'var(--white)' : 'var(--gray-50)'};opacity:${it.selected ? 1 : 0.5};">
+      <div style="width:22px;height:22px;border-radius:50%;border:2px solid ${it.selected ? 'var(--teal)' : 'var(--gray-200)'};background:${it.selected ? 'var(--teal)' : 'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        ${it.selected ? '<svg viewBox="0 0 24 24" style="width:12px;height:12px;stroke:white;fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;"><polyline points="20 6 9 17 4 12"/></svg>' : ''}
+      </div>
+      <div style="flex:1;">
+        <div style="font-size:14px;font-weight:500;">${escapeHtml(it.name)}</div>
+        <div style="font-size:11px;color:var(--text-tertiary);margin-top:2px;display:flex;gap:6px;align-items:center;">
+          <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${color};"></span>${it.category}${already ? ' · <span style="color:var(--amber);">already on list</span>' : ''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('list-confirm-items').innerHTML = html;
+}
+
+function toggleImportItem(idx) {
+  importedItems[idx].selected = !importedItems[idx].selected;
+  renderListConfirm();
+}
+
+function confirmListImport() {
+  const toAdd = importedItems.filter(i => i.selected);
+  if (toAdd.length === 0) { showToast('No items selected'); return; }
+  const defaultStore = household.stores[0] || 'Other';
+  toAdd.forEach(it => {
+    // Don't add duplicates
+    if (shoppingList.find(s => s.name.toLowerCase() === it.name.toLowerCase())) return;
+    // Check pantry for price history
+    const pantryMatch = pantryItems.find(p => p.name.toLowerCase() === it.name.toLowerCase());
+    const lastEntry = pantryMatch?.priceHistory?.[pantryMatch.priceHistory.length - 1];
+    shoppingList.push({
+      id: Date.now() + Math.random(),
+      name: it.name,
+      category: it.category,
+      lastPrice: lastEntry?.price || null,
+      store: lastEntry?.store || defaultStore,
+      onSale: false,
+      checked: false,
+      qty: 1
+    });
+  });
+  saveList();
+  closeModal('list-confirm-modal');
+  switchTab('plan');
+  showToast(`${toAdd.length} item${toAdd.length !== 1 ? 's' : ''} added to your list`);
+  importedItems = [];
+}
+
 
 // ════════════════════════════════════════════════════
 // RECEIPT
