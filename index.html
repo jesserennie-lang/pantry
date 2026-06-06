@@ -128,9 +128,9 @@
   .list-item:active { background: var(--gray-50); }
   .list-item.checked { opacity: 0.55; }
   /* Swipe — YNAB style: delete reveals from right, grows with swipe */
-  .swipe-wrap { position: relative; overflow: hidden; border-bottom: 0.5px solid var(--border); background: var(--red); }
+  .swipe-wrap { position: relative; overflow: hidden; border-bottom: 0.5px solid var(--border); }
   .swipe-wrap .list-item { border-bottom: none; position: relative; z-index: 1; will-change: transform; background: var(--white); }
-  .swipe-action-delete { position: absolute; right: 0; top: 0; bottom: 0; min-width: 90px; width: 90px; background: var(--red); display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; font-weight: 700; letter-spacing: 0.01em; cursor: pointer; user-select: none; }
+  .swipe-action-delete { position: absolute; right: 0; top: 4px; bottom: 4px; width: 0; background: var(--red); display: flex; align-items: center; justify-content: center; color: white; font-size: 15px; font-weight: 700; letter-spacing: 0.01em; cursor: pointer; user-select: none; border-radius: 12px 8px 8px 12px; overflow: hidden; white-space: nowrap; }
   /* Edit action removed from swipe — edit via tap on item */
   .check-circle { width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--gray-200); flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
   .check-circle.done { background: var(--teal); border-color: var(--teal); }
@@ -981,11 +981,14 @@ function ensureSwipeCloseListener() {
 }
 
 function snapSwipeBack(el, wrap) {
-  el.style.transition = 'transform 0.22s cubic-bezier(0.25,0.46,0.45,0.94)';
+  el.style.transition = 'transform 0.25s cubic-bezier(0.25,0.46,0.45,0.94)';
   el.style.transform = 'translateX(0)';
   el._swipeX = 0;
   const del = wrap.querySelector('.swipe-action-delete');
-  if (del) { del.style.transition = 'width 0.22s cubic-bezier(0.25,0.46,0.45,0.94)'; del.style.width = '90px'; }
+  if (del) {
+    del.style.transition = 'width 0.25s cubic-bezier(0.25,0.46,0.45,0.94)';
+    del.style.width = '0';
+  }
 }
 
 function attachSwipeListeners() {
@@ -995,18 +998,21 @@ function attachSwipeListeners() {
     if (!el || el._swipeAttached) return;
     el._swipeAttached = true;
     el._swipeX = 0;
-    let startX = 0, startY = 0;
-    let lastX = 0, lastTime = 0, velocity = 0;
-    let swiping = false, direction = null;
-    const SNAP_PX = 90;
-    const SNAP_THRESHOLD = 35;
-    const DELETE_THRESHOLD = Math.round(window.innerWidth * 0.55);
+
+    let startX = 0, startY = 0, gestureBaseX = 0;
+    let lastX = 0, lastT = 0, velocity = 0;
+    let swiping = false, dir = null;
+    const SNAP_PX = 88;
+    const SNAP_THRESHOLD = 30;
+    const DELETE_THRESHOLD = Math.round(window.innerWidth * 0.52);
 
     el.addEventListener('touchstart', e => {
       startX = lastX = e.touches[0].clientX;
       startY = e.touches[0].clientY;
-      lastTime = Date.now();
-      velocity = 0; swiping = false; direction = null;
+      lastT = Date.now();
+      velocity = 0; swiping = false; dir = null;
+      // Capture where the element currently sits — this is our base for this gesture
+      gestureBaseX = el._swipeX || 0;
       el.style.transition = 'none';
       const del = wrap.querySelector('.swipe-action-delete');
       if (del) del.style.transition = 'none';
@@ -1015,25 +1021,29 @@ function attachSwipeListeners() {
     el.addEventListener('touchmove', e => {
       const cx = e.touches[0].clientX;
       const cy = e.touches[0].clientY;
-      const dx = cx - startX;
+      const dx = cx - startX; // delta from touch-start (NOT from last event)
       const dy = cy - startY;
-      if (!direction && (Math.abs(dx) > 4 || Math.abs(dy) > 4)) {
-        direction = Math.abs(dx) > Math.abs(dy) ? 'h' : 'v';
+
+      if (!dir && (Math.abs(dx) > 4 || Math.abs(dy) > 4)) {
+        dir = Math.abs(dx) > Math.abs(dy) ? 'h' : 'v';
       }
-      if (direction !== 'h') return;
+      if (dir !== 'h') return;
       swiping = true;
+
+      // Velocity (px/ms, negative = leftward)
       const now = Date.now();
-      if (now > lastTime) velocity = (cx - lastX) / (now - lastTime);
-      lastX = cx; lastTime = now;
-      // Drag relative to where we started this touch (base position + current drag)
-      const base = el._swipeX || 0;
-      const raw = base + dx;
-      const clamped = Math.min(0, Math.max(-(DELETE_THRESHOLD + 50), raw));
-      el._swipeX = clamped;
-      el.style.transform = 'translateX(' + clamped + 'px)';
-      // Delete button grows to fill revealed space
+      if (now > lastT) velocity = (cx - lastX) / (now - lastT);
+      lastX = cx; lastT = now;
+
+      // New position = where we started this gesture + how far we've dragged
+      const target = Math.min(0, Math.max(-(DELETE_THRESHOLD + 60), gestureBaseX + dx));
+      el._swipeX = target;
+      el.style.transform = 'translateX(' + target + 'px)';
+
+      // Delete button width = exactly the revealed amount
+      const revealed = -target;
       const del = wrap.querySelector('.swipe-action-delete');
-      if (del) del.style.width = Math.max(90, -clamped) + 'px';
+      if (del) del.style.width = revealed + 'px';
     }, { passive: true });
 
     el.addEventListener('touchend', () => {
@@ -1041,10 +1051,10 @@ function attachSwipeListeners() {
       swiping = false;
       const x = el._swipeX || 0;
       const id = parseInt(el.dataset.id, 10);
-      const isFlick = velocity < -0.4; // fast leftward flick
+      const isFlick = velocity < -0.45;
 
       if (x < -DELETE_THRESHOLD || isFlick) {
-        // Full swipe or fast flick — instant delete, no confirmation
+        // Full swipe / fast flick — instant delete, no confirmation
         el.style.transition = 'transform 0.15s ease-in';
         el.style.transform = 'translateX(-110vw)';
         el._swipeX = -9999;
@@ -1052,17 +1062,24 @@ function attachSwipeListeners() {
           const h = wrap.offsetHeight;
           wrap.style.height = h + 'px';
           wrap.style.overflow = 'hidden';
-          wrap.style.transition = 'height 0.2s ease, opacity 0.15s ease';
+          wrap.style.transition = 'height 0.22s ease, opacity 0.15s ease';
           requestAnimationFrame(() => { wrap.style.height = '0'; wrap.style.opacity = '0'; });
-          setTimeout(() => { shoppingList = shoppingList.filter(i => i.id !== id); saveList(); renderPlanList(); showToast('Item deleted'); }, 220);
+          setTimeout(() => {
+            shoppingList = shoppingList.filter(i => i.id !== id);
+            saveList(); renderPlanList(); showToast('Item deleted');
+          }, 230);
         }, 150);
+
       } else if (x < -SNAP_THRESHOLD) {
-        // Snap to reveal delete button
-        el.style.transition = 'transform 0.22s cubic-bezier(0.25,0.46,0.45,0.94)';
+        // Snap open — show delete button
+        el.style.transition = 'transform 0.25s cubic-bezier(0.25,0.46,0.45,0.94)';
         el.style.transform = 'translateX(-' + SNAP_PX + 'px)';
         el._swipeX = -SNAP_PX;
         const del = wrap.querySelector('.swipe-action-delete');
-        if (del) { del.style.transition = 'width 0.22s cubic-bezier(0.25,0.46,0.45,0.94)'; del.style.width = SNAP_PX + 'px'; }
+        if (del) {
+          del.style.transition = 'width 0.25s cubic-bezier(0.25,0.46,0.45,0.94)';
+          del.style.width = SNAP_PX + 'px';
+        }
       } else {
         snapSwipeBack(el, wrap);
       }
