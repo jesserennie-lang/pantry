@@ -797,6 +797,27 @@
   <input type="file" id="scanner-library-input" accept="image/*" style="display:none;" onchange="handleScannerLibraryUpload(this)">
 </div>
 
+
+<!-- Recon match picker — searchable list of shopping list items -->
+<div class="modal-overlay" id="recon-match-modal" onclick="closeModal('recon-match-modal')" style="z-index:510;">
+  <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:80vh;">
+    <div class="modal-handle"></div>
+    <div style="padding:8px 16px 12px;">
+      <div style="font-size:15px;font-weight:600;margin-bottom:10px;" id="recon-match-title">Match to list item</div>
+      <div style="display:flex;align-items:center;background:var(--gray-100);border-radius:var(--radius-md);padding:9px 12px;gap:8px;">
+        <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:var(--text-tertiary);fill:none;stroke-width:2.5;flex-shrink:0;"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input type="search" id="recon-match-search" placeholder="Type to search your list..." autocomplete="off"
+               style="background:none;border:none;font-size:15px;color:var(--text-primary);width:100%;"
+               oninput="filterMatchPicker(this.value)">
+      </div>
+    </div>
+    <div id="recon-match-items" style="max-height:50vh;overflow-y:auto;border-top:0.5px solid var(--border);"></div>
+    <div style="padding:12px 16px 8px;border-top:0.5px solid var(--border);">
+      <button class="btn-ghost" style="width:100%;" onclick="closeModal('recon-match-modal')">Cancel — leave unmatched</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast-msg"></div>
 
 <script>
@@ -1687,8 +1708,8 @@ function renderRecon() {
         '</div>'+
       '</div>'+
       '<div class="recon-link" onclick="cycleMatch('+idx+')"><div class="recon-link-dot"><svg viewBox="0 0 24 24">'+(matched?'<polyline points="20 6 9 17 4 12"/>':'<path d="M12 5v14M5 12h14"/>')+'</svg></div></div>'+
-      (matched?'<div class="recon-cell"><div class="recon-cell-name">'+escapeHtml(listItem.name)+'</div><div class="recon-cell-meta">on your list</div></div>':
-               '<div class="recon-cell empty" onclick="pickMatch('+idx+')">tap + to match</div>')+
+      (matched?'<div class="recon-cell"><div class="recon-cell-name">'+escapeHtml(listItem.name)+'</div><div class="recon-cell-meta">on your list ✓</div></div>':
+               '<div class="recon-cell empty" onclick="openMatchPicker('+idx+')" style="cursor:pointer;font-size:11px;text-align:center;padding:10px 6px;">🔍 Tap to<br>search list</div>')+
     '</div>';
   });
   const unboughtIdx=shoppingList.map((_,i)=>i).filter(i=>!matchedListIdx.has(i)&&!shoppingList[i].checked);
@@ -1701,7 +1722,13 @@ function renderRecon() {
     '<span><span style="display:inline-block;width:11px;height:11px;border-radius:50%;background:var(--amber);margin-right:3px;vertical-align:middle;"></span>Best guess</span>'+
     '<span><span style="display:inline-block;width:11px;height:11px;border-radius:50%;background:var(--red);margin-right:3px;vertical-align:middle;"></span>Needs review</span>'+
   '</div>';
-  html+='<div style="padding:4px 4px 4px;"><button onclick="openReconAddItem()" style="width:100%;background:none;border:1.5px dashed var(--border-strong);border-radius:var(--radius-md);padding:10px;color:var(--text-secondary);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;"><svg viewBox="0 0 24 24" style="width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;"><path d="M12 5v14M5 12h14"/></svg>Add item the scanner missed</button></div>';
+  // Add missed item — prominent button
+  html+='<div style="padding:4px 4px 16px;">'+
+    '<button onclick="openReconAddItem()" style="width:100%;background:var(--teal-light);border:1.5px solid var(--teal-mid);border-radius:var(--radius-md);padding:12px;color:var(--teal-dark);font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">'+
+    '<svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;"><path d="M12 5v14M5 12h14"/></svg>'+
+    'Add item the scanner missed'+
+    '</button>'+
+  '</div>';
   const matchCount=items.filter(it=>it.matchIndex!==null).length;
   html='<div class="recon-summary"><strong>'+items.length+'</strong> items scanned · <strong>'+matchCount+'</strong> matched · tap ✏️ to correct</div>'+html;
   document.getElementById('recon-body').innerHTML=html;
@@ -1754,16 +1781,73 @@ function deleteReconItem() {
   closeModal('recon-edit-modal'); reconEditIdx=null; renderRecon();
 }
 
-function cycleMatch(idx) { if(reconState.items[idx].matchIndex!==null){reconState.items[idx].matchIndex=null;renderRecon();}else{pickMatch(idx);} }
-function pickMatch(idx) {
-  const items=reconState.items; const taken=new Set(items.map((it,i)=>i!==idx?it.matchIndex:null).filter(v=>v!==null));
-  const candidates=shoppingList.map((li,i)=>({li,i})).filter(({li,i})=>!taken.has(i)&&!li.checked);
-  if(candidates.length===0){showToast('No more list items to match');return;}
-  const cur=items[idx].matchIndex; let next;
-  if(cur===null)next=candidates[0].i;
-  else{const pos=candidates.findIndex(c=>c.i===cur);next=pos===-1||pos===candidates.length-1?candidates[0].i:candidates[pos+1].i;}
-  items[idx].matchIndex=next; renderRecon();
+function cycleMatch(idx) {
+  if (reconState.items[idx].matchIndex !== null) {
+    // Already matched — tap link to unmatch
+    reconState.items[idx].matchIndex = null;
+    renderRecon();
+  } else {
+    openMatchPicker(idx);
+  }
 }
+
+// Searchable picker for matching a scanned item to a list item
+let matchPickerIdx = null;
+function openMatchPicker(idx) {
+  matchPickerIdx = idx;
+  const it = reconState.items[idx];
+  document.getElementById('recon-match-title').textContent = 'Match "' + it.name + '" to your list';
+  document.getElementById('recon-match-search').value = '';
+  renderMatchPicker('');
+  document.getElementById('recon-match-modal').classList.add('open');
+  setTimeout(() => document.getElementById('recon-match-search').focus(), 150);
+}
+
+function filterMatchPicker(q) { renderMatchPicker(q); }
+
+function renderMatchPicker(q) {
+  const taken = new Set(
+    reconState.items.map((it, i) => i !== matchPickerIdx ? it.matchIndex : null).filter(v => v !== null)
+  );
+  const candidates = shoppingList
+    .map((li, i) => ({ li, i }))
+    .filter(({ li, i }) => !taken.has(i) && !li.checked);
+  const filtered = q
+    ? candidates.filter(({ li }) => li.name.toLowerCase().includes(q.toLowerCase()))
+    : candidates;
+
+  let html = '';
+  if (filtered.length === 0) {
+    html = '<div style="padding:24px;text-align:center;color:var(--text-tertiary);font-size:14px;">' +
+      (q ? 'No items match "' + escapeHtml(q) + '"' : 'No unmatched items on your list') + '</div>';
+  } else {
+    filtered.forEach(({ li, i }) => {
+      const color = CATEGORY_COLORS[li.category] || '#888780';
+      const price = li.lastPrice ? ' · $' + li.lastPrice.toFixed(2) : '';
+      html += '<div onclick="selectMatch(' + i + ')" style="display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:0.5px solid var(--border);cursor:pointer;active:background:var(--gray-50);">' +
+        '<div style="width:10px;height:10px;border-radius:50%;background:' + color + ';flex-shrink:0;"></div>' +
+        '<div style="flex:1;">' +
+          '<div style="font-size:14px;font-weight:500;">' + escapeHtml(li.name) + '</div>' +
+          '<div style="font-size:11px;color:var(--text-tertiary);margin-top:2px;">' + escapeHtml(li.store || '') + price + '</div>' +
+        '</div>' +
+        '<svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:var(--text-tertiary);fill:none;stroke-width:2;stroke-linecap:round;"><path d="M9 18l6-6-6-6"/></svg>' +
+      '</div>';
+    });
+  }
+  document.getElementById('recon-match-items').innerHTML = html;
+}
+
+function selectMatch(listIdx) {
+  if (matchPickerIdx === null) return;
+  reconState.items[matchPickerIdx].matchIndex = listIdx;
+  closeModal('recon-match-modal');
+  matchPickerIdx = null;
+  renderRecon();
+}
+
+// pickMatch kept for compatibility (now opens picker)
+function pickMatch(idx) { openMatchPicker(idx); }
+
 function cancelRecon() { document.getElementById('recon-modal').classList.remove('open'); reconState=null; }
 function confirmRecon() {
   const{items,targetKey,store}=reconState;
