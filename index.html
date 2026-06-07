@@ -707,8 +707,8 @@
     <div class="settings-row" onclick="testConnection()"><div class="settings-row-icon" style="background:var(--blue-light);"><svg viewBox="0 0 24 24" style="stroke:var(--blue);"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div><div class="settings-row-label"><div class="t">Test connection</div><div class="s" id="set-test-sub">Check that the API key works</div></div><div class="settings-row-chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></div>
     <div class="settings-row" onclick="closeModal('settings-modal');startOnboarding(true);"><div class="settings-row-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3M12 17h.01"/></svg></div><div class="settings-row-label"><div class="t">Replay setup guide</div><div class="s">Walk through the tour again</div></div><div class="settings-row-chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></div>
     <div class="settings-row" onclick="exportData()"><div class="settings-row-icon" style="background:var(--teal-light);"><svg viewBox="0 0 24 24" style="stroke:var(--teal);"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div><div class="settings-row-label"><div class="t">Export data backup</div><div class="s" id="set-backup-sub">Save all pantry data as a file</div></div><div class="settings-row-chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></div>
-    <div class="settings-row" onclick="document.getElementById('import-data-file').click()"><div class="settings-row-icon" style="background:var(--blue-light);"><svg viewBox="0 0 24 24" style="stroke:var(--blue);"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div><div class="settings-row-label"><div class="t">Restore from backup</div><div class="s">Import a previously exported file</div></div><div class="settings-row-chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></div>
-    <input type="file" id="import-data-file" accept=".json" style="display:none;" onchange="importData(this)">
+    <label class="settings-row" for="import-data-file" style="cursor:pointer;"><div class="settings-row-icon" style="background:var(--blue-light);"><svg viewBox="0 0 24 24" style="stroke:var(--blue);"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div><div class="settings-row-label"><div class="t">Restore from backup</div><div class="s">Import a previously exported file</div></div><div class="settings-row-chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></label>
+    <input type="file" id="import-data-file" accept="*/*" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;" onchange="importData(this)">
     <div class="settings-row" onclick="resetAllData()"><div class="settings-row-icon" style="background:var(--red-light);"><svg viewBox="0 0 24 24" style="stroke:var(--red);"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></div><div class="settings-row-label"><div class="t" style="color:var(--red);">Reset all data</div><div class="s">Clear everything and start over</div></div><div class="settings-row-chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></div>
     <div style="height:16px;"></div>
   </div>
@@ -2074,30 +2074,34 @@ function exportData(){
   updateSettingsUI(); showToast('Backup saved!');
 }
 function importData(input){
-  const file=input.files[0];if(!file)return;
+  const file=input.files[0];
+  if(!file){alert('No file selected.');return;}
   const reader=new FileReader();
-  reader.onerror=()=>showToast('Could not read the file. Try again.');
-  reader.onload=(e)=>{
-    try{
-      const d=JSON.parse(e.target.result);
-      let restored=0;
-      // Save each key independently so one bad key doesn't block the rest
-      try{if(d.pantry_items&&Array.isArray(d.pantry_items)){localStorage.setItem('pantry_items',JSON.stringify(d.pantry_items));restored++;}}catch(e){}
-      try{if(d.pantry_hauls&&typeof d.pantry_hauls==='object'){localStorage.setItem('pantry_hauls',JSON.stringify(d.pantry_hauls));restored++;}}catch(e){}
-      try{if(d.pantry_list&&Array.isArray(d.pantry_list))localStorage.setItem('pantry_list',JSON.stringify(d.pantry_list));}catch(e){}
-      try{if(d.pantry_budgets&&typeof d.pantry_budgets==='object'){budgetByMonth=d.pantry_budgets;saveBudgets();}}catch(e){}
-      try{if(d.pantry_household&&typeof d.pantry_household==='object'){const hh=d.pantry_household;if(!Array.isArray(hh.stores))hh.stores=['Costco','Publix','Walmart'];household=hh;saveHousehold();}}catch(e){}
-      try{if(d.pantry_abbrev_map)localStorage.setItem('pantry_abbrev_map',JSON.stringify(d.pantry_abbrev_map));}catch(e){}
-      if(restored===0&&!d.pantry_items&&!d.pantry_hauls)throw new Error('File does not look like a Pantry. backup.');
-      localStorage.setItem('pantry_last_backup',new Date().toISOString());
-      showToast('Restored! Reloading…');
-      setTimeout(()=>location.reload(),1000);
-    }catch(err){
-      console.error('Import error:',err);
-      showToast('Import failed: '+(err&&err.message?err.message.slice(0,80):'Unknown error'));
+  reader.onerror=function(){alert('Could not read the file. Try selecting it again.');};
+  reader.onload=function(e){
+    var raw=e.target.result;
+    var d;
+    try{ d=JSON.parse(raw); }
+    catch(err){ alert('That file is not valid JSON.\n\n'+err.message+'\n\nStart of file:\n'+String(raw).slice(0,160)); return; }
+    var count=0; var summary=[];
+    try{ if(Array.isArray(d.pantry_items)){ localStorage.setItem('pantry_items',JSON.stringify(d.pantry_items)); count++; summary.push(d.pantry_items.length+' pantry items'); } }catch(e){}
+    try{ if(d.pantry_hauls&&typeof d.pantry_hauls==='object'&&!Array.isArray(d.pantry_hauls)){ localStorage.setItem('pantry_hauls',JSON.stringify(d.pantry_hauls)); count++; var hm=Object.keys(d.pantry_hauls).length; var hi=0; Object.values(d.pantry_hauls).forEach(function(a){ if(Array.isArray(a)) hi+=a.length; }); summary.push(hm+' haul month(s), '+hi+' hauls'); } }catch(e){}
+    try{ if(Array.isArray(d.pantry_list)){ localStorage.setItem('pantry_list',JSON.stringify(d.pantry_list)); summary.push(d.pantry_list.length+' list items'); } }catch(e){}
+    try{ if(d.pantry_budgets&&typeof d.pantry_budgets==='object'){ localStorage.setItem('pantry_budgets',JSON.stringify(d.pantry_budgets)); } }catch(e){}
+    try{ if(d.pantry_household&&typeof d.pantry_household==='object'){ var hh=d.pantry_household; if(!Array.isArray(hh.stores)) hh.stores=['Costco','Publix','Walmart']; localStorage.setItem('pantry_household',JSON.stringify(hh)); } }catch(e){}
+    try{ if(d.pantry_abbrev_map) localStorage.setItem('pantry_abbrev_map',JSON.stringify(d.pantry_abbrev_map)); }catch(e){}
+    if(count===0){
+      var keys=Object.keys(d);
+      alert('No Pantry data found in that file.\n\nThe file contains these keys:\n'+(keys.length?keys.join(', '):'(none)')+'\n\nExpected pantry_items and/or pantry_hauls.');
+      return;
     }
+    localStorage.setItem('pantry_onboarded','1');
+    localStorage.setItem('pantry_last_backup',new Date().toISOString());
+    alert('Restored:\n\n'+summary.join('\n')+'\n\nTap OK to reload the app.');
+    location.reload();
   };
-  reader.readAsText(file);input.value='';
+  reader.readAsText(file);
+  input.value='';
 }
 
 // ════════════════════════════════════════════════════
@@ -2167,31 +2171,24 @@ function checkMonthTurnover(){
 // ════════════════════════════════════════════════════
 function showRestoreBanner(){
   if(document.getElementById('restore-banner'))return;
-  // Own file input so it is never inside a hidden modal (iOS ignores those)
-  const fi=document.createElement('input');
-  fi.type='file'; fi.accept='.json,text/plain';
-  fi.style.cssText='position:fixed;top:-200px;left:-200px;width:1px;height:1px;opacity:0.01;';
-  document.body.appendChild(fi);
-  fi.addEventListener('change',function(){
-    if(!fi.files||!fi.files[0])return;
-    importData(fi);
-    const banner=document.getElementById('restore-banner');
-    if(banner)banner.remove();
-    fi.remove();
-  });
   const b=document.createElement('div');b.id='restore-banner';
   b.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:var(--red);color:white;padding:18px 20px;z-index:600;display:flex;flex-direction:column;gap:12px;';
+  // Real input + <label> = native iOS file picker trigger (most reliable)
+  const fi=document.createElement('input');
+  fi.type='file'; fi.id='banner-file-input'; fi.accept='*/*';
+  fi.style.cssText='position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;';
+  fi.addEventListener('change',function(){ if(fi.files&&fi.files[0]) importData(fi); });
   const title=document.createElement('div');title.style.cssText='font-size:15px;font-weight:700;';title.textContent='Pantry data not found';
   const sub=document.createElement('div');sub.style.cssText='font-size:13px;opacity:0.9;line-height:1.5;';sub.textContent='Safari may have cleared storage. Tap below to restore from your backup file.';
-  const btn=document.createElement('button');
-  btn.style.cssText='background:white;color:var(--red);border:none;border-radius:8px;padding:13px 16px;font-size:15px;font-weight:700;text-align:center;cursor:pointer;width:100%;';
-  btn.textContent='Import Backup File';
-  btn.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();fi.click();});
+  const lbl=document.createElement('label');
+  lbl.setAttribute('for','banner-file-input');
+  lbl.style.cssText='background:white;color:var(--red);border-radius:8px;padding:13px 16px;font-size:15px;font-weight:700;text-align:center;cursor:pointer;width:100%;display:block;box-sizing:border-box;';
+  lbl.textContent='Import Backup File';
   const dismiss=document.createElement('button');
   dismiss.style.cssText='background:none;border:none;color:rgba(255,255,255,0.75);font-size:12px;cursor:pointer;text-align:left;padding:0;';
   dismiss.textContent='Dismiss';
-  dismiss.addEventListener('click',function(){b.remove();fi.remove();});
-  b.appendChild(title);b.appendChild(sub);b.appendChild(btn);b.appendChild(dismiss);
+  dismiss.addEventListener('click',function(){b.remove();});
+  b.appendChild(fi);b.appendChild(title);b.appendChild(sub);b.appendChild(lbl);b.appendChild(dismiss);
   document.body.appendChild(b);
 }
 
@@ -2243,7 +2240,7 @@ function showRecoveryMode() {
     '<div style="font-size:13px;color:#666;margin-bottom:24px;line-height:1.5;">Load your backup to restore data. This runs on the same domain as the app so it writes to the right place.</div>' +
     '<div style="background:white;border-radius:14px;padding:16px;margin-bottom:14px;border:0.5px solid rgba(0,0,0,0.1);">' +
       '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#888;margin-bottom:12px;">Load backup file</div>' +
-      '<input type="file" id="rec-file" accept=".json,text/plain" style="display:none;" onchange="recLoad(this)">' +
+      '<input type="file" id="rec-file" accept="*/*" style="position:absolute;width:1px;height:1px;opacity:0;" onchange="recLoad(this)">' +
       '<label for="rec-file" style="display:flex;align-items:center;justify-content:center;gap:8px;background:#1D9E75;color:white;border-radius:10px;padding:14px;font-size:15px;font-weight:600;cursor:pointer;">' +
         'Select backup .json file' +
       '</label>' +
