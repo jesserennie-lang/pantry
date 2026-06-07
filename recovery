@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Pantry. Recovery Tool</title>
+<style>
+  :root { --teal: #1D9E75; --red: #E24B4A; --amber: #BA7517; --gray: #F8F7F4; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, 'SF Pro Text', sans-serif; background: var(--gray); padding: 20px; max-width: 480px; margin: 0 auto; }
+  h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+  .sub { font-size: 13px; color: #666; margin-bottom: 20px; line-height: 1.5; }
+  .card { background: white; border-radius: 14px; padding: 16px; margin-bottom: 14px; border: 0.5px solid rgba(0,0,0,0.1); }
+  .card h2 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #888; margin-bottom: 12px; }
+  .drop-zone { border: 2px dashed #ccc; border-radius: 12px; padding: 32px 20px; text-align: center; cursor: pointer; transition: border-color 0.2s; margin-bottom: 10px; }
+  .drop-zone.over { border-color: var(--teal); background: #E1F5EE; }
+  .drop-zone p { font-size: 14px; color: #666; margin-top: 8px; }
+  input[type=file] { display: none; }
+  .btn { width: 100%; padding: 14px; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; margin-bottom: 8px; }
+  .btn-primary { background: var(--teal); color: white; }
+  .btn-danger { background: var(--red); color: white; }
+  .btn-ghost { background: none; border: 1.5px solid var(--teal); color: var(--teal); }
+  .stat-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 0.5px solid #eee; align-items: center; }
+  .stat-row:last-child { border-bottom: none; }
+  .stat-label { font-size: 14px; font-weight: 500; }
+  .stat-val { font-size: 14px; font-weight: 700; color: var(--teal); }
+  .stat-val.zero { color: #ccc; }
+  .warn { background: #FAEEDA; color: #7a4e0c; border-radius: 8px; padding: 10px 12px; font-size: 13px; line-height: 1.5; margin-bottom: 10px; }
+  .ok { background: #E1F5EE; color: #0F6E56; border-radius: 8px; padding: 10px 12px; font-size: 13px; line-height: 1.5; margin-bottom: 10px; }
+  .err { background: #FCEBEB; color: var(--red); border-radius: 8px; padding: 10px 12px; font-size: 13px; line-height: 1.5; margin-bottom: 10px; }
+  .raw { background: #f4f4f4; border-radius: 8px; padding: 10px 12px; font-family: monospace; font-size: 11px; word-break: break-all; max-height: 120px; overflow-y: auto; margin-bottom: 10px; color: #333; }
+  .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #2C2C2A; color: white; padding: 10px 18px; border-radius: 24px; font-size: 13px; font-weight: 500; opacity: 0; transition: opacity 0.3s; pointer-events: none; white-space: nowrap; }
+  .toast.show { opacity: 1; }
+  #status { display: none; }
+</style>
+</head>
+<body>
+<h1 style="margin-top:8px;">Pantry. Recovery</h1>
+<p class="sub">Diagnose and restore your backup file. This tool writes directly to your browser's localStorage on this device.</p>
+
+<div class="card">
+  <h2>Step 1 — Load backup file</h2>
+  <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+    <p>Tap to select your backup .json file</p>
+  </div>
+  <input type="file" id="file-input" accept=".json,application/json,text/plain" onchange="loadFile(this)">
+</div>
+
+<div class="card" id="status">
+  <h2>Step 2 — What's in the file</h2>
+  <div id="file-info"></div>
+  <div id="stats"></div>
+</div>
+
+<div class="card" id="action-card" style="display:none;">
+  <h2>Step 3 — Restore</h2>
+  <div id="action-info"></div>
+  <button class="btn btn-primary" onclick="doRestore()">Write to localStorage &amp; Reload</button>
+  <button class="btn btn-ghost" onclick="showRaw()">Show raw JSON</button>
+</div>
+
+<div class="card" id="current-card">
+  <h2>Current localStorage</h2>
+  <div id="current-stats"></div>
+  <button class="btn btn-ghost" onclick="showCurrent()" style="margin-top:8px;">Refresh</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let parsedData = null;
+
+function showCurrent() {
+  const el = document.getElementById('current-stats');
+  const keys = ['pantry_items','pantry_hauls','pantry_list','pantry_budgets','pantry_household'];
+  const labels = {'pantry_items':'Pantry items','pantry_hauls':'Haul months','pantry_list':'Shopping list items','pantry_budgets':'Budget months','pantry_household':'Household'};
+  let html = '';
+  keys.forEach(k => {
+    try {
+      const raw = localStorage.getItem(k);
+      if (!raw) { html += `<div class="stat-row"><span class="stat-label">${labels[k]}</span><span class="stat-val zero">Empty</span></div>`; return; }
+      const val = JSON.parse(raw);
+      let count = '';
+      if (Array.isArray(val)) count = val.length + ' items';
+      else if (typeof val === 'object') count = Object.keys(val).length + ' keys';
+      else count = String(val);
+      html += `<div class="stat-row"><span class="stat-label">${labels[k]}</span><span class="stat-val">${count}</span></div>`;
+    } catch(e) {
+      html += `<div class="stat-row"><span class="stat-label">${labels[k]}</span><span class="stat-val zero">Error reading</span></div>`;
+    }
+  });
+  el.innerHTML = html || '<div style="color:#888;font-size:13px;">No pantry data in localStorage yet.</div>';
+}
+
+function loadFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onerror = () => showErr('Could not read the file.');
+  reader.onload = e => {
+    const text = e.target.result;
+    const statusEl = document.getElementById('status');
+    const infoEl   = document.getElementById('file-info');
+    const statsEl  = document.getElementById('stats');
+    statusEl.style.display = 'block';
+
+    // Show raw first 200 chars
+    infoEl.innerHTML = `<div class="raw">${escH(text.slice(0,300))}${text.length>300?'…':''}</div>`;
+
+    // Try parse
+    let d;
+    try { d = JSON.parse(text); }
+    catch(err) {
+      infoEl.innerHTML += `<div class="err">Not valid JSON: ${escH(err.message)}</div>`;
+      return;
+    }
+
+    parsedData = d;
+    const topKeys = Object.keys(d);
+
+    // Check for pantry_ keys
+    const pantryKeys = topKeys.filter(k => k.startsWith('pantry_'));
+    if (pantryKeys.length === 0) {
+      statsEl.innerHTML = `<div class="warn">This file has no "pantry_" keys. Top-level keys found: ${escH(topKeys.slice(0,10).join(', '))}. This may not be a Pantry. backup.</div>`;
+      document.getElementById('action-card').style.display = 'none';
+      return;
+    }
+
+    // Count what's there
+    let html = '';
+    const map = {
+      pantry_items: 'Pantry items (price history)',
+      pantry_hauls: 'Haul months',
+      pantry_list:  'Shopping list',
+      pantry_budgets: 'Budget data',
+      pantry_household: 'Household settings',
+      pantry_abbrev_map: 'Receipt shortcuts',
+    };
+    let canRestore = 0;
+    Object.entries(map).forEach(([k,label]) => {
+      const val = d[k];
+      let count = '';
+      let good = false;
+      if (val === undefined || val === null) { count = 'Not in file'; }
+      else if (Array.isArray(val)) { count = val.length + ' items'; good = val.length > 0; }
+      else if (typeof val === 'object') { count = Object.keys(val).length + ' entries'; good = Object.keys(val).length > 0; }
+      else { count = String(val); }
+      if (good) canRestore++;
+      html += `<div class="stat-row"><span class="stat-label">${label}</span><span class="stat-val ${good?'':' zero'}">${count}</span></div>`;
+    });
+    statsEl.innerHTML = html;
+
+    const actionCard = document.getElementById('action-card');
+    const actionInfo = document.getElementById('action-info');
+    actionCard.style.display = 'block';
+
+    if (canRestore === 0) {
+      actionInfo.innerHTML = `<div class="warn">File parsed OK but all pantry data is empty. Nothing to restore.</div>`;
+    } else {
+      actionInfo.innerHTML = `<div class="ok">Found ${canRestore} data sections ready to restore.</div>`;
+    }
+  };
+  reader.readAsText(file);
+  input.value = '';
+}
+
+function doRestore() {
+  if (!parsedData) { toast('No file loaded yet.'); return; }
+  let count = 0;
+  const saves = [
+    ['pantry_items', d => Array.isArray(d)],
+    ['pantry_hauls', d => typeof d === 'object' && !Array.isArray(d)],
+    ['pantry_list',  d => Array.isArray(d)],
+    ['pantry_budgets', d => typeof d === 'object' && !Array.isArray(d)],
+    ['pantry_household', d => typeof d === 'object' && !Array.isArray(d)],
+    ['pantry_abbrev_map', d => typeof d === 'object'],
+  ];
+  saves.forEach(([key, valid]) => {
+    try {
+      const val = parsedData[key];
+      if (val !== undefined && val !== null && valid(val)) {
+        // Fix household.stores if missing
+        if (key === 'pantry_household' && !Array.isArray(val.stores)) {
+          val.stores = ['Costco','Publix','Walmart'];
+        }
+        localStorage.setItem(key, JSON.stringify(val));
+        count++;
+      }
+    } catch(e) { console.error('Save error for', key, e); }
+  });
+  // Mark as onboarded so the app doesn't show the setup wizard
+  localStorage.setItem('pantry_onboarded', '1');
+  toast(`Saved ${count} data sections. Reloading…`);
+  setTimeout(() => {
+    // Redirect to the pantry app on the same domain
+    const url = new URL(window.location.href);
+    url.pathname = '/pantry/';  // adjust if needed
+    // Try to go to the pantry app — if this fails just reload
+    window.location.href = url.href;
+  }, 1500);
+}
+
+function showRaw() {
+  if (!parsedData) return;
+  const w = window.open('', '_blank');
+  w.document.write('<pre style="font-size:11px;word-break:break-all;">' + escH(JSON.stringify(parsedData, null, 2)) + '</pre>');
+}
+
+function escH(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function showErr(msg) {
+  document.getElementById('status').style.display = 'block';
+  document.getElementById('file-info').innerHTML = `<div class="err">${escH(msg)}</div>`;
+}
+
+let toastTimer;
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+// Drag-and-drop
+const dz = document.getElementById('drop-zone');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('over'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('over'));
+dz.addEventListener('drop', e => {
+  e.preventDefault(); dz.classList.remove('over');
+  const file = e.dataTransfer.files[0];
+  if (!file) return;
+  const fakeInput = { files: [file] };
+  loadFile(fakeInput);
+});
+
+// Show current on load
+showCurrent();
+</script>
+</body>
+</html>
