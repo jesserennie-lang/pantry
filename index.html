@@ -2076,18 +2076,26 @@ function exportData(){
 function importData(input){
   const file=input.files[0];if(!file)return;
   const reader=new FileReader();
+  reader.onerror=()=>showToast('Could not read the file. Try again.');
   reader.onload=(e)=>{
     try{
       const d=JSON.parse(e.target.result);
-      if(d.pantry_items){pantryItems=d.pantry_items;localStorage.setItem('pantry_items',JSON.stringify(pantryItems));}
-      if(d.pantry_hauls){haulsData=d.pantry_hauls;localStorage.setItem('pantry_hauls',JSON.stringify(haulsData));}
-      if(d.pantry_list){shoppingList=d.pantry_list;localStorage.setItem('pantry_list',JSON.stringify(shoppingList));}
-      if(d.pantry_budgets){budgetByMonth=d.pantry_budgets;saveBudgets();}
-      if(d.pantry_household){household=d.pantry_household;saveHousehold();}
-      if(d.pantry_abbrev_map)localStorage.setItem('pantry_abbrev_map',JSON.stringify(d.pantry_abbrev_map));
-      refreshStoreDropdowns(); renderHome(); renderPlanList(); renderPerspective(); renderPantry(); updateSettingsUI();
-      showToast('Data restored!');
-    }catch(err){showToast('Could not import. Check the file.');}
+      let restored=0;
+      // Save each key independently so one bad key doesn't block the rest
+      try{if(d.pantry_items&&Array.isArray(d.pantry_items)){localStorage.setItem('pantry_items',JSON.stringify(d.pantry_items));restored++;}}catch(e){}
+      try{if(d.pantry_hauls&&typeof d.pantry_hauls==='object'){localStorage.setItem('pantry_hauls',JSON.stringify(d.pantry_hauls));restored++;}}catch(e){}
+      try{if(d.pantry_list&&Array.isArray(d.pantry_list))localStorage.setItem('pantry_list',JSON.stringify(d.pantry_list));}catch(e){}
+      try{if(d.pantry_budgets&&typeof d.pantry_budgets==='object'){budgetByMonth=d.pantry_budgets;saveBudgets();}}catch(e){}
+      try{if(d.pantry_household&&typeof d.pantry_household==='object'){const hh=d.pantry_household;if(!Array.isArray(hh.stores))hh.stores=['Costco','Publix','Walmart'];household=hh;saveHousehold();}}catch(e){}
+      try{if(d.pantry_abbrev_map)localStorage.setItem('pantry_abbrev_map',JSON.stringify(d.pantry_abbrev_map));}catch(e){}
+      if(restored===0&&!d.pantry_items&&!d.pantry_hauls)throw new Error('File does not look like a Pantry. backup.');
+      localStorage.setItem('pantry_last_backup',new Date().toISOString());
+      showToast('Restored! Reloading…');
+      setTimeout(()=>location.reload(),1000);
+    }catch(err){
+      console.error('Import error:',err);
+      showToast('Import failed: '+(err&&err.message?err.message.slice(0,80):'Unknown error'));
+    }
   };
   reader.readAsText(file);input.value='';
 }
