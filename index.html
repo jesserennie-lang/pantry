@@ -712,7 +712,7 @@
     <div class="settings-row" onclick="editApiKey()"><div class="settings-row-icon" style="background:var(--teal-light);"><svg viewBox="0 0 24 24" style="stroke:var(--teal);"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg></div><div class="settings-row-label"><div class="t">Anthropic API key</div><div class="s" id="set-api-key-sub">Not set</div></div><div class="settings-row-chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></div>
     <div class="settings-row" onclick="testConnection()"><div class="settings-row-icon" style="background:var(--blue-light);"><svg viewBox="0 0 24 24" style="stroke:var(--blue);"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div><div class="settings-row-label"><div class="t">Test connection</div><div class="s" id="set-test-sub">Check that the API key works</div></div><div class="settings-row-chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></div>
     <div class="settings-row" onclick="closeModal('settings-modal');startOnboarding(true);"><div class="settings-row-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3M12 17h.01"/></svg></div><div class="settings-row-label"><div class="t">Replay setup guide</div><div class="s">Walk through the tour again</div></div><div class="settings-row-chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></div>
-    <div class="settings-row" onclick="exportData()"><div class="settings-row-icon" style="background:var(--teal-light);"><svg viewBox="0 0 24 24" style="stroke:var(--teal);"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div><div class="settings-row-label"><div class="t">Export data backup</div><div class="s">Save all pantry data as a file</div></div><div class="settings-row-chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></div>
+    <div class="settings-row" onclick="exportData()"><div class="settings-row-icon" style="background:var(--teal-light);"><svg viewBox="0 0 24 24" style="stroke:var(--teal);"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div><div class="settings-row-label"><div class="t">Export data backup</div><div class="s" id="set-backup-sub">Save all pantry data as a file</div></div><div class="settings-row-chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></div>
     <div class="settings-row" onclick="document.getElementById('import-data-file').click()"><div class="settings-row-icon" style="background:var(--blue-light);"><svg viewBox="0 0 24 24" style="stroke:var(--blue);"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div><div class="settings-row-label"><div class="t">Restore from backup</div><div class="s">Import a previously exported file</div></div><div class="settings-row-chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></div>
     <input type="file" id="import-data-file" accept=".json" style="display:none;" onchange="importData(this)">
     <div class="settings-row" onclick="resetAllData()"><div class="settings-row-icon" style="background:var(--red-light);"><svg viewBox="0 0 24 24" style="stroke:var(--red);"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></div><div class="settings-row-label"><div class="t" style="color:var(--red);">Reset all data</div><div class="s">Clear everything and start over</div></div><div class="settings-row-chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></div>
@@ -1155,18 +1155,19 @@ function renderPerspective() {
     let displayItems = haul.items && haul.items.length > 0 ? haul.items : null;
 
     if (!displayItems && haul.trips.length > 0) {
-      // Reconstruct from pantry: find items bought from this store on the haul date(s)
-      const haulDates = new Set(haul.trips.map(t => t.date));
-      const haulStores = new Set(haul.trips.map(t => t.store));
-      const found = [];
-      pantryItems.forEach(p => {
-        p.priceHistory.forEach(entry => {
-          if (haulDates.has(entry.date) && haulStores.has(entry.store)) {
-            found.push({ name: p.name, price: entry.price, category: p.category, onSale: !!entry.onSale });
-          }
+      try {
+        const haulDates = new Set(haul.trips.map(t => t.date));
+        const haulStores = new Set(haul.trips.map(t => t.store));
+        const found = [];
+        pantryItems.forEach(p => {
+          (p.priceHistory||[]).forEach(entry => {
+            if (haulDates.has(entry.date) && haulStores.has(entry.store)) {
+              found.push({ name: p.name, price: entry.price, category: p.category, onSale: !!entry.onSale });
+            }
+          });
         });
-      });
-      if (found.length > 0) displayItems = found;
+        if (found.length > 0) displayItems = found;
+      } catch(e) {}
     }
 
     const hasItems = displayItems && displayItems.length > 0;
@@ -2139,6 +2140,9 @@ function openSettings() {
   document.getElementById('set-api-key-sub').textContent=storedKey
     ? '••••••••'+storedKey.slice(-4)+' · tap to change'
     : 'Not set — required for AI features';
+  const bakTs = localStorage.getItem('pantry_bak_ts');
+  const bakSub = document.getElementById('set-backup-sub');
+  if (bakSub) bakSub.textContent = bakTs ? 'Auto-saved ' + new Date(bakTs).toLocaleDateString() + ' · tap to export' : 'Save all pantry data as a file';
   document.getElementById('settings-modal').classList.add('open');
 }
 
@@ -2306,10 +2310,52 @@ function showToast(msg) { const toast=document.getElementById('toast-msg');toast
 // INIT
 // ════════════════════════════════════════════════════
 function purgeLegacySeedData() { /* intentionally disabled — user data is real now */ }
-document.addEventListener('DOMContentLoaded',()=>{
-  purgeLegacySeedData(); checkMonthTurnover(); refreshStoreDropdowns();
-  renderHome(); renderPlanList(); renderPerspective(); renderPantry();
-  if(!isOnboarded())startOnboarding(false);
+
+// ── Auto-backup: runs on every load, saves a copy if we have data ──
+function autoBackup() {
+  try {
+    if (pantryItems.length > 0 || Object.keys(haulsData).length > 0 || shoppingList.length > 0) {
+      localStorage.setItem('pantry_bak_items',  localStorage.getItem('pantry_items')  || '[]');
+      localStorage.setItem('pantry_bak_hauls',  localStorage.getItem('pantry_hauls')  || '{}');
+      localStorage.setItem('pantry_bak_list',   localStorage.getItem('pantry_list')   || '[]');
+      localStorage.setItem('pantry_bak_ts',     new Date().toISOString());
+    }
+  } catch(e) {}
+}
+
+// ── Auto-restore: if data is empty but backup exists, restore silently ──
+function autoRestore() {
+  const hasData = pantryItems.length > 0 || Object.keys(haulsData).length > 0 || shoppingList.length > 0;
+  if (hasData) return; // all good
+  try {
+    const bakItems = JSON.parse(localStorage.getItem('pantry_bak_items') || 'null');
+    const bakHauls = JSON.parse(localStorage.getItem('pantry_bak_hauls') || 'null');
+    const bakList  = JSON.parse(localStorage.getItem('pantry_bak_list')  || 'null');
+    const ts = localStorage.getItem('pantry_bak_ts');
+    if (bakItems && bakItems.length > 0) {
+      pantryItems  = bakItems;
+      haulsData    = bakHauls || {};
+      shoppingList = bakList  || [];
+      localStorage.setItem('pantry_items', JSON.stringify(pantryItems));
+      localStorage.setItem('pantry_hauls', JSON.stringify(haulsData));
+      localStorage.setItem('pantry_list',  JSON.stringify(shoppingList));
+      const when = ts ? ' (backup from ' + new Date(ts).toLocaleDateString() + ')' : '';
+      showToast('Data restored from backup' + when);
+    }
+  } catch(e) {}
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  autoRestore();      // restore if data is missing
+  autoBackup();       // save backup now that we have confirmed data
+  checkMonthTurnover();
+  refreshStoreDropdowns();
+  // Safe renders — errors in one tab don't blank the others
+  try { renderHome(); }        catch(e) { console.error('renderHome', e); }
+  try { renderPlanList(); }    catch(e) { console.error('renderPlan', e); }
+  try { renderPerspective(); } catch(e) { console.error('renderPersp', e); }
+  try { renderPantry(); }      catch(e) { console.error('renderPantry', e); }
+  if (!isOnboarded()) startOnboarding(false);
 });
 document.addEventListener('visibilitychange',()=>{if(!document.hidden){checkMonthTurnover();renderHome();}});
 </script>
