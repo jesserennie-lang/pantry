@@ -705,6 +705,9 @@
     <div class="settings-row" onclick="editApiKey()"><div class="settings-row-icon" style="background:var(--teal-light);"><svg viewBox="0 0 24 24" style="stroke:var(--teal);"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg></div><div class="settings-row-label"><div class="t">Anthropic API key</div><div class="s" id="set-api-key-sub">Not set</div></div><div class="settings-row-chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></div>
     <div class="settings-row" onclick="testConnection()"><div class="settings-row-icon" style="background:var(--blue-light);"><svg viewBox="0 0 24 24" style="stroke:var(--blue);"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div><div class="settings-row-label"><div class="t">Test connection</div><div class="s" id="set-test-sub">Check that the API key works</div></div><div class="settings-row-chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></div>
     <div class="settings-row" onclick="closeModal('settings-modal');startOnboarding(true);"><div class="settings-row-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3M12 17h.01"/></svg></div><div class="settings-row-label"><div class="t">Replay setup guide</div><div class="s">Walk through the tour again</div></div><div class="settings-row-chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></div>
+    <div class="settings-row" onclick="exportData()"><div class="settings-row-icon" style="background:var(--teal-light);"><svg viewBox="0 0 24 24" style="stroke:var(--teal);"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div><div class="settings-row-label"><div class="t">Export data backup</div><div class="s">Save all pantry data as a file</div></div><div class="settings-row-chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></div>
+    <div class="settings-row" onclick="document.getElementById('import-data-file').click()"><div class="settings-row-icon" style="background:var(--blue-light);"><svg viewBox="0 0 24 24" style="stroke:var(--blue);"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div><div class="settings-row-label"><div class="t">Restore from backup</div><div class="s">Import a previously exported file</div></div><div class="settings-row-chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></div>
+    <input type="file" id="import-data-file" accept=".json" style="display:none;" onchange="importData(this)">
     <div class="settings-row" onclick="resetAllData()"><div class="settings-row-icon" style="background:var(--red-light);"><svg viewBox="0 0 24 24" style="stroke:var(--red);"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></div><div class="settings-row-label"><div class="t" style="color:var(--red);">Reset all data</div><div class="s">Clear everything and start over</div></div><div class="settings-row-chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></div>
     <div style="height:16px;"></div>
   </div>
@@ -1660,15 +1663,29 @@ async function processReceiptBase64(base64, monthTarget, store) {
     if (!data.content || !Array.isArray(data.content)) throw new Error('Unexpected response.');
     const text = data.content.map(c => c.text || '').join('');
 
-    // Parse response — now a {tax, items} object, but fall back to plain array for safety
+    // Robust parsing — handles {tax, items} object OR plain array, never throws
     let taxAmount = 0;
     let rawItems = null;
-    const clean = text.replace(/```json|```/g,'').trim();
+    const clean = text.replace(/```json|```/g, '').trim();
+
+    // Try object format first {tax:..., items:[...]}
     try {
-      const parsed = JSON.parse(clean.slice(clean.indexOf('{') > -1 && clean.indexOf('{') < (clean.indexOf('[') || 9999) ? clean.indexOf('{') : clean.indexOf('['), clean.lastIndexOf(clean.indexOf('{') > -1 && clean.indexOf('{') < (clean.indexOf('[') || 9999) ? '}' : ']') + 1));
-      if (parsed && parsed.items) { rawItems = parsed.items; taxAmount = Number(parsed.tax) || 0; }
-      else if (Array.isArray(parsed)) rawItems = parsed;
-    } catch(e) { rawItems = extractJsonArray(text); }
+      const objStart = clean.indexOf('{');
+      const arrStart = clean.indexOf('[');
+      if (objStart !== -1 && (arrStart === -1 || objStart < arrStart)) {
+        const objEnd = clean.lastIndexOf('}');
+        const parsed = JSON.parse(clean.slice(objStart, objEnd + 1));
+        if (parsed && Array.isArray(parsed.items)) {
+          rawItems = parsed.items;
+          taxAmount = Number(parsed.tax) || 0;
+        }
+      }
+    } catch(e) { /* fall through */ }
+
+    // Fall back to plain array
+    if (!rawItems) {
+      rawItems = extractJsonArray(text);
+    }
 
     if (!rawItems || rawItems.length === 0) throw new Error("Couldn't read any items. Try a clearer, well-lit photo.");
     const items = rawItems
@@ -1879,38 +1896,45 @@ function cancelRecon() { document.getElementById('recon-modal').classList.remove
 
 function confirmRecon() {
   const { items, targetKey, store } = reconState;
+  const tax = reconState.tax || 0;
 
-  // LEARN: save the rawText → name mapping for every item that has both.
-  // This means the next scan recognizes these items instantly, even partially obscured.
-  items.forEach(it => {
-    if (it.rawText && it.name && it.rawText.toLowerCase() !== it.name.toLowerCase()) {
-      saveAbbrevMapping(it.rawText, it.name);
-    }
-  });
-
-  // Auto-match to shopping list by name similarity — no manual matching needed
-  const listCopy = shoppingList.filter(li => !li.checked);
-  items.forEach(it => {
-    const nameLower = it.name.toLowerCase();
-    const words = nameLower.split(' ').filter(w => w.length > 3);
-    const match = listCopy.find(li => {
-      const liLower = li.name.toLowerCase();
-      return liLower === nameLower ||
-        liLower.includes(nameLower) ||
-        nameLower.includes(liLower) ||
-        words.some(w => liLower.includes(w));
+  // LEARN: save abbreviation mappings first (safe, non-blocking)
+  try {
+    items.forEach(it => {
+      if (it.rawText && it.name && it.rawText.toLowerCase() !== it.name.toLowerCase()) {
+        saveAbbrevMapping(it.rawText, it.name);
+      }
     });
-    if (match) { match.checked = true; it._autoMatched = match.name; }
-  });
+  } catch(e) { console.warn('Abbrev save error:', e); }
 
-  saveList();
-  logReceiptAsHaul(items, targetKey, store, reconState.tax || 0);
+  // AUTO-MATCH to shopping list
+  try {
+    const listCopy = shoppingList.filter(li => !li.checked);
+    items.forEach(it => {
+      const nameLower = it.name.toLowerCase();
+      const words = nameLower.split(' ').filter(w => w.length > 3);
+      const match = listCopy.find(li => {
+        const liLower = li.name.toLowerCase();
+        return liLower === nameLower || liLower.includes(nameLower) ||
+          nameLower.includes(liLower) || words.some(w => liLower.includes(w));
+      });
+      if (match) { match.checked = true; it._autoMatched = match.name; }
+    });
+    saveList();
+  } catch(e) { console.warn('List match error:', e); }
+
+  // LOG HAUL + SAVE PANTRY — most critical step
+  try {
+    logReceiptAsHaul(items, targetKey, store, tax);
+  } catch(e) {
+    console.error('Haul save error:', e);
+    showToast('Warning: some data may not have saved. Check Perspective.');
+  }
+
   document.getElementById('recon-modal').classList.remove('open');
-
   const checked = items.filter(i => i._autoMatched).length;
-  const msg = items.length + ' items logged to Pantry' + (checked ? ' · ' + checked + ' checked off your list' : '');
+  showToast(items.length + ' items logged' + (checked ? ' · ' + checked + ' checked off list' : ''));
   reconState = null;
-  showToast(msg);
   perspMonth = targetKey;
   switchTab('perspective');
 }
@@ -2124,6 +2148,62 @@ function editHousehold() { const name=prompt('Household name:',household.name);i
 function manageFamily() { const result=prompt('Family members (comma-separated):',household.members.join(', '));if(result===null)return;household.members=result.split(',').map(s=>s.trim()).filter(Boolean);saveHousehold();openSettings();showToast('Family updated'); }
 function manageStores() { const result=prompt('Your stores (comma-separated):',household.stores.join(', '));if(result===null)return;const list=result.split(',').map(s=>s.trim()).filter(Boolean);if(list.length===0){showToast('Keep at least one store');return;}household.stores=list;saveHousehold();refreshStoreDropdowns();openSettings();showToast('Stores updated'); }
 function resetAllData() { if(!confirm('This clears your list, pantry, hauls, budget, and household setup. Cannot be undone. Continue?'))return;['pantry_list','pantry_items','pantry_hauls','pantry_budgets','pantry_household','pantry_onboarded','pantry_active_month'].forEach(k=>localStorage.removeItem(k));location.reload(); }
+
+function exportData() {
+  try {
+    const backup = {
+      exportedAt: new Date().toISOString(),
+      version: 1,
+      pantry_list:      localStorage.getItem('pantry_list')      || '[]',
+      pantry_items:     localStorage.getItem('pantry_items')     || '[]',
+      pantry_hauls:     localStorage.getItem('pantry_hauls')     || '{}',
+      pantry_budgets:   localStorage.getItem('pantry_budgets')   || '{}',
+      pantry_household: localStorage.getItem('pantry_household') || 'null',
+      pantry_abbrev_map:localStorage.getItem('pantry_abbrev_map')|| '{}'
+    };
+
+    // Count what we're exporting
+    const items = JSON.parse(backup.pantry_items || '[]');
+    const list  = JSON.parse(backup.pantry_list  || '[]');
+    const hauls = JSON.parse(backup.pantry_hauls || '{}');
+    const haulCount = Object.values(hauls).flat().length;
+    const summary = `${items.length} pantry items, ${list.length} list items, ${haulCount} hauls`;
+
+    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    const date = new Date().toISOString().slice(0,10);
+    a.href = url; a.download = `pantry-backup-${date}.json`;
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a); URL.revokeObjectURL(url);
+    showToast('Exported: ' + summary);
+  } catch(e) {
+    alert('Export failed: ' + (e.message || e));
+  }
+}
+
+function importData(input) {
+  if (!input.files[0]) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const backup = JSON.parse(e.target.result);
+      if (!backup.version || !backup.pantry_items) {
+        alert('This doesn\'t look like a valid Pantry. backup file.');
+        return;
+      }
+      if (!confirm('This will replace your current data with the backup. Continue?')) return;
+      const keys = ['pantry_list','pantry_items','pantry_hauls','pantry_budgets','pantry_household','pantry_abbrev_map'];
+      keys.forEach(k => { if (backup[k]) localStorage.setItem(k, backup[k]); });
+      showToast('Data restored! Reloading...');
+      setTimeout(() => location.reload(), 1000);
+    } catch(e) {
+      alert('Could not read the backup file: ' + (e.message || e));
+    }
+  };
+  reader.readAsText(input.files[0]);
+  input.value = '';
+}
 
 // ════════════════════════════════════════════════════
 // HOME / BUDGET
