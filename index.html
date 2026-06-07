@@ -51,7 +51,7 @@
   .btn-ghost { background: none; color: var(--teal); border: 1.5px solid var(--teal); border-radius: var(--radius-md); padding: 11px 20px; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
   .btn-ghost:active { background: var(--teal-light); }
   .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 200; align-items: flex-end; }
-  #api-key-modal { z-index: 250; } /* above settings-modal so it always shows on top */
+  #api-key-modal { z-index: 250; }
   .modal-overlay.open { display: flex; }
   .modal-sheet { background: var(--white); border-radius: var(--radius-xl) var(--radius-xl) 0 0; width: 100%; max-height: 85vh; overflow-y: auto; padding-bottom: calc(16px + var(--safe-bottom)); }
   .modal-handle { width: 36px; height: 4px; background: var(--gray-200); border-radius: 2px; margin: 12px auto 8px; }
@@ -64,7 +64,6 @@
   .seg-toggle { display: flex; background: var(--gray-100); border-radius: var(--radius-md); padding: 3px; gap: 3px; }
   .seg-btn { flex: 1; border: none; background: none; padding: 9px 12px; border-radius: 7px; font-size: 13px; font-weight: 600; color: var(--text-secondary); cursor: pointer; transition: all 0.15s; }
   .seg-btn.active { background: var(--white); color: var(--teal); box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
-  /* HOME */
   #screen-home { background: var(--gray-50); }
   .home-header { background: var(--teal); padding: 52px 20px 24px; position: relative; }
   .home-wordmark { font-size: 28px; font-weight: 700; color: white; letter-spacing: -0.5px; margin-bottom: 20px; }
@@ -89,8 +88,6 @@
   .qa-sub { font-size: 11px; color: var(--text-tertiary); margin-top: 2px; }
   .scan-zone { margin: 0 20px 16px; background: var(--white); border: 1.5px dashed var(--teal-mid); border-radius: var(--radius-lg); padding: 28px 20px; display: flex; flex-direction: column; align-items: center; gap: 10px; cursor: pointer; transition: background 0.15s; }
   .scan-zone:active { background: var(--teal-light); }
-
-  /* ── Live scanner view ── */
   .scan-icon { width: 56px; height: 56px; background: var(--teal-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
   .scan-icon svg { width: 28px; height: 28px; stroke: var(--teal); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
   .scan-label { font-size: 15px; font-weight: 600; color: var(--text-primary); }
@@ -99,7 +96,6 @@
   .stat-mini { background: var(--white); border: 0.5px solid var(--border); border-radius: var(--radius-md); padding: 12px; text-align: center; }
   .stat-mini-val { font-size: 18px; font-weight: 700; color: var(--text-primary); }
   .stat-mini-lbl { font-size: 10px; color: var(--text-tertiary); margin-top: 3px; font-weight: 500; }
-  /* PLAN */
   #screen-plan { background: var(--gray-50); }
   .plan-header { background: var(--white); border-bottom: 0.5px solid var(--border); padding: 16px 20px; }
   .plan-progress-wrap { margin-top: 12px; }
@@ -109,7 +105,7 @@
   .plan-progress-labels strong { color: var(--text-primary); }
   .list-item { display: flex; align-items: center; padding: 12px 16px; gap: 12px; background: var(--white); border-bottom: 0.5px solid var(--border); cursor: pointer; transition: background 0.12s; }
   .list-item:active { background: var(--gray-50); }
-    .list-item.checked { opacity: 0.55; }
+  .list-item.checked { opacity: 0.55; }
   .quick-add-bar { position: sticky; top: 0; z-index: 20; display: flex; gap: 8px; padding: 10px 16px; background: var(--white); border-bottom: 0.5px solid var(--border); }
   .quick-add-input { flex: 1; background: var(--gray-100); border: none; border-radius: var(--radius-md); padding: 11px 14px; font-size: 16px; color: var(--text-primary); }
   .quick-add-input:focus { outline: 2px solid var(--teal); outline-offset: -1px; background: var(--white); }
@@ -118,11 +114,12 @@
   .quick-add-btn:active { background: var(--teal-dark); }
   .quick-add-btn svg { width: 20px; height: 20px; stroke: white; fill: none; stroke-width: 2.75; stroke-linecap: round; }
   .pill-instore { background: var(--amber-light); color: var(--amber); padding: 1px 7px; font-size: 10px; }
-  /* Swipe — YNAB style: delete reveals from right, grows with swipe */
   .swipe-wrap { position: relative; overflow: hidden; border-bottom: 0.5px solid var(--border); }
   .swipe-wrap .list-item { border-bottom: none; position: relative; z-index: 1; will-change: transform; background: var(--white); user-select: none; -webkit-user-select: none; }
   .swipe-action-delete { position: absolute; right: 0; top: 5px; bottom: 5px; width: 0; min-width: 0; background: var(--red); display: flex; align-items: center; justify-content: center; color: white; font-size: 15px; font-weight: 700; cursor: pointer; user-select: none; border-radius: 10px 6px 6px 10px; overflow: hidden; white-space: nowrap; }
-  /* Edit action removed from swipe — edit via tap on item */
+  .swipe-action-edit { position: absolute; left: 0; top: 5px; bottom: 5px; width: 0; min-width: 0; background: var(--teal); display: flex; align-items: center; justify-content: center; color: white; font-size: 15px; font-weight: 700; cursor: pointer; user-select: none; border-radius: 6px 10px 10px 6px; overflow: hidden; white-space: nowrap; }
+  .swipe-wrap .swipe-row { border-bottom: none; position: relative; z-index: 1; will-change: transform; background: var(--white); user-select: none; -webkit-user-select: none; display: flex; align-items: center; justify-content: space-between; padding: 9px 16px; }
+  .swipe-wrap .swipe-row:active { background: var(--gray-50); }
   .check-circle { width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--gray-200); flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
   .check-circle.done { background: var(--teal); border-color: var(--teal); }
   .check-circle.done svg { display: block; }
@@ -136,7 +133,6 @@
   .category-header { padding: 12px 20px 4px; display: flex; align-items: center; gap: 8px; }
   .category-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
   .category-name { font-size: 11px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--text-tertiary); }
-  /* PERSPECTIVE */
   #screen-perspective { background: var(--gray-50); }
   .persp-header { background: var(--white); padding: 16px 20px; border-bottom: 0.5px solid var(--border); }
   .month-nav { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
@@ -167,7 +163,6 @@
   .persp-stat-trend { font-size: 11px; margin-top: 4px; font-weight: 600; }
   .trend-up { color: var(--red); }
   .trend-down { color: var(--teal); }
-  /* PANTRY */
   #screen-pantry { background: var(--gray-50); }
   .pantry-search { padding: 12px 20px; background: var(--white); border-bottom: 0.5px solid var(--border); position: sticky; top: 0; z-index: 10; }
   .search-wrap { display: flex; align-items: center; background: var(--gray-100); border-radius: var(--radius-md); padding: 9px 14px; gap: 8px; }
@@ -187,7 +182,6 @@
   .stock-bar-wrap { margin-top: 5px; }
   .stock-bar { height: 3px; border-radius: 2px; background: var(--gray-100); overflow: hidden; width: 80px; }
   .stock-fill { height: 100%; border-radius: 2px; transition: width 0.4s ease; }
-  /* AI */
   #screen-ai { background: var(--gray-50); }
   .ai-header { background: linear-gradient(135deg, #0F6E56 0%, #1D9E75 60%, #5DCAA5 100%); padding: 52px 20px 24px; position: relative; overflow: hidden; }
   .ai-header::before { content: ''; position: absolute; right: -40px; top: -40px; width: 200px; height: 200px; border-radius: 50%; background: rgba(255,255,255,0.07); }
@@ -213,7 +207,6 @@
   .refresh-btn { margin: 16px 20px; display: flex; align-items: center; justify-content: center; gap: 8px; background: none; border: 1.5px solid var(--border-strong); border-radius: var(--radius-md); padding: 12px; color: var(--text-secondary); font-size: 14px; font-weight: 500; cursor: pointer; width: calc(100% - 40px); transition: background 0.15s; }
   .refresh-btn:active { background: var(--gray-100); }
   .refresh-btn svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; }
-  /* DETAIL MODAL */
   .detail-modal { display: none; position: fixed; inset: 0; z-index: 300; background: rgba(0,0,0,0.5); align-items: flex-end; }
   .detail-modal.open { display: flex; }
   .detail-sheet { background: var(--white); border-radius: var(--radius-xl) var(--radius-xl) 0 0; width: 100%; max-height: 88vh; overflow-y: auto; padding-bottom: calc(20px + var(--safe-bottom)); }
@@ -230,7 +223,6 @@
   .empty-state svg { width: 48px; height: 48px; stroke: var(--gray-200); fill: none; stroke-width: 1.5; margin-bottom: 16px; }
   .empty-state h3 { font-size: 16px; font-weight: 600; color: var(--text-primary); margin-bottom: 6px; }
   .empty-state p { font-size: 13px; color: var(--text-tertiary); line-height: 1.5; }
-  /* ONBOARDING */
   .onboard { display: none; position: fixed; inset: 0; max-width: 430px; margin: 0 auto; background: var(--white); z-index: 1000; flex-direction: column; }
   .onboard.open { display: flex; }
   .onboard-progress { display: flex; gap: 6px; padding: 18px 24px calc(18px + env(safe-area-inset-top, 0px)); padding-top: max(18px, env(safe-area-inset-top, 0px)); }
@@ -265,7 +257,6 @@
   .invite-tag { display: inline-flex; align-items: center; gap: 6px; background: var(--gray-100); padding: 6px 12px; border-radius: 20px; font-size: 13px; margin: 0 6px 6px 0; }
   .invite-tag button { background: none; border: none; cursor: pointer; color: var(--text-tertiary); display: flex; }
   .invite-tag svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2.5; }
-  /* SETTINGS */
   .settings-section-title { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-tertiary); padding: 16px 20px 6px; }
   .settings-row { display: flex; align-items: center; gap: 12px; padding: 14px 20px; border-bottom: 0.5px solid var(--border); cursor: pointer; background: var(--white); transition: background 0.12s; }
   .settings-row:active { background: var(--gray-50); }
@@ -275,7 +266,6 @@
   .settings-row-label .t { font-size: 14px; font-weight: 500; }
   .settings-row-label .s { font-size: 12px; color: var(--text-tertiary); margin-top: 2px; }
   .settings-row-chevron svg { width: 16px; height: 16px; stroke: var(--gray-200); fill: none; stroke-width: 2.5; }
-  /* RECONCILIATION */
   .recon-modal { display: none; position: fixed; inset: 0; z-index: 400; background: var(--gray-50); max-width: 430px; margin: 0 auto; flex-direction: column; }
   .recon-modal.open { display: flex; }
   .recon-header { padding: max(52px, env(safe-area-inset-top, 52px)) 20px 12px; border-bottom: 0.5px solid var(--border); background: var(--white); }
@@ -283,7 +273,6 @@
   .recon-sub { font-size: 12px; color: var(--text-tertiary); margin-top: 3px; }
   .recon-body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 12px 16px 20px; }
   .recon-footer { padding: 12px 16px max(24px, env(safe-area-inset-bottom, 24px)); border-top: 0.5px solid var(--border); background: var(--white); }
-  /* Review cards */
   .review-card { background: var(--white); border-radius: var(--radius-lg); margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.07); overflow: hidden; }
   .review-card-main { display: flex; align-items: flex-start; gap: 10px; padding: 14px 14px 10px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
   .review-card-main:active { background: var(--gray-50); }
@@ -317,14 +306,14 @@
       <div class="budget-hero-row">
         <div onclick="openEditBudget()" style="cursor:pointer;">
           <div class="budget-label" id="home-budget-label">Budget <span style="opacity:0.6;">· tap to edit</span></div>
-          <div class="budget-amount" id="home-budget-amt">$800</div>
+          <div class="budget-amount" id="home-budget-amt">$850</div>
           <div class="budget-remaining"><strong id="home-remaining">$0.00</strong> remaining · <span id="home-days">—</span> left</div>
         </div>
         <div><div class="budget-pill" id="home-pace-pill">On track</div></div>
       </div>
       <div class="progress-bar"><div class="progress-fill" id="home-progress-fill" style="width:0%"></div></div>
       <div class="progress-labels">
-        <span>$0</span><span id="home-spent-lbl">$0.00 spent</span><span id="home-budget-lbl">$800</span>
+        <span>$0</span><span id="home-spent-lbl">$0.00 spent</span><span id="home-budget-lbl">$850</span>
       </div>
     </div>
   </div>
@@ -364,12 +353,12 @@
   <div class="section-label" style="padding-bottom:8px;">Budget snapshot</div>
   <div style="margin:0 20px 20px;">
     <div class="card">
-      <div class="card-row" style="cursor:default;"><div style="flex:1;"><div style="font-size:13px;font-weight:500;">Monthly grocery target</div><div style="font-size:12px;color:var(--text-tertiary);margin-top:2px;">YNAB-style rollover active</div></div><div style="font-size:16px;font-weight:700;" id="snap-target">$800</div></div>
+      <div class="card-row" style="cursor:default;"><div style="flex:1;"><div style="font-size:13px;font-weight:500;">Monthly grocery target</div><div style="font-size:12px;color:var(--text-tertiary);margin-top:2px;">YNAB-style rollover active</div></div><div style="font-size:16px;font-weight:700;" id="snap-target">$850</div></div>
       <div class="card-row" style="cursor:default;"><div style="flex:1;"><div style="font-size:13px;font-weight:500;color:var(--red);">Spent so far</div></div><div style="font-size:16px;font-weight:700;color:var(--red);" id="snap-spent">$0.00</div></div>
-      <div class="card-row" style="cursor:default;"><div style="flex:1;"><div style="font-size:13px;font-weight:500;color:var(--teal);">Remaining</div><div style="font-size:12px;color:var(--text-tertiary);margin-top:2px;">Pantry buffer building 💪</div></div><div style="font-size:16px;font-weight:700;color:var(--teal);" id="snap-remaining">$0.00</div></div>
+      <div class="card-row" style="cursor:default;"><div style="flex:1;"><div style="font-size:13px;font-weight:500;color:var(--teal);">Remaining</div><div style="font-size:12px;color:var(--text-tertiary);margin-top:2px;">Pantry buffer building</div></div><div style="font-size:16px;font-weight:700;color:var(--teal);" id="snap-remaining">$0.00</div></div>
       <div class="card-row" id="snap-next-row" style="cursor:pointer;display:none;" onclick="editNextMonthBudget()">
         <div style="flex:1;"><div style="font-size:13px;font-weight:500;" id="snap-next-label">Next month budget</div><div style="font-size:12px;color:var(--text-tertiary);margin-top:2px;">Tap to plan ahead</div></div>
-        <div style="display:flex;align-items:center;gap:6px;"><div style="font-size:16px;font-weight:700;" id="snap-next-amt">$800</div><svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:var(--text-tertiary);fill:none;stroke-width:2.5;"><path d="M9 18l6-6-6-6"/></svg></div>
+        <div style="display:flex;align-items:center;gap:6px;"><div style="font-size:16px;font-weight:700;" id="snap-next-amt">$850</div><svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:var(--text-tertiary);fill:none;stroke-width:2.5;"><path d="M9 18l6-6-6-6"/></svg></div>
       </div>
     </div>
   </div>
@@ -391,14 +380,13 @@
       <div class="plan-progress-labels"><span id="plan-checked-lbl"><strong>0</strong> of 0 checked</span><span id="plan-est-total">Est. <strong>$0.00</strong></span></div>
     </div>
   </div>
-    <div class="quick-add-bar">
+  <div class="quick-add-bar">
     <input type="text" id="quick-add-input" class="quick-add-input" placeholder="Add an item on the fly…" autocomplete="off" enterkeyhint="done" onkeydown="if(event.key==='Enter'){event.preventDefault();quickAddItem();}">
     <button class="quick-add-btn" onclick="quickAddItem()" aria-label="Add item"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
   </div>
   <div id="plan-list-container"></div>
-
   <div style="padding:16px 20px 8px;"><button class="btn-primary" onclick="openAddItem()"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Add Item</button></div>
-  <div style="padding:0 20px 8px;"><button class="btn-ghost" style="width:100%;" onclick="openListImport()">📷 Import from photo</button></div>
+  <div style="padding:0 20px 8px;"><button class="btn-ghost" style="width:100%;" onclick="openListImport()">Import from photo</button></div>
   <div style="padding:0 20px 24px;"><button class="btn-ghost" style="width:100%;" onclick="switchTab('pantry')">Browse Pantry to add</button></div>
 </div>
 
@@ -421,7 +409,7 @@
     </div>
     <div onclick="openEditBudget(perspMonth)" style="cursor:pointer;margin-top:10px;background:var(--white);border:0.5px solid var(--border);border-radius:var(--radius-md);padding:12px 14px;display:flex;align-items:center;justify-content:space-between;">
       <div><div style="font-size:13px;font-weight:500;" id="persp-budget-month-label">Month budget</div><div style="font-size:11px;color:var(--text-tertiary);margin-top:2px;">Tap to set this month's target</div></div>
-      <div style="display:flex;align-items:center;gap:8px;"><div style="font-size:17px;font-weight:700;" id="persp-budget-target">$800</div><svg viewBox="0 0 24 24" style="width:15px;height:15px;stroke:var(--text-tertiary);fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;"><path d="M9 18l6-6-6-6"/></svg></div>
+      <div style="display:flex;align-items:center;gap:8px;"><div style="font-size:17px;font-weight:700;" id="persp-budget-target">$850</div><svg viewBox="0 0 24 24" style="width:15px;height:15px;stroke:var(--text-tertiary);fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;"><path d="M9 18l6-6-6-6"/></svg></div>
     </div>
   </div>
   <div id="persp-hauls-container"></div>
@@ -469,18 +457,11 @@
     <div class="modal-handle"></div>
     <div class="modal-title">Anthropic API Key</div>
     <div style="padding:0 20px 16px;">
-      <p style="font-size:13px;color:var(--text-secondary);line-height:1.55;margin-bottom:16px;">Your key is stored on this device. iOS will offer to save it to your Keychain — say <strong>Yes</strong> and Face ID will fill it automatically from then on.</p>
-      <p style="font-size:13px;color:var(--text-secondary);line-height:1.55;margin-bottom:16px;">Get a key at <strong>console.anthropic.com</strong> → API Keys.</p>
-      <!-- Hidden username field — required for iOS to trigger Keychain/Face ID autofill -->
+      <p style="font-size:13px;color:var(--text-secondary);line-height:1.55;margin-bottom:16px;">Your key is stored on this device only.</p>
       <input type="text" autocomplete="username" value="pantry-api-key" style="display:none;" aria-hidden="true" tabindex="-1">
       <label class="form-label">API Key</label>
-      <input class="form-input" id="api-key-input"
-             placeholder="sk-ant-..."
-             type="password"
-             autocomplete="current-password"
-             style="margin-bottom:8px;font-family:monospace;letter-spacing:0.04em;">
+      <input class="form-input" id="api-key-input" placeholder="sk-ant-..." type="password" autocomplete="current-password" style="margin-bottom:8px;font-family:monospace;letter-spacing:0.04em;">
       <div style="font-size:11px;color:var(--text-tertiary);margin-bottom:4px;">Starts with <code>sk-ant-</code></div>
-      <div style="font-size:11px;color:var(--teal-dark);margin-bottom:16px;">💡 When iOS asks "Save Password?" — tap Yes. Face ID will fill it automatically next time.</div>
     </div>
     <div style="padding:0 20px 16px;"><button class="btn-primary" onclick="saveApiKey()">Save Key</button></div>
   </div>
@@ -525,8 +506,6 @@
   </div>
 </div>
 
-
-<!-- List import from photo -->
 <div class="modal-overlay" id="list-import-modal" onclick="closeModal('list-import-modal')">
   <div class="modal-sheet" onclick="event.stopPropagation()">
     <div class="modal-handle"></div>
@@ -546,7 +525,6 @@
   </div>
 </div>
 
-<!-- List import confirm screen -->
 <div class="modal-overlay" id="list-confirm-modal" onclick="event.stopPropagation()">
   <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:92vh;">
     <div class="modal-handle"></div>
@@ -554,7 +532,7 @@
       <div class="modal-title" style="padding:0;">Add to your list</div>
       <button class="icon-btn" onclick="closeModal('list-confirm-modal')"><svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
     </div>
-    <div style="padding:4px 20px 8px;font-size:13px;color:var(--text-tertiary);" id="list-confirm-sub">Tap items to deselect any you don't want</div>
+    <div style="padding:4px 20px 8px;font-size:13px;color:var(--text-tertiary);" id="list-confirm-sub">Tap items to deselect</div>
     <div id="list-confirm-items" style="max-height:52vh;overflow-y:auto;padding:4px 0;border-top:0.5px solid var(--border);"></div>
     <div style="padding:12px 20px 8px;"><button class="btn-primary" onclick="confirmListImport()" id="list-confirm-btn">Add Selected Items</button></div>
     <div style="padding:0 20px 16px;"><button class="btn-ghost" style="width:100%;" onclick="closeModal('list-confirm-modal')">Cancel</button></div>
@@ -600,25 +578,19 @@
       </div>
       <label class="form-label">Store</label>
       <select class="form-input" id="receipt-store" style="margin-bottom:16px;"></select>
-      <!-- Web search toggle -->
       <div style="display:flex;align-items:center;justify-content:space-between;background:var(--gray-50);border-radius:var(--radius-md);padding:11px 14px;margin-bottom:16px;">
-        <div>
-          <div style="font-size:13px;font-weight:600;color:var(--text-primary);">🔍 Web search</div>
-          <div style="font-size:11px;color:var(--text-tertiary);margin-top:2px;" id="web-search-sub">Look up uncertain items online</div>
-        </div>
+        <div><div style="font-size:13px;font-weight:600;color:var(--text-primary);">Web search</div><div style="font-size:11px;color:var(--text-tertiary);margin-top:2px;" id="web-search-sub">Look up uncertain items online</div></div>
         <label style="position:relative;display:inline-block;width:46px;height:26px;cursor:pointer;flex-shrink:0;">
           <input type="checkbox" id="web-search-toggle" style="opacity:0;width:0;height:0;" onchange="saveWebSearchPref(this.checked)">
           <span id="ws-track" style="position:absolute;inset:0;border-radius:13px;transition:background 0.2s;"></span>
           <span id="ws-thumb" style="position:absolute;top:2px;width:22px;height:22px;background:white;border-radius:50%;transition:left 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.2);"></span>
         </label>
       </div>
-      <!-- Camera: opens native camera directly -->
       <input type="file" id="receipt-file-input" accept="image/*" capture="environment" style="opacity:0;position:absolute;width:0;height:0;pointer-events:none;" onchange="handleReceiptUpload(this)">
       <label for="receipt-file-input" class="btn-primary" style="margin-bottom:10px;cursor:pointer;user-select:none;" id="receipt-camera-label">
         <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
         Take Photo
       </label>
-      <!-- Library: picks from photo library -->
       <input type="file" id="receipt-library-input" accept="image/*" style="opacity:0;position:absolute;width:0;height:0;pointer-events:none;" onchange="handleReceiptUpload(this)">
       <label for="receipt-library-input" id="receipt-library-label" style="display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;user-select:none;width:100%;background:none;color:var(--teal);border:1.5px solid var(--teal);border-radius:var(--radius-md);padding:11px 20px;font-size:14px;font-weight:600;margin-bottom:4px;">
         <svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
@@ -647,7 +619,16 @@
     </div>
     <div class="section-label" style="padding:0 20px 8px;">Price history</div>
     <div class="price-history" id="detail-price-history"></div>
-    <div style="padding:16px 20px;"><button class="btn-primary" id="detail-add-to-list-btn"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Add to Shopping List</button></div>
+    <div style="padding:16px 20px 0;"><button class="btn-primary" id="detail-add-to-list-btn"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Add to Shopping List</button></div>
+    <div style="border-top:0.5px solid var(--border);padding:16px 20px 0;margin-top:16px;">
+      <div style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-tertiary);padding:0 0 10px;">Edit item</div>
+      <div class="form-group" style="padding:0 0 10px;"><label class="form-label">Name</label><input class="form-input" id="detail-edit-name" type="text"></div>
+      <div class="form-group" style="padding:0 0 12px;"><label class="form-label">Category</label>
+        <select class="form-input" id="detail-edit-category"><option>Protein</option><option>Produce</option><option>Dairy</option><option>Pantry Staples</option><option>Snacks</option><option>Beverages</option><option>Frozen</option><option>Ready-Made</option><option>Non-Grocery</option><option>Other</option></select>
+      </div>
+      <button class="btn-primary" onclick="savePantryItemEdit()" style="margin-bottom:8px;">Save Changes</button>
+      <button class="btn-ghost" style="width:100%;border-color:var(--red);color:var(--red);margin-bottom:16px;" onclick="deletePantryItem()">Delete from Pantry</button>
+    </div>
   </div>
 </div>
 
@@ -657,19 +638,19 @@
     <div class="onboard-step active" data-step="0">
       <div class="onboard-hero-icon"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
       <div class="onboard-title">Welcome to Pantry.</div>
-      <div class="onboard-text">Pantry. is YNAB for groceries. Track prices, plan hauls across multiple stores, and let AI help your budget go further. Let's get your household set up — takes about a minute.</div>
+      <div class="onboard-text">Pantry. is YNAB for groceries. Track prices, plan hauls across multiple stores, and let AI help your budget go further.</div>
     </div>
     <div class="onboard-step" data-step="1">
       <div class="onboard-hero-icon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></div>
       <div class="onboard-title">Your household</div>
       <div class="onboard-text">Name your household and tell us who's doing the shopping.</div>
-      <div class="form-group" style="padding:0 0 16px;"><label class="form-label">Household name</label><input class="form-input" id="ob-household-name" placeholder="e.g. The Smith Family" type="text"></div>
+      <div class="form-group" style="padding:0 0 16px;"><label class="form-label">Household name</label><input class="form-input" id="ob-household-name" placeholder="e.g. The Rennie Family" type="text"></div>
       <div class="form-group" style="padding:0 0 16px;"><label class="form-label">Your name (admin)</label><input class="form-input" id="ob-admin-name" placeholder="e.g. Jesse" type="text"></div>
     </div>
     <div class="onboard-step" data-step="2">
       <div class="onboard-hero-icon"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 11h-6M19 8v6"/></svg></div>
       <div class="onboard-title">Invite family</div>
-      <div class="onboard-text">Add family members who shop or plan with you. You can always do this later.</div>
+      <div class="onboard-text">Add family members who shop or plan with you.</div>
       <div class="invite-row"><input class="form-input" id="ob-invite-input" placeholder="Family member's name" type="text" onkeydown="if(event.key==='Enter')addInviteTag()"><button class="btn-ghost" style="padding:11px 16px;" onclick="addInviteTag()">Add</button></div>
       <div id="ob-invite-tags" style="margin-top:8px;"></div>
     </div>
@@ -689,17 +670,17 @@
     <div class="onboard-step" data-step="5">
       <div class="onboard-hero-icon" style="background:var(--teal-light);"><svg viewBox="0 0 24 24" style="stroke:var(--teal);"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg></div>
       <div class="onboard-title">Connect AI features</div>
-      <div class="onboard-text">The receipt scanner and AI suggestions run on Anthropic's API. Get one free at <strong>console.anthropic.com</strong>.</div>
+      <div class="onboard-text">The receipt scanner and AI suggestions run on Anthropic's API. Get one at <strong>console.anthropic.com</strong>.</div>
       <div class="form-group" style="padding:0 0 8px;"><label class="form-label">Anthropic API Key</label><input class="form-input" id="ob-api-key" placeholder="sk-ant-..." type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" style="font-family:monospace;letter-spacing:0.04em;"></div>
       <div style="font-size:12px;color:var(--text-tertiary);line-height:1.5;">You can skip this and add it later in Settings.</div>
     </div>
     <div class="onboard-step" data-step="6">
       <div class="onboard-title" style="margin-bottom:16px;">How Pantry. works</div>
       <div class="tour-card"><div class="tour-card-icon" style="background:#E1F5EE;color:var(--teal);"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg></div><div><h4>Home</h4><p>Your budget, what's left, and the receipt scanner.</p></div></div>
-      <div class="tour-card"><div class="tour-card-icon" style="background:#E1F5EE;color:var(--teal);"><svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 012-2h2a2 2 0 012 2M9 5h6"/></svg></div><div><h4>Plan</h4><p>Your shopping list — last price paid, sale flags, swipe to edit or delete.</p></div></div>
-      <div class="tour-card"><div class="tour-card-icon" style="background:#FAEEDA;color:var(--amber);"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div><div><h4>Perspective</h4><p>Each month's hauls. Tap to edit or delete any haul.</p></div></div>
+      <div class="tour-card"><div class="tour-card-icon" style="background:#E1F5EE;color:var(--teal);"><svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 012-2h2a2 2 0 012 2M9 5h6"/></svg></div><div><h4>Plan</h4><p>Shopping list — swipe right to edit, left to delete. Quick-add at top.</p></div></div>
+      <div class="tour-card"><div class="tour-card-icon" style="background:#FAEEDA;color:var(--amber);"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div><div><h4>Perspective</h4><p>Each month's hauls. Expand to see items — swipe to edit or delete.</p></div></div>
       <div class="tour-card"><div class="tour-card-icon" style="background:#E6F1FB;color:var(--blue);"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg></div><div><h4>Pantry</h4><p>Everything you've bought, with price history and stock estimates.</p></div></div>
-      <div class="tour-card"><div class="tour-card-icon" style="background:#E1F5EE;color:var(--teal);"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 9a3 3 0 015.12 2.12C14 13 12 14 12 16M12 20h.01"/></svg></div><div><h4>AI</h4><p>Smart suggestions — what's running low and how to stretch your budget.</p></div></div>
+      <div class="tour-card"><div class="tour-card-icon" style="background:#E1F5EE;color:var(--teal);"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 9a3 3 0 015.12 2.12C14 13 12 14 12 16M12 20h.01"/></svg></div><div><h4>AI</h4><p>Smart suggestions based on your pantry and spending patterns.</p></div></div>
     </div>
   </div>
   <div class="onboard-footer">
@@ -736,21 +717,14 @@
 <div class="recon-modal" id="recon-modal">
   <div class="recon-header">
     <div style="display:flex;align-items:center;justify-content:space-between;">
-      <div>
-        <div class="recon-title">Review Items</div>
-        <div class="recon-sub" id="recon-sub">Tap any item to correct it</div>
-      </div>
+      <div><div class="recon-title">Review Items</div><div class="recon-sub" id="recon-sub">Tap any item to correct it</div></div>
       <button onclick="cancelRecon()" style="background:none;border:none;font-size:13px;font-weight:600;color:var(--text-secondary);padding:8px;cursor:pointer;">Cancel</button>
     </div>
   </div>
   <div class="recon-body" id="recon-body"></div>
-  <div class="recon-footer">
-    <button class="btn-primary" onclick="confirmRecon()" id="recon-confirm-btn">Log items to Pantry</button>
-  </div>
+  <div class="recon-footer"><button class="btn-primary" onclick="confirmRecon()" id="recon-confirm-btn">Log items to Pantry</button></div>
 </div>
 
-
-<!-- Recon item edit modal -->
 <div class="modal-overlay" id="recon-edit-modal" onclick="closeModal('recon-edit-modal')" style="z-index:500;">
   <div class="modal-sheet" onclick="event.stopPropagation()">
     <div class="modal-handle"></div>
@@ -770,7 +744,6 @@
         <span style="font-size:13px;color:var(--text-secondary);flex:1;">This item was on sale / discounted</span>
       </div>
     </div>
-    <!-- Sale price breakdown — shown only when on sale -->
     <div id="recon-sale-fields" style="display:none;">
       <div style="margin:0 20px 12px;background:var(--amber-light);border-radius:var(--radius-md);padding:12px 14px;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
@@ -787,19 +760,14 @@
           <div style="font-size:18px;font-weight:700;color:var(--amber);" id="recon-price-paid-display">$—</div>
         </div>
       </div>
-      <div style="padding:0 20px 4px;font-size:11px;color:var(--text-tertiary);">Price paid auto-calculates. Edit above fields to correct.</div>
+      <div style="padding:0 20px 4px;font-size:11px;color:var(--text-tertiary);">Price paid auto-calculates.</div>
     </div>
-    <!-- Normal price field — shown when NOT on sale -->
     <div class="form-group" id="recon-normal-price-wrap">
       <label class="form-label">Price Paid ($)</label>
       <input class="form-input" id="recon-edit-price" type="number" step="0.01" inputmode="decimal">
     </div>
     <div class="form-group"><label class="form-label">Category</label>
-      <select class="form-input" id="recon-edit-category">
-        <option>Protein</option><option>Produce</option><option>Dairy</option>
-        <option>Pantry Staples</option><option>Snacks</option><option>Beverages</option>
-        <option>Frozen</option><option>Ready-Made</option><option>Non-Grocery</option><option>Other</option>
-      </select>
+      <select class="form-input" id="recon-edit-category"><option>Protein</option><option>Produce</option><option>Dairy</option><option>Pantry Staples</option><option>Snacks</option><option>Beverages</option><option>Frozen</option><option>Ready-Made</option><option>Non-Grocery</option><option>Other</option></select>
     </div>
     <div style="padding:0 20px 8px;"><button class="btn-primary" onclick="saveReconEdit()">Save</button></div>
     <div style="padding:0 20px 16px;" id="recon-edit-delete-wrap">
@@ -808,10 +776,6 @@
   </div>
 </div>
 
-
-<!-- ── Live Scanner View ── -->
-
-<!-- Recon match picker — searchable list of shopping list items -->
 <div class="modal-overlay" id="recon-match-modal" onclick="closeModal('recon-match-modal')" style="z-index:510;">
   <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:80vh;">
     <div class="modal-handle"></div>
@@ -819,9 +783,7 @@
       <div style="font-size:15px;font-weight:600;margin-bottom:10px;" id="recon-match-title">Match to list item</div>
       <div style="display:flex;align-items:center;background:var(--gray-100);border-radius:var(--radius-md);padding:9px 12px;gap:8px;">
         <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:var(--text-tertiary);fill:none;stroke-width:2.5;flex-shrink:0;"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-        <input type="search" id="recon-match-search" placeholder="Type to search your list..." autocomplete="off"
-               style="background:none;border:none;font-size:15px;color:var(--text-primary);width:100%;"
-               oninput="filterMatchPicker(this.value)">
+        <input type="search" id="recon-match-search" placeholder="Type to search your list..." autocomplete="off" style="background:none;border:none;font-size:15px;color:var(--text-primary);width:100%;" oninput="filterMatchPicker(this.value)">
       </div>
     </div>
     <div id="recon-match-items" style="max-height:50vh;overflow-y:auto;border-top:0.5px solid var(--border);"></div>
@@ -830,6 +792,8 @@
     </div>
   </div>
 </div>
+
+<!-- Haul item edit modal -->
 <div class="modal-overlay" id="haul-item-edit-modal" onclick="closeModal('haul-item-edit-modal')" style="z-index:450;">
   <div class="modal-sheet" onclick="event.stopPropagation()">
     <div class="modal-handle"></div>
@@ -852,11 +816,10 @@
       </div>
     </div>
     <div class="form-group"><label class="form-label">Category</label>
-      <select class="form-input" id="hie-category">
-        <option>Protein</option><option>Produce</option><option>Dairy</option>
-        <option>Pantry Staples</option><option>Snacks</option><option>Beverages</option>
-        <option>Frozen</option><option>Ready-Made</option><option>Non-Grocery</option><option>Other</option>
-      </select>
+      <select class="form-input" id="hie-category"><option>Protein</option><option>Produce</option><option>Dairy</option><option>Pantry Staples</option><option>Snacks</option><option>Beverages</option><option>Frozen</option><option>Ready-Made</option><option>Non-Grocery</option><option>Other</option></select>
+    </div>
+    <div class="form-group"><label class="form-label">On Sale?</label>
+      <select class="form-input" id="hie-sale"><option value="no">No</option><option value="yes">Yes — on sale</option></select>
     </div>
     <div style="padding:0 20px 8px;"><button class="btn-primary" onclick="saveHaulItemEdit()">Save Changes</button></div>
     <div style="padding:0 20px 16px;"><button class="btn-ghost" style="width:100%;border-color:var(--red);color:var(--red);" onclick="deleteHaulItem()">Remove from Haul</button></div>
@@ -867,7 +830,7 @@
 
 <script>
 // ════════════════════════════════════════════════════
-// API KEY — stored only on device, never in this file
+// API KEY
 // ════════════════════════════════════════════════════
 function getApiKey() {
   return localStorage.getItem('pantry_api_key') || localStorage.getItem('pantry_api_key_backup') || sessionStorage.getItem('pantry_api_key') || '';
@@ -890,8 +853,7 @@ function keyDiagnostic() {
   if (!k.startsWith('sk-ant-')) issues.push('does NOT start with sk-ant-');
   if (/\s/.test(k)) issues.push('contains a space or line break');
   if (/[^\x20-\x7E]/.test(k)) issues.push('contains invisible/non-ASCII characters');
-  const source = (localStorage.getItem('pantry_api_key') || localStorage.getItem('pantry_api_key_backup') || sessionStorage.getItem('pantry_api_key')) ? 'from Settings (this device)' : 'unknown';
-  return 'Key diagnostic — length: ' + k.length + ', looks like: ' + masked + ', source: ' + source + (issues.length ? '. PROBLEMS: ' + issues.join('; ') : '. (format looks OK)');
+  return 'Key: length ' + k.length + ', looks like ' + masked + (issues.length ? '. PROBLEMS: ' + issues.join('; ') : '. (OK)');
 }
 
 // ════════════════════════════════════════════════════
@@ -899,7 +861,7 @@ function keyDiagnostic() {
 // ════════════════════════════════════════════════════
 const STORE_PALETTE = ['#E24B4A','#1D9E75','#378ADD','#FAC775','#9F77DD','#5DCAA5','#D85A30','#85B7EB'];
 const DEFAULT_STORE_DEFS = { costco:{name:'Costco',color:'#E24B4A'}, detweilers:{name:'Detweilers',color:'#1D9E75'}, publix:{name:'Publix',color:'#378ADD'}, walmart:{name:'Walmart',color:'#FAC775'}, aldi:{name:'Aldi',color:'#9F77DD'}, other:{name:'Other',color:'#888780'} };
-let household = JSON.parse(localStorage.getItem('pantry_household') || 'null') || { name:'My Household', admin:'', members:[], stores:['Costco','Detweilers'] };
+let household = JSON.parse(localStorage.getItem('pantry_household') || 'null') || { name:'Rennie Family', admin:'Jesse', members:['Lauren'], stores:['Costco','Detweilers','Publix','Walmart','Aldi'] };
 function saveHousehold() { localStorage.setItem('pantry_household', JSON.stringify(household)); }
 function storeKey(name) { return name.toLowerCase().replace(/[^a-z0-9]/g,''); }
 function buildStores() {
@@ -912,10 +874,10 @@ let STORES = buildStores();
 function refreshStoreDropdowns() {
   STORES = buildStores();
   const opts = household.stores.concat(['Other']).map(s=>`<option>${s}</option>`).join('');
-  const itemSel = document.getElementById('new-item-store');
-  const haulSel = document.getElementById('haul-store');
-  if (itemSel) itemSel.innerHTML = opts;
-  if (haulSel) haulSel.innerHTML = opts;
+  ['new-item-store','haul-store','edit-item-store'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = opts;
+  });
 }
 const CATEGORY_COLORS = {'Protein':'#E24B4A','Produce':'#1D9E75','Dairy':'#378ADD','Pantry Staples':'#BA7517','Snacks':'#9F77DD','Beverages':'#5DCAA5','Frozen':'#85B7EB','Ready-Made':'#D8742E','Non-Grocery':'#7A7A75','Other':'#888780'};
 const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -930,8 +892,8 @@ function getSpentForMonth(key) { return (haulsData[key]||[]).reduce((s,h)=>s+h.t
 function daysLeftInMonth(key) { const[y,m]=key.split('-').map(Number); const n=new Date(); const isCur=(n.getFullYear()===y&&(n.getMonth()+1)===m); const last=new Date(y,m,0).getDate(); return isCur?last-n.getDate():0; }
 const BUDGET = { get monthKey(){return currentMonthKey();}, get monthly(){return getBudgetForMonth(currentMonthKey());}, get spent(){return getSpentForMonth(currentMonthKey());}, get remaining(){return this.monthly-this.spent;} };
 let shoppingList = JSON.parse(localStorage.getItem('pantry_list')||'null')||[];
-let pantryItems = JSON.parse(localStorage.getItem('pantry_items')||'null')||[];
-let haulsData = JSON.parse(localStorage.getItem('pantry_hauls')||'null')||{};
+let pantryItems  = JSON.parse(localStorage.getItem('pantry_items')||'null')||[];
+let haulsData    = JSON.parse(localStorage.getItem('pantry_hauls')||'null')||{};
 
 // ════════════════════════════════════════════════════
 // NAV
@@ -957,50 +919,46 @@ function switchTab(tab) {
 function clearAllItems() {
   if (shoppingList.length === 0) return;
   if (!confirm(`Clear all ${shoppingList.length} item${shoppingList.length > 1 ? 's' : ''} from your list?`)) return;
-  shoppingList = [];
-  saveList();
-  renderPlanList();
-  showToast('List cleared');
+  shoppingList = []; saveList(); renderPlanList(); showToast('List cleared');
 }
 
 function renderPlanList() {
   const container = document.getElementById('plan-list-container');
-  const checked = shoppingList.filter(i=>i.checked).length;
-  const estTotal = shoppingList.reduce((s,i)=>s+(i.lastPrice||0),0);
-  const total = shoppingList.length;
-  // Show trash button only when there are items
-  const clearBtn = document.getElementById('plan-clear-btn');
+  const checked   = shoppingList.filter(i=>i.checked).length;
+  const estTotal  = shoppingList.reduce((s,i)=>s+(i.lastPrice||0),0);
+  const total     = shoppingList.length;
+  const clearBtn  = document.getElementById('plan-clear-btn');
   if (clearBtn) clearBtn.style.display = total > 0 ? 'flex' : 'none';
   document.getElementById('plan-progress-fill').style.width = total ? Math.round((checked/total)*100)+'%' : '0%';
   document.getElementById('plan-checked-lbl').innerHTML = `<strong>${checked}</strong> of ${total} checked`;
-  document.getElementById('plan-est-total').innerHTML = `Est. <strong>$${estTotal.toFixed(2)}</strong>`;
-    const inStoreCount = shoppingList.filter(i => i.addedInStore).length;
+  document.getElementById('plan-est-total').innerHTML   = `Est. <strong>$${estTotal.toFixed(2)}</strong>`;
+  const inStoreCount = shoppingList.filter(i => i.addedInStore).length;
   const planSub = document.getElementById('plan-subtitle');
   if (planSub) planSub.textContent = inStoreCount ? inStoreCount + ' added in-store · plan these next time' : 'Your shopping list';
-  const uncheckedItems = shoppingList.filter(i=>!i.checked);
-  const checkedItems = shoppingList.filter(i=>i.checked);
+  const unchecked = shoppingList.filter(i=>!i.checked);
+  const checked2  = shoppingList.filter(i=>i.checked);
   const byCategory = {};
-  uncheckedItems.forEach(item=>{ if(!byCategory[item.category])byCategory[item.category]=[]; byCategory[item.category].push(item); });
+  unchecked.forEach(item=>{ if(!byCategory[item.category])byCategory[item.category]=[]; byCategory[item.category].push(item); });
   let html = '';
   Object.entries(byCategory).forEach(([cat,items])=>{
     html += `<div class="category-header"><div class="category-dot" style="background:${CATEGORY_COLORS[cat]||'#888780'}"></div><div class="category-name">${cat}</div></div>`;
     items.forEach(item=>{ html += renderListItem(item); });
   });
-  if(checkedItems.length>0){
+  if(checked2.length>0){
     html += `<div class="category-header"><div class="category-name">✓ In cart</div></div>`;
-    checkedItems.forEach(item=>{ html += renderListItem(item); });
+    checked2.forEach(item=>{ html += renderListItem(item); });
   }
   container.innerHTML = html;
   attachSwipeListeners();
 }
 
-// ── BUG FIX: salePill was missing from renderListItem — caused ReferenceError on every render ──
 function renderListItem(item) {
-  const salePill = item.onSale ? `<span class="pill pill-teal" style="padding:1px 7px;font-size:10px;">Sale</span>` : '';
+  const salePill    = item.onSale       ? `<span class="pill pill-teal" style="padding:1px 7px;font-size:10px;">Sale</span>` : '';
   const inStorePill = item.addedInStore ? `<span class="pill pill-instore">In-store</span>` : '';
   const price = item.lastPrice ? `$${item.lastPrice.toFixed(2)}` : '–';
   return `<div class="swipe-wrap" id="swipe-wrap-${item.id}">
-    <div class="swipe-action-delete" id="swipe-del-${item.id}" onclick="deleteItem(${item.id})">Delete</div>
+    <div class="swipe-action-edit"   id="swipe-edit-${item.id}" onclick="openEditItem(${item.id})">Edit</div>
+    <div class="swipe-action-delete" id="swipe-del-${item.id}"  onclick="deleteItem(${item.id})">Delete</div>
     <div class="list-item ${item.checked?'checked':''}" id="swipe-item-${item.id}" onclick="handleListItemTap(event,${item.id})" data-id="${item.id}">
       <div class="check-circle ${item.checked?'done':''}"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
       <div class="item-info">
@@ -1011,52 +969,31 @@ function renderListItem(item) {
     </div>
   </div>`;
 }
-function quickAddItem() {
-  const input = document.getElementById('quick-add-input');
-  const name = (input.value || '').trim();
-  if (!name) { input.focus(); return; }
-  const pantryMatch = pantryItems.find(p => p.name.toLowerCase() === name.toLowerCase());
-  const lastEntry = pantryMatch && pantryMatch.priceHistory && pantryMatch.priceHistory.length
-    ? pantryMatch.priceHistory[pantryMatch.priceHistory.length - 1] : null;
-  const defaultStore = household.stores[0] || 'Other';
-  shoppingList.push({
-    id: Date.now() + Math.random(),
-    name,
-    category: (pantryMatch && pantryMatch.category) || 'Other',
-    lastPrice: lastEntry ? lastEntry.price : null,
-    store: lastEntry ? lastEntry.store : defaultStore,
-    onSale: false,
-    checked: false,
-    qty: 1,
-    addedInStore: true
-  });
-  saveList();
-  input.value = '';
-  renderPlanList();
-  showToast(name + ' added · in-store');
-  setTimeout(() => { const el = document.getElementById('quick-add-input'); if (el) el.focus(); }, 30);
-}
 
 function handleListItemTap(e,id) { const el=document.getElementById('swipe-item-'+id); if(el&&Math.abs(el._swipeX||0)>5)return; toggleItem(id); }
 function toggleItem(id) { const item=shoppingList.find(i=>i.id===id); if(item){item.checked=!item.checked;saveList();renderPlanList();} }
 function saveList() { localStorage.setItem('pantry_list',JSON.stringify(shoppingList)); }
 
-// ── Swipe gestures — YNAB-style ──
-// One function controls item + button together so they're always in sync
-function setSwipePos(el, del, x, animate) {
-  const SPRING = 'cubic-bezier(0.34, 1.3, 0.64, 1)'; // slight overshoot spring
-  const EASE   = 'cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+// ════════════════════════════════════════════════════
+// SWIPE — bidirectional (right=edit, left=delete)
+// ════════════════════════════════════════════════════
+function setSwipePos(el, x, animate) {
+  const wrap = el.closest ? el.closest('.swipe-wrap') : null;
+  const del  = wrap ? wrap.querySelector('.swipe-action-delete') : null;
+  const edit = wrap ? wrap.querySelector('.swipe-action-edit')   : null;
+  const SPRING = 'cubic-bezier(0.34, 1.3, 0.64, 1)';
   if (animate) {
-    // Both get the same duration so they move in perfect sync
-    el.style.transition  = 'transform 0.32s ' + SPRING;
-    if (del) del.style.transition = 'width 0.32s ' + SPRING;
+    el.style.transition = 'transform 0.32s ' + SPRING;
+    if (del)  del.style.transition  = 'width 0.32s ' + SPRING;
+    if (edit) edit.style.transition = 'width 0.32s ' + SPRING;
   } else {
-    el.style.transition  = 'none';
-    if (del) del.style.transition = 'none';
+    el.style.transition = 'none';
+    if (del)  del.style.transition  = 'none';
+    if (edit) edit.style.transition = 'none';
   }
-  const revealed = Math.max(0, -x);
-  el.style.transform   = 'translateX(' + x + 'px)';
-  if (del) del.style.width = revealed + 'px';
+  el.style.transform = 'translateX(' + x + 'px)';
+  if (del)  del.style.width  = Math.max(0, -x) + 'px';
+  if (edit) edit.style.width = Math.max(0, x)  + 'px';
   el._swipeX = x;
 }
 
@@ -1065,12 +1002,10 @@ function ensureSwipeCloseListener() {
   if (_swipeCloseListenerAdded) return;
   _swipeCloseListenerAdded = true;
   document.addEventListener('touchstart', e => {
-    document.querySelectorAll('.swipe-wrap .list-item').forEach(el => {
+    document.querySelectorAll('.swipe-wrap .list-item, .swipe-wrap .swipe-row').forEach(el => {
       if (el._swipeX && Math.abs(el._swipeX) > 5) {
         const wrap = el.closest('.swipe-wrap');
-        if (wrap && !wrap.contains(e.target)) {
-          setSwipePos(el, wrap.querySelector('.swipe-action-delete'), 0, true);
-        }
+        if (wrap && !wrap.contains(e.target)) setSwipePos(el, 0, true);
       }
     });
   }, { passive: true });
@@ -1079,89 +1014,50 @@ function ensureSwipeCloseListener() {
 function attachSwipeListeners() {
   ensureSwipeCloseListener();
   document.querySelectorAll('.swipe-wrap').forEach(wrap => {
-    const el = wrap.querySelector('.list-item');
+    const el = wrap.querySelector('.list-item, .swipe-row');
     if (!el || el._swipeAttached) return;
     el._swipeAttached = true;
     el._swipeX = 0;
-
-    let startX = 0, startY = 0, gestureBase = 0;
-    let lastX = 0, lastT = 0, vel = 0;
-    let active = false, dir = null;
-
-    const SNAP_PX         = 88;
-    const SNAP_THRESHOLD  = 28;
-    const DELETE_THRESHOLD = Math.round(window.innerWidth * 0.52);
-
+    let startX=0, startY=0, gestureBase=0, lastX=0, lastT=0, vel=0, active=false, dir=null;
+    const SNAP_PX=88, SNAP_THRESHOLD=28, DELETE_THRESHOLD=Math.round(window.innerWidth*0.52), EDIT_MAX=100;
     el.addEventListener('touchstart', e => {
-      const t = e.touches[0];
-      startX = lastX = t.clientX;
-      startY = t.clientY;
-      lastT  = Date.now();
-      vel    = 0; active = false; dir = null;
-      gestureBase = el._swipeX || 0;
-      // Kill any active transition immediately
-      const del = wrap.querySelector('.swipe-action-delete');
-      setSwipePos(el, del, gestureBase, false);
+      const t=e.touches[0]; startX=lastX=t.clientX; startY=t.clientY; lastT=Date.now();
+      vel=0; active=false; dir=null; gestureBase=el._swipeX||0;
+      setSwipePos(el, gestureBase, false);
     }, { passive: true });
-
     el.addEventListener('touchmove', e => {
-      const t  = e.touches[0];
-      const cx = t.clientX, cy = t.clientY;
-      const dx = cx - startX;
-      const dy = cy - startY;
-
-      if (!dir && (Math.abs(dx) > 4 || Math.abs(dy) > 4)) {
-        dir = Math.abs(dx) > Math.abs(dy) ? 'h' : 'v';
-      }
-      if (dir !== 'h') return;
-      active = true;
-
-      const now = Date.now();
-      if (now > lastT) vel = (cx - lastX) / (now - lastT);
-      lastX = cx; lastT = now;
-
-      // gestureBase is locked at touchstart; dx is cumulative from startX — no double-counting
-      const raw    = gestureBase + dx;
-      const target = Math.min(0, Math.max(-(DELETE_THRESHOLD + 60), raw));
-      const del    = wrap.querySelector('.swipe-action-delete');
-      setSwipePos(el, del, target, false); // NO animation during drag — tracks finger exactly
+      const t=e.touches[0]; const cx=t.clientX,cy=t.clientY; const dx=cx-startX,dy=cy-startY;
+      if (!dir && (Math.abs(dx)>4||Math.abs(dy)>4)) dir=Math.abs(dx)>Math.abs(dy)?'h':'v';
+      if (dir!=='h') return;
+      active=true;
+      const now=Date.now(); if(now>lastT) vel=(cx-lastX)/(now-lastT); lastX=cx; lastT=now;
+      const raw=gestureBase+dx;
+      const target=Math.max(-(DELETE_THRESHOLD+60), Math.min(EDIT_MAX, raw));
+      setSwipePos(el, target, false);
     }, { passive: true });
-
     el.addEventListener('touchend', () => {
-      if (!active) return;
-      active = false;
-      const x   = el._swipeX || 0;
-      const id  = parseInt(el.dataset.id, 10);
-      const del = wrap.querySelector('.swipe-action-delete');
-      const isFlick = vel < -0.45;
-
-      if (x < -DELETE_THRESHOLD || isFlick) {
-        // Full swipe / fast flick — fly off left, collapse row, delete
-        el.style.transition = 'transform 0.15s ease-in';
-        if (del) del.style.transition = 'none';
-        el.style.transform = 'translateX(-110vw)';
-        el._swipeX = -9999;
-        setTimeout(() => {
-          const h = wrap.offsetHeight;
-          wrap.style.height = h + 'px';
-          wrap.style.overflow = 'hidden';
-          wrap.style.transition = 'height 0.22s ease, opacity 0.16s ease';
-          requestAnimationFrame(() => { wrap.style.height = '0'; wrap.style.opacity = '0'; });
-          setTimeout(() => { shoppingList = shoppingList.filter(i => i.id !== id); saveList(); renderPlanList(); showToast('Item deleted'); }, 230);
-        }, 140);
-
-      } else if (x < -SNAP_THRESHOLD) {
-        // Snap open — spring into reveal position
-        setSwipePos(el, del, -SNAP_PX, true);
-
+      if (!active) return; active=false;
+      const x=el._swipeX||0, isFlick=vel<-0.45, isRFlick=vel>0.45;
+      if (x<-DELETE_THRESHOLD||isFlick) {
+        el.style.transition='transform 0.15s ease-in'; el.style.transform='translateX(-110vw)'; el._swipeX=-9999;
+        setTimeout(()=>{
+          const h=wrap.offsetHeight; wrap.style.height=h+'px'; wrap.style.overflow='hidden';
+          wrap.style.transition='height 0.22s ease, opacity 0.16s ease';
+          requestAnimationFrame(()=>{ wrap.style.height='0'; wrap.style.opacity='0'; });
+          setTimeout(()=>{ const delBtn=wrap.querySelector('.swipe-action-delete'); if(delBtn)delBtn.click(); },230);
+        },140);
+      } else if (x>SNAP_THRESHOLD||isRFlick) {
+        setSwipePos(el, SNAP_PX, true);
+      } else if (x<-SNAP_THRESHOLD) {
+        setSwipePos(el, -SNAP_PX, true);
       } else {
-        // Snap back — spring return
-        setSwipePos(el, del, 0, true);
+        setSwipePos(el, 0, true);
       }
-      vel = 0;
+      vel=0;
     }, { passive: true });
   });
 }
+
 function deleteItem(id) {
   const el=document.getElementById('swipe-item-'+id); if(el){el.style.transform='translateX(0)';el._swipeX=0;}
   shoppingList=shoppingList.filter(i=>i.id!==id); saveList(); renderPlanList(); showToast('Item removed');
@@ -1174,10 +1070,53 @@ function addItemToList() {
   const category=document.getElementById('new-item-category').value;
   const store=document.getElementById('new-item-store').value;
   const id=Date.now();
-  shoppingList.push({id,name,category,lastPrice:price,store,onSale:false,checked:false,qty:1});
+  shoppingList.push({id,name,category,lastPrice:price,store,onSale:false,checked:false,qty:1,addedInStore:false});
   saveList(); closeModal('add-item-modal');
   document.getElementById('new-item-name').value=''; document.getElementById('new-item-price').value='';
   renderPlanList(); showToast('Added to list');
+}
+
+// ════════════════════════════════════════════════════
+// QUICK-ADD + SHOPPING LIST EDIT
+// ════════════════════════════════════════════════════
+function quickAddItem() {
+  const input = document.getElementById('quick-add-input');
+  const name  = (input.value || '').trim();
+  if (!name) { input.focus(); return; }
+  const pm = pantryItems.find(p => p.name.toLowerCase() === name.toLowerCase());
+  const le = pm && pm.priceHistory && pm.priceHistory.length ? pm.priceHistory[pm.priceHistory.length-1] : null;
+  shoppingList.push({ id: Date.now()+Math.random(), name,
+    category: (pm && pm.category)||'Other', lastPrice: le?le.price:null,
+    store: le?le.store:(household.stores[0]||'Other'), onSale:false, checked:false, qty:1, addedInStore:true });
+  saveList(); input.value=''; renderPlanList();
+  showToast(name+' added · in-store');
+  setTimeout(()=>{ const el=document.getElementById('quick-add-input'); if(el)el.focus(); },30);
+}
+
+let editingItemId = null;
+function openEditItem(id) {
+  const item = shoppingList.find(i => i.id === id); if (!item) return;
+  editingItemId = id;
+  document.getElementById('edit-item-name').value     = item.name;
+  document.getElementById('edit-item-category').value = item.category || 'Other';
+  document.getElementById('edit-item-price').value    = item.lastPrice != null ? item.lastPrice.toFixed(2) : '';
+  document.getElementById('edit-item-store').value    = item.store || (household.stores[0]||'Other');
+  document.getElementById('edit-item-sale').value     = item.onSale ? 'yes' : 'no';
+  document.getElementById('edit-item-modal').classList.add('open');
+  setTimeout(()=>document.getElementById('edit-item-name').focus(), 80);
+}
+function saveEditItem() {
+  if (!editingItemId) return;
+  const item = shoppingList.find(i => i.id === editingItemId); if (!item) return;
+  const newName = document.getElementById('edit-item-name').value.trim();
+  if (!newName) { showToast('Enter an item name'); return; }
+  item.name      = newName;
+  item.category  = document.getElementById('edit-item-category').value;
+  item.lastPrice = parseFloat(document.getElementById('edit-item-price').value) || null;
+  item.store     = document.getElementById('edit-item-store').value;
+  item.onSale    = document.getElementById('edit-item-sale').value === 'yes';
+  saveList(); closeModal('edit-item-modal'); editingItemId=null; renderPlanList();
+  showToast('Item updated');
 }
 
 // ════════════════════════════════════════════════════
@@ -1205,11 +1144,11 @@ function renderPerspective() {
   const bml=document.getElementById('persp-budget-month-label');
   const tagWord=cmp===0?'This month':cmp>0?MONTH_NAMES[m-1]+' (upcoming)':MONTH_NAMES[m-1];
   bml.textContent=(isSet?'':'Default · ')+tagWord+' budget';
-  let pm=m-1,py=y; if(pm<1){pm=12;py--;}
-  const prevKey=`${py}-${String(pm).padStart(2,'0')}`;
+  let pm2=m-1,py=y; if(pm2<1){pm2=12;py--;}
+  const prevKey=`${py}-${String(pm2).padStart(2,'0')}`;
   const prevTotal=(haulsData[prevKey]||[]).reduce((s,h)=>s+h.totalAmount,0);
   const vsEl=document.getElementById('persp-vs-last');
-  if(prevTotal>0&&hauls.length>0){const diff=total-prevTotal;vsEl.textContent=(diff<=0?'↓ $':'↑ $')+Math.abs(diff).toFixed(0)+' vs '+MONTH_NAMES[pm-1].substring(0,3);vsEl.className='persp-stat-trend '+(diff<=0?'trend-down':'trend-up');}
+  if(prevTotal>0&&hauls.length>0){const diff=total-prevTotal;vsEl.textContent=(diff<=0?'↓ $':'↑ $')+Math.abs(diff).toFixed(0)+' vs '+MONTH_NAMES[pm2-1].substring(0,3);vsEl.className='persp-stat-trend '+(diff<=0?'trend-down':'trend-up');}
   else{vsEl.textContent=hauls.length?'No prior month':'No spending yet';vsEl.className='persp-stat-trend';vsEl.style.color='var(--text-tertiary)';}
   const daysEl=document.getElementById('persp-days-left');
   const dl=daysLeftInMonth(perspMonth);
@@ -1218,53 +1157,57 @@ function renderPerspective() {
   else daysEl.textContent='Closed month';
   daysEl.className='persp-stat-trend'; daysEl.style.color='var(--text-tertiary)';
   const container=document.getElementById('persp-hauls-container');
-  if(hauls.length===0){const upcoming=cmp>0;container.innerHTML=`<div class="empty-state"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18"/></svg><h3>${upcoming?'Planning '+MONTH_NAMES[m-1]:'No hauls yet'}</h3><p>${upcoming?'Get a jump on next month.':'Start a new haul to track your shopping trips this month.'}</p></div>`;return;}
+  if(hauls.length===0){const upcoming=cmp>0;container.innerHTML=`<div class="empty-state"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18"/></svg><h3>${upcoming?'Planning '+MONTH_NAMES[m-1]:'No hauls yet'}</h3><p>${upcoming?'Get a jump on next month.':'Start a new haul to track your shopping trips.'}</p></div>`;return;}
   let html='';
   hauls.forEach((haul,idx)=>{
     let tripsHtml='';
     haul.trips.forEach(trip=>{const sc=(STORES[trip.storeKey]||STORES.other).color;tripsHtml+=`<div class="haul-trip-row"><div class="trip-store-dot" style="background:${sc}"></div><div class="trip-info"><div class="trip-store">${trip.store}</div><div class="trip-date">${formatDate(trip.date)} · ${trip.items} items</div></div><div class="trip-amount">$${trip.amount.toFixed(2)}</div></div>`;});
     const storeNames=haul.trips.map(t=>t.store).join(' + ');
-
-    // Build items from stored data, or reconstruct from pantry price history
     let displayItems = haul.items && haul.items.length > 0 ? haul.items : null;
-
     if (!displayItems && haul.trips.length > 0) {
       try {
-        const haulDates = new Set(haul.trips.map(t => t.date));
-        const haulStores = new Set(haul.trips.map(t => t.store));
-        const found = [];
-        pantryItems.forEach(p => {
-          (p.priceHistory||[]).forEach(entry => {
-            if (haulDates.has(entry.date) && haulStores.has(entry.store)) {
-              found.push({ name: p.name, price: entry.price, category: p.category, onSale: !!entry.onSale });
-            }
-          });
-        });
-        if (found.length > 0) displayItems = found;
+        const haulDates=new Set(haul.trips.map(t=>t.date)), haulStores=new Set(haul.trips.map(t=>t.store)), found=[];
+        pantryItems.forEach(p=>{(p.priceHistory||[]).forEach(entry=>{if(haulDates.has(entry.date)&&haulStores.has(entry.store))found.push({name:p.name,price:entry.price,category:p.category,onSale:!!entry.onSale});});});
+        if(found.length>0)displayItems=found;
       } catch(e) {}
     }
-
     const hasItems = displayItems && displayItems.length > 0;
-
-        let itemsHtml = '';
+    const editable = !!(haul.items && haul.items.length > 0);
+    let itemsHtml = '';
     if (hasItems) {
-      displayItems.forEach(it => {
-        const cc = CATEGORY_COLORS[it.category] || '#888780';
-        const saleTag = it.onSale ? `<span style="font-size:10px;color:var(--amber);font-weight:700;margin-left:4px;">SALE</span>` : '';
-        itemsHtml += `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 16px;border-bottom:0.5px solid var(--border);">` +
-          `<div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0;">` +
-          `<div style="width:8px;height:8px;border-radius:50%;background:${cc};flex-shrink:0;"></div>` +
-          `<span style="font-size:13px;">${escapeHtml(it.name)}${saleTag}</span>` +
-          `</div><span style="font-size:13px;font-weight:600;flex-shrink:0;padding-left:10px;">$${Number(it.price).toFixed(2)}</span></div>`;
+      const hSafeId = haul.id.replace(/[^a-zA-Z0-9_-]/g,'_');
+      displayItems.forEach((it,ii)=>{
+        const cc=CATEGORY_COLORS[it.category]||'#888780';
+        const cnt=it.count||1;
+        const lineTotal=(Number(it.price)||0)*cnt;
+        const saleTag=it.onSale?`<span style="font-size:10px;color:var(--amber);font-weight:700;margin-left:4px;">SALE</span>`:'';
+        const countTag=cnt>1?`<span style="font-size:10px;color:var(--text-tertiary);margin-left:4px;">×${cnt}</span>`:'';
+        if (editable) {
+          itemsHtml+=
+            `<div class="swipe-wrap" id="sw-hi-${hSafeId}-${ii}">` +
+            `<div class="swipe-action-edit" onclick="openHaulItemEdit('${haul.id}',${ii})">Edit</div>` +
+            `<div class="swipe-action-delete" onclick="deleteHaulItemAt('${haul.id}',${ii})">Delete</div>` +
+            `<div class="swipe-row" data-id="hi-${hSafeId}-${ii}">` +
+            `<div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0;">` +
+            `<div style="width:8px;height:8px;border-radius:50%;background:${cc};flex-shrink:0;"></div>` +
+            `<span style="font-size:13px;">${escapeHtml(it.name)}${saleTag}${countTag}</span>` +
+            `</div>` +
+            `<span style="font-size:13px;font-weight:600;padding-left:10px;">$${lineTotal.toFixed(2)}</span>` +
+            `</div></div>`;
+        } else {
+          itemsHtml+=
+            `<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 16px;border-bottom:0.5px solid var(--border);">` +
+            `<div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0;">` +
+            `<div style="width:8px;height:8px;border-radius:50%;background:${cc};flex-shrink:0;"></div>` +
+            `<span style="font-size:13px;">${escapeHtml(it.name)}${saleTag}${countTag}</span>` +
+            `</div><span style="font-size:13px;font-weight:600;flex-shrink:0;padding-left:10px;">$${lineTotal.toFixed(2)}</span></div>`;
+        }
       });
-      if (haul.tax) itemsHtml += `<div style="display:flex;justify-content:space-between;padding:7px 16px;border-bottom:0.5px solid var(--border);"><span style="font-size:13px;color:var(--text-tertiary);">Tax</span><span style="font-size:13px;color:var(--text-tertiary);">$${Number(haul.tax).toFixed(2)}</span></div>`;
-      itemsHtml += `<div style="display:flex;justify-content:space-between;padding:9px 16px;"><span style="font-size:13px;font-weight:700;">Total</span><span style="font-size:14px;font-weight:700;">$${haul.totalAmount.toFixed(2)}</span></div>`;
+      if(haul.tax)itemsHtml+=`<div style="display:flex;justify-content:space-between;padding:7px 16px;border-bottom:0.5px solid var(--border);"><span style="font-size:13px;color:var(--text-tertiary);">Tax</span><span style="font-size:13px;color:var(--text-tertiary);">$${Number(haul.tax).toFixed(2)}</span></div>`;
+      itemsHtml+=`<div style="display:flex;justify-content:space-between;padding:9px 16px;"><span style="font-size:13px;font-weight:700;">Total</span><span style="font-size:14px;font-weight:700;">$${haul.totalAmount.toFixed(2)}</span></div>`;
     }
-
-
-    const safeId = haul.id.replace(/[^a-zA-Z0-9_-]/g, '_');
-
-    html += `<div class="haul-group">` +
+    const safeId=haul.id.replace(/[^a-zA-Z0-9_-]/g,'_');
+    html+=`<div class="haul-group">` +
       `<div class="haul-label"><span>Haul ${idx+1} · ${storeNames}</span><span style="cursor:pointer;color:var(--teal);font-weight:600;" onclick="openHaulEditor('${haul.id}')">Edit</span></div>` +
       `<div class="haul-card" id="haul-card-${safeId}">` +
         `<div class="haul-card-header" style="cursor:pointer;" onclick="openHaulEditor('${haul.id}')">` +
@@ -1275,7 +1218,7 @@ function renderPerspective() {
         (hasItems
           ? `<div id="haul-toggle-${safeId}" onclick="toggleHaulItems('${safeId}')" style="display:flex;align-items:center;justify-content:center;gap:6px;padding:10px 16px;border-top:0.5px solid var(--border);cursor:pointer;font-size:12px;font-weight:600;color:var(--teal);-webkit-tap-highlight-color:transparent;">` +
             `<svg id="haul-chevron-${safeId}" viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;transition:transform 0.22s;"><path d="M6 9l6 6 6-6"/></svg>` +
-            `<span id="haul-lbl-${safeId}">Show ${displayItems.length} items</span>` +
+            `<span id="haul-lbl-${safeId}">Show items</span>` +
           `</div>` +
           `<div id="haul-items-${safeId}" style="display:none;">${itemsHtml}</div>`
           : '') +
@@ -1288,12 +1231,12 @@ function toggleHaulItems(safeId) {
   const itemsEl   = document.getElementById('haul-items-'   + safeId);
   const chevronEl = document.getElementById('haul-chevron-' + safeId);
   const lblEl     = document.getElementById('haul-lbl-'     + safeId);
-  const toggleEl  = document.getElementById('haul-toggle-'  + safeId);
   if (!itemsEl) return;
   const isOpen = itemsEl.style.display !== 'none';
   itemsEl.style.display = isOpen ? 'none' : 'block';
   if (chevronEl) chevronEl.style.transform = isOpen ? '' : 'rotate(180deg)';
-  if (lblEl)     lblEl.textContent = isOpen ? 'Show ' + itemsEl.querySelectorAll('[style*="border-bottom"]').length + ' items' : 'Hide items';
+  if (lblEl)     lblEl.textContent = isOpen ? 'Show items' : 'Hide items';
+  if (!isOpen) setTimeout(() => attachSwipeListeners(), 30);
 }
 
 function formatDate(dateStr) { const[y,m,d]=dateStr.split('-').map(Number); return MONTH_NAMES[m-1].substring(0,3)+' '+d; }
@@ -1309,7 +1252,6 @@ function createNewHaul() {
   closeModal('new-haul-modal'); document.getElementById('haul-name').value=''; renderPerspective(); showToast('Haul created!');
 }
 
-// ── Edit / delete hauls ──
 let editingHaul = null;
 function findHaul(id) { return (haulsData[perspMonth]||[]).find(h=>h.id===id)||null; }
 function openHaulEditor(id) {
@@ -1342,6 +1284,91 @@ function deleteHaul() {
   if(haulsData[perspMonth].length===0)delete haulsData[perspMonth];
   localStorage.setItem('pantry_hauls',JSON.stringify(haulsData));
   closeModal('haul-edit-modal'); editingHaul=null; renderPerspective(); renderHome(); showToast('Haul deleted');
+}
+
+// ════════════════════════════════════════════════════
+// HAUL ITEM EDITING
+// ════════════════════════════════════════════════════
+let hieState = null;
+let hieCount = 1;
+function openHaulItemEdit(haulId, itemIdx) {
+  const hauls=haulsData[perspMonth]||[]; const haul=hauls.find(h=>h.id===haulId);
+  if(!haul||!haul.items||haul.items[itemIdx]===undefined)return;
+  const it=haul.items[itemIdx];
+  hieState={haulId,itemIdx,monthKey:perspMonth}; hieCount=it.count||1;
+  document.getElementById('hie-name').value=it.name||'';
+  document.getElementById('hie-price').value=it.price!=null?Number(it.price).toFixed(2):'';
+  document.getElementById('hie-category').value=it.category||'Other';
+  document.getElementById('hie-sale').value=it.onSale?'yes':'no';
+  hieUpdateDisplay();
+  document.getElementById('haul-item-edit-modal').classList.add('open');
+  setTimeout(()=>document.getElementById('hie-name').focus(),80);
+}
+function hieUpdateDisplay() {
+  const price=parseFloat(document.getElementById('hie-price').value)||0;
+  document.getElementById('hie-count-display').textContent=hieCount;
+  document.getElementById('hie-unit-price-lbl').textContent=price.toFixed(2);
+  document.getElementById('hie-line-total-lbl').textContent=(price*hieCount).toFixed(2);
+}
+function hieStep(delta) { hieCount=Math.max(1,hieCount+delta); hieUpdateDisplay(); }
+function saveHaulItemEdit() {
+  if(!hieState)return;
+  const name=document.getElementById('hie-name').value.trim(); if(!name){showToast('Enter an item name');return;}
+  const price=parseFloat(document.getElementById('hie-price').value)||0;
+  const category=document.getElementById('hie-category').value;
+  const onSale=document.getElementById('hie-sale').value==='yes';
+  const hauls=haulsData[hieState.monthKey]||[]; const haul=hauls.find(h=>h.id===hieState.haulId);
+  if(!haul||!haul.items)return;
+  const it=haul.items[hieState.itemIdx];
+  it.name=name; it.price=price; it.count=hieCount; it.category=category; it.onSale=onSale;
+  recomputeHaulTotals(haul);
+  localStorage.setItem('pantry_hauls',JSON.stringify(haulsData));
+  const haulId=hieState.haulId;
+  closeModal('haul-item-edit-modal'); hieState=null;
+  renderPerspective(); renderHome(); _reopenHaul(haulId);
+  showToast('Item updated');
+}
+function deleteHaulItem() {
+  if(!hieState)return;
+  if(!confirm('Remove this item from the haul?'))return;
+  const hauls=haulsData[hieState.monthKey]||[]; const haul=hauls.find(h=>h.id===hieState.haulId);
+  if(!haul||!haul.items)return;
+  haul.items.splice(hieState.itemIdx,1);
+  if(haul.trips&&haul.trips.length===1)haul.trips[0].items=haul.items.length;
+  recomputeHaulTotals(haul);
+  const haulId=hieState.haulId;
+  localStorage.setItem('pantry_hauls',JSON.stringify(haulsData));
+  closeModal('haul-item-edit-modal'); hieState=null;
+  renderPerspective(); renderHome(); _reopenHaul(haulId);
+  showToast('Item removed');
+}
+function deleteHaulItemAt(haulId, itemIdx) {
+  const hauls=haulsData[perspMonth]||[]; const haul=hauls.find(h=>h.id===haulId);
+  if(!haul||!haul.items)return;
+  haul.items.splice(itemIdx,1);
+  if(haul.trips&&haul.trips.length===1)haul.trips[0].items=haul.items.length;
+  recomputeHaulTotals(haul);
+  localStorage.setItem('pantry_hauls',JSON.stringify(haulsData));
+  renderPerspective(); renderHome(); _reopenHaul(haulId);
+  showToast('Item removed');
+}
+function recomputeHaulTotals(haul) {
+  if(!haul.items)return;
+  let total=0;
+  haul.items.forEach(it=>{ total+=(Number(it.price)||0)*(it.count||1); });
+  haul.totalAmount=Math.round((total+(Number(haul.tax)||0))*100)/100;
+  if(haul.trips&&haul.trips.length===1)haul.trips[0].amount=haul.totalAmount;
+}
+function _reopenHaul(haulId) {
+  const safeId=haulId.replace(/[^a-zA-Z0-9_-]/g,'_');
+  setTimeout(()=>{
+    const el=document.getElementById('haul-items-'+safeId);
+    if(el){el.style.display='block'; attachSwipeListeners();}
+    const ch=document.getElementById('haul-chevron-'+safeId);
+    const lb=document.getElementById('haul-lbl-'+safeId);
+    if(ch)ch.style.transform='rotate(180deg)';
+    if(lb)lb.textContent='Hide items';
+  },60);
 }
 
 // ════════════════════════════════════════════════════
@@ -1390,11 +1417,42 @@ function openPantryDetail(id) {
   const rev=[...item.priceHistory].reverse();
   rev.forEach((entry,idx)=>{const prev=rev[idx+1];const delta=prev?entry.price-prev.price:0;const deltaStr=delta!==0?(delta>0?'+$'+delta.toFixed(2):'-$'+Math.abs(delta).toFixed(2)):'';const deltaColor=delta>0?'var(--red)':delta<0?'var(--teal)':'var(--gray-400)';histHtml+=`<div class="price-row"><div><div class="price-date">${formatDate(entry.date)}</div><div class="price-store">${entry.store}</div></div><div><div class="price-val">$${entry.price.toFixed(2)}</div>${deltaStr?`<div class="price-delta" style="color:${deltaColor}">${deltaStr}</div>`:''}</div></div>`;});
   document.getElementById('detail-price-history').innerHTML=histHtml;
-  document.getElementById('detail-add-to-list-btn').onclick=()=>{const alreadyOn=shoppingList.find(s=>s.name.toLowerCase()===item.name.toLowerCase());if(alreadyOn){showToast('Already on your list!');return;}shoppingList.push({id:Date.now(),name:item.name,category:item.category,lastPrice:lastEntry?lastEntry.price:null,store:lastEntry?lastEntry.store:'Costco',onSale:false,checked:false,qty:1});saveList();closeDetailModal();showToast(item.name+' added to list');};
+  document.getElementById('detail-add-to-list-btn').onclick=()=>{
+    const alreadyOn=shoppingList.find(s=>s.name.toLowerCase()===item.name.toLowerCase());
+    if(alreadyOn){showToast('Already on your list!');return;}
+    shoppingList.push({id:Date.now(),name:item.name,category:item.category,lastPrice:lastEntry?lastEntry.price:null,store:lastEntry?lastEntry.store:'Costco',onSale:false,checked:false,qty:1});
+    saveList(); closeDetailModal(); showToast(item.name+' added to list');
+  };
+  document.getElementById('detail-edit-name').value=item.name;
+  document.getElementById('detail-edit-category').value=item.category||'Other';
+  document.getElementById('pantry-detail-modal').dataset.editId=String(item.id);
   document.getElementById('pantry-detail-modal').classList.add('open');
 }
 function closeDetailModal() { document.getElementById('pantry-detail-modal').classList.remove('open'); }
 function openAddPantryItem() { openAddItem(); }
+
+// ════════════════════════════════════════════════════
+// PANTRY ITEM EDITING
+// ════════════════════════════════════════════════════
+function savePantryItemEdit() {
+  const modal=document.getElementById('pantry-detail-modal');
+  const id=Number(modal.dataset.editId);
+  const item=pantryItems.find(p=>p.id===id); if(!item)return;
+  const newName=document.getElementById('detail-edit-name').value.trim();
+  if(!newName){showToast('Enter a name');return;}
+  item.name=newName; item.category=document.getElementById('detail-edit-category').value;
+  localStorage.setItem('pantry_items',JSON.stringify(pantryItems));
+  closeDetailModal(); renderPantry(); showToast('Item updated');
+}
+function deletePantryItem() {
+  const modal=document.getElementById('pantry-detail-modal');
+  const id=Number(modal.dataset.editId);
+  const item=pantryItems.find(p=>p.id===id); if(!item)return;
+  if(!confirm('Remove "'+item.name+'" from pantry? Deletes all price history.'))return;
+  pantryItems=pantryItems.filter(p=>p.id!==id);
+  localStorage.setItem('pantry_items',JSON.stringify(pantryItems));
+  closeDetailModal(); renderPantry(); showToast(item.name+' removed from pantry');
+}
 
 // ════════════════════════════════════════════════════
 // AI NUDGES
@@ -1416,7 +1474,8 @@ async function generateNudges() {
     const text=data.content.map(c=>c.text||'').join('');
     aiNudges=JSON.parse(text.replace(/```json|```/g,'').trim());
     renderNudges(aiNudges);
-    document.getElementById('ai-badge').textContent=aiNudges.filter(n=>n.urgent).length||aiNudges.length;
+    const badge=document.getElementById('ai-badge');
+    if(badge){badge.textContent=aiNudges.filter(n=>n.urgent).length||aiNudges.length;badge.style.display='flex';}
   } catch(e){container.innerHTML=`<div class="ai-loading">Could not load suggestions. Check your connection and try again.</div>`;}
 }
 const TYPE_COLORS={protein:{icon:'#E24B4A',iconBg:'#FCEBEB'},produce:{icon:'#1D9E75',iconBg:'#E1F5EE'},staple:{icon:'#BA7517',iconBg:'#FAEEDA'},deal:{icon:'#1D9E75',iconBg:'#E1F5EE'},budget:{icon:'#378ADD',iconBg:'#E6F1FB'}};
@@ -1440,1105 +1499,743 @@ function sendAiMessage(msg) { generateNudges(); }
 // ════════════════════════════════════════════════════
 // LIST IMPORT FROM PHOTO
 // ════════════════════════════════════════════════════
-let importedItems = []; // [{name, category, selected}]
-
+let importedItems = [];
 function openListImport() {
-  if (!hasApiKey()) {
-    alert('Add your Anthropic API key in Settings first.');
-    return;
-  }
-  document.getElementById('list-import-processing').style.display = 'none';
-  document.getElementById('list-import-label').style.display = 'flex';
-  document.getElementById('list-import-file').value = '';
+  if(!hasApiKey()){alert('Add your Anthropic API key in Settings first.');return;}
+  document.getElementById('list-import-processing').style.display='none';
+  document.getElementById('list-import-label').style.display='flex';
+  document.getElementById('list-import-file').value='';
   document.getElementById('list-import-modal').classList.add('open');
 }
-
 async function handleListImport(input) {
-  if (!input.files || input.files.length === 0) return;
-  const files = Array.from(input.files);
-  document.getElementById('list-import-label').style.display = 'none';
-  document.getElementById('list-import-processing').style.display = 'block';
-  document.getElementById('list-import-processing').innerHTML =
-    `<div class="ai-spinner" style="margin:0 auto 12px;"></div><div style="font-size:14px;color:var(--text-secondary);">Reading ${files.length} image${files.length > 1 ? 's' : ''}...</div>`;
+  if(!input.files||!input.files.length)return;
+  const files=Array.from(input.files);
+  document.getElementById('list-import-label').style.display='none';
+  document.getElementById('list-import-processing').style.display='block';
+  document.getElementById('list-import-processing').innerHTML=`<div class="ai-spinner" style="margin:0 auto 12px;"></div><div style="font-size:14px;color:var(--text-secondary);">Reading ${files.length} image${files.length>1?'s':''}...</div>`;
   try {
-    // Process all images in parallel
-    const results = await Promise.all(files.map(async (file, i) => {
-      const { base64, mediaType } = await fileToBase64(file);
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: apiHeaders(),
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-5-20250929',
-          max_tokens: 1500,
-          messages: [{
-            role: 'user',
-            content: [
-              { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64 } },
-              { type: 'text', text: `This is a screenshot of a shopping list (could be from Alexa, a grocery app, Notes, or anywhere). Extract every item on the list.
-
-Return ONLY a valid JSON array, no markdown, no explanation:
-[{"name":"Organic Milk","category":"Dairy"},{"name":"Chicken Breast","category":"Protein"}]
-
-Categories: Protein, Produce, Dairy, Pantry Staples, Snacks, Beverages, Frozen, Other
-
-If you cannot read any items, return: []` }
-            ]
-          }]
-        })
-      });
-      const data = await res.json();
-      if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
-      const text = data.content.map(c => c.text || '').join('');
-      return extractJsonArray(text) || [];
+    const results=await Promise.all(files.map(async(file)=>{
+      const {base64,mediaType}=await fileToBase64(file);
+      const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:apiHeaders(),body:JSON.stringify({model:'claude-sonnet-4-5-20250929',max_tokens:1500,messages:[{role:'user',content:[{type:'image',source:{type:'base64',media_type:mediaType,data:base64}},{type:'text',text:`Extract every item from this shopping list screenshot.\nReturn ONLY a valid JSON array:\n[{"name":"Organic Milk","category":"Dairy"}]\nCategories: Protein, Produce, Dairy, Pantry Staples, Snacks, Beverages, Frozen, Other\nIf no items visible, return: []`}]}]})});
+      const data=await res.json();
+      if(data.error)throw new Error(data.error.message||JSON.stringify(data.error));
+      const text=data.content.map(c=>c.text||'').join('');
+      return extractJsonArray(text)||[];
     }));
-
-    // Merge all results, deduplicate by name (case-insensitive)
-    const seen = new Set();
-    const allItems = results.flat()
-      .filter(it => it && typeof it.name === 'string' && it.name.trim())
-      .filter(it => {
-        const key = it.name.trim().toLowerCase();
-        if (seen.has(key)) return false;
-        seen.add(key); return true;
-      })
-      .map(it => ({ name: it.name.trim(), category: it.category || 'Other', selected: true }));
-
-    if (allItems.length === 0) throw new Error("Couldn't read any items. Try clearer screenshots.");
-
-    importedItems = allItems;
-    closeModal('list-import-modal');
-    openListConfirm();
-  } catch(e) {
-    document.getElementById('list-import-processing').style.display = 'none';
-    document.getElementById('list-import-label').style.display = 'flex';
-    showToast(e.message || 'Could not read list. Try again.');
+    const seen=new Set();
+    const allItems=results.flat().filter(it=>it&&typeof it.name==='string'&&it.name.trim()).filter(it=>{const key=it.name.trim().toLowerCase();if(seen.has(key))return false;seen.add(key);return true;}).map(it=>({name:it.name.trim(),category:it.category||'Other',selected:true}));
+    if(allItems.length===0)throw new Error("Couldn't read any items. Try clearer screenshots.");
+    importedItems=allItems; closeModal('list-import-modal'); openListConfirm();
+  } catch(e){
+    document.getElementById('list-import-processing').style.display='none';
+    document.getElementById('list-import-label').style.display='flex';
+    showToast(e.message||'Could not read list. Try again.');
   }
-  input.value = '';
+  input.value='';
 }
-
 function openListConfirm() {
-  const alreadyOnList = new Set(shoppingList.map(i => i.name.toLowerCase()));
-  importedItems.forEach(it => {
-    if (alreadyOnList.has(it.name.toLowerCase())) it.selected = false;
-  });
-  renderListConfirm();
-  document.getElementById('list-confirm-modal').classList.add('open');
+  const alreadyOnList=new Set(shoppingList.map(i=>i.name.toLowerCase()));
+  importedItems.forEach(it=>{ if(alreadyOnList.has(it.name.toLowerCase()))it.selected=false; });
+  renderListConfirm(); document.getElementById('list-confirm-modal').classList.add('open');
 }
-
 function renderListConfirm() {
-  const selected = importedItems.filter(i => i.selected).length;
-  const alreadyOnList = new Set(shoppingList.map(i => i.name.toLowerCase()));
-  document.getElementById('list-confirm-sub').textContent =
-    `${selected} of ${importedItems.length} selected · tap to toggle`;
-  document.getElementById('list-confirm-btn').textContent =
-    `Add ${selected} Item${selected !== 1 ? 's' : ''} to List`;
-
-  const html = importedItems.map((it, idx) => {
-    const already = alreadyOnList.has(it.name.toLowerCase());
-    const color = CATEGORY_COLORS[it.category] || '#888780';
-    return `<div onclick="toggleImportItem(${idx})" style="display:flex;align-items:center;gap:12px;padding:12px 20px;border-bottom:0.5px solid var(--border);cursor:pointer;background:${it.selected ? 'var(--white)' : 'var(--gray-50)'};opacity:${it.selected ? 1 : 0.5};">
-      <div style="width:22px;height:22px;border-radius:50%;border:2px solid ${it.selected ? 'var(--teal)' : 'var(--gray-200)'};background:${it.selected ? 'var(--teal)' : 'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-        ${it.selected ? '<svg viewBox="0 0 24 24" style="width:12px;height:12px;stroke:white;fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;"><polyline points="20 6 9 17 4 12"/></svg>' : ''}
-      </div>
-      <div style="flex:1;">
-        <div style="font-size:14px;font-weight:500;">${escapeHtml(it.name)}</div>
-        <div style="font-size:11px;color:var(--text-tertiary);margin-top:2px;display:flex;gap:6px;align-items:center;">
-          <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${color};"></span>${it.category}${already ? ' · <span style="color:var(--amber);">already on list</span>' : ''}
-        </div>
-      </div>
-    </div>`;
+  const selected=importedItems.filter(i=>i.selected).length;
+  const alreadyOnList=new Set(shoppingList.map(i=>i.name.toLowerCase()));
+  document.getElementById('list-confirm-sub').textContent=`${selected} of ${importedItems.length} selected · tap to toggle`;
+  document.getElementById('list-confirm-btn').textContent=`Add ${selected} Item${selected!==1?'s':''} to List`;
+  const html=importedItems.map((it,idx)=>{
+    const already=alreadyOnList.has(it.name.toLowerCase());
+    const color=CATEGORY_COLORS[it.category]||'#888780';
+    return `<div onclick="toggleImportItem(${idx})" style="display:flex;align-items:center;gap:12px;padding:12px 20px;border-bottom:0.5px solid var(--border);cursor:pointer;background:${it.selected?'var(--white)':'var(--gray-50)'};opacity:${it.selected?1:0.5};">
+      <div style="width:22px;height:22px;border-radius:50%;border:2px solid ${it.selected?'var(--teal)':'var(--gray-200)'};background:${it.selected?'var(--teal)':'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0;">${it.selected?'<svg viewBox="0 0 24 24" style="width:12px;height:12px;stroke:white;fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;"><polyline points="20 6 9 17 4 12"/></svg>':''}</div>
+      <div style="flex:1;"><div style="font-size:14px;font-weight:500;">${escapeHtml(it.name)}</div><div style="font-size:11px;color:var(--text-tertiary);margin-top:2px;display:flex;gap:6px;align-items:center;"><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${color};"></span>${it.category}${already?' · <span style="color:var(--amber);">already on list</span>':''}</div></div></div>`;
   }).join('');
-  document.getElementById('list-confirm-items').innerHTML = html;
+  document.getElementById('list-confirm-items').innerHTML=html;
 }
-
-function toggleImportItem(idx) {
-  importedItems[idx].selected = !importedItems[idx].selected;
-  renderListConfirm();
-}
-
+function toggleImportItem(idx) { importedItems[idx].selected=!importedItems[idx].selected; renderListConfirm(); }
 function confirmListImport() {
-  const toAdd = importedItems.filter(i => i.selected);
-  if (toAdd.length === 0) { showToast('No items selected'); return; }
-  const defaultStore = household.stores[0] || 'Other';
-  toAdd.forEach(it => {
-    // Don't add duplicates
-    if (shoppingList.find(s => s.name.toLowerCase() === it.name.toLowerCase())) return;
-    // Check pantry for price history
-    const pantryMatch = pantryItems.find(p => p.name.toLowerCase() === it.name.toLowerCase());
-    const lastEntry = pantryMatch?.priceHistory?.[pantryMatch.priceHistory.length - 1];
-    shoppingList.push({
-      id: Date.now() + Math.random(),
-      name: it.name,
-      category: it.category,
-      lastPrice: lastEntry?.price || null,
-      store: lastEntry?.store || defaultStore,
-      onSale: false,
-      checked: false,
-      qty: 1
-    });
+  const toAdd=importedItems.filter(i=>i.selected);
+  if(toAdd.length===0){showToast('No items selected');return;}
+  const defaultStore=household.stores[0]||'Other';
+  toAdd.forEach(it=>{
+    if(shoppingList.find(s=>s.name.toLowerCase()===it.name.toLowerCase()))return;
+    const pm=pantryItems.find(p=>p.name.toLowerCase()===it.name.toLowerCase());
+    const le=pm?.priceHistory?.[pm.priceHistory.length-1];
+    shoppingList.push({id:Date.now()+Math.random(),name:it.name,category:it.category,lastPrice:le?.price||null,store:le?.store||defaultStore,onSale:false,checked:false,qty:1});
   });
-  saveList();
-  closeModal('list-confirm-modal');
-  switchTab('plan');
-  showToast(`${toAdd.length} item${toAdd.length !== 1 ? 's' : ''} added to your list`);
-  importedItems = [];
+  saveList(); closeModal('list-confirm-modal'); switchTab('plan');
+  showToast(`${toAdd.length} item${toAdd.length!==1?'s':''} added to your list`);
+  importedItems=[];
 }
-
 
 // ════════════════════════════════════════════════════
 // RECEIPT
 // ════════════════════════════════════════════════════
-let receiptMonthTarget = 'current';
-function receiptTargetKey() { const n=new Date(); let y=n.getFullYear(),m=n.getMonth()+1; if(receiptMonthTarget==='next'){m+=1;if(m>12){m=1;y+=1;}} return `${y}-${String(m).padStart(2,'0')}`; }
-function setReceiptMonth(target) { receiptMonthTarget=target; document.getElementById('seg-current').classList.toggle('active',target==='current'); document.getElementById('seg-next').classList.toggle('active',target==='next'); }
-function showReceiptButtons(visible) {
-  const camera = document.getElementById('receipt-camera-label');
-  const library = document.getElementById('receipt-library-label');
-  if (camera)  camera.style.display  = visible ? 'flex' : 'none';
-  if (library) library.style.display = visible ? 'flex' : 'none';
-}
-function openReceiptModal() {
-  openFallbackReceiptModal();
-}
-
-function openFallbackReceiptModal() {
+let receiptMonthTarget='current';
+function receiptTargetKey(){const n=new Date();let y=n.getFullYear(),m=n.getMonth()+1;if(receiptMonthTarget==='next'){m+=1;if(m>12){m=1;y+=1;}}return `${y}-${String(m).padStart(2,'0')}`;}
+function setReceiptMonth(target){receiptMonthTarget=target;document.getElementById('seg-current').classList.toggle('active',target==='current');document.getElementById('seg-next').classList.toggle('active',target==='next');}
+function showReceiptButtons(visible){const camera=document.getElementById('receipt-camera-label');const library=document.getElementById('receipt-library-label');if(camera)camera.style.display=visible?'flex':'none';if(library)library.style.display=visible?'flex':'none';}
+function openReceiptModal(){
   setReceiptMonth('current');
-  const n = new Date();
-  document.getElementById('seg-current').textContent = MONTH_NAMES[n.getMonth()];
-  document.getElementById('seg-next').textContent = MONTH_NAMES[(n.getMonth()+1)%12];
-  const sel = document.getElementById('receipt-store');
-  sel.innerHTML = household.stores.concat(['Other']).map(s=>`<option>${s}</option>`).join('');
-  document.getElementById('receipt-processing').style.display = 'none';
-  document.getElementById('receipt-file-input').value = '';
+  const n=new Date();
+  document.getElementById('seg-current').textContent=MONTH_NAMES[n.getMonth()];
+  document.getElementById('seg-next').textContent=MONTH_NAMES[(n.getMonth()+1)%12];
+  const sel=document.getElementById('receipt-store');
+  sel.innerHTML=household.stores.concat(['Other']).map(s=>`<option>${s}</option>`).join('');
+  document.getElementById('receipt-processing').style.display='none';
+  document.getElementById('receipt-file-input').value='';
   showReceiptButtons(true);
-  // Sync the web search toggle to saved preference
-  const on = webSearchEnabled();
-  const toggle = document.getElementById('web-search-toggle');
-  const track = document.getElementById('ws-track');
-  const thumb = document.getElementById('ws-thumb');
-  if (toggle) toggle.checked = on;
-  if (track) track.style.background = on ? 'var(--teal)' : 'var(--gray-200)';
-  if (thumb) thumb.style.left = on ? '22px' : '2px';
-  const sub = document.getElementById('web-search-sub');
-  if (sub) sub.textContent = on ? 'Slower but catches more items · tap to turn off' : 'Faster · uses pantry data only';
+  const on=webSearchEnabled();
+  const toggle=document.getElementById('web-search-toggle');
+  const track=document.getElementById('ws-track');
+  const thumb=document.getElementById('ws-thumb');
+  if(toggle)toggle.checked=on;
+  if(track)track.style.background=on?'var(--teal)':'var(--gray-200)';
+  if(thumb)thumb.style.left=on?'22px':'2px';
+  const sub=document.getElementById('web-search-sub');
+  if(sub)sub.textContent=on?'Slower but catches more items · tap to turn off':'Faster · uses pantry data only';
   document.getElementById('receipt-modal').classList.add('open');
 }
-
-function webSearchEnabled() {
-  return localStorage.getItem('pantry_web_search') !== 'off'; // on by default
+function webSearchEnabled(){return localStorage.getItem('pantry_web_search')!=='off';}
+function saveWebSearchPref(on){
+  localStorage.setItem('pantry_web_search',on?'on':'off');
+  const track=document.getElementById('ws-track');const thumb=document.getElementById('ws-thumb');
+  if(track)track.style.background=on?'var(--teal)':'var(--gray-200)';
+  if(thumb)thumb.style.left=on?'22px':'2px';
+  const sub=document.getElementById('web-search-sub');
+  if(sub)sub.textContent=on?'Slower but catches more items · tap to turn off':'Faster · uses pantry data only';
 }
-function saveWebSearchPref(on) {
-  localStorage.setItem('pantry_web_search', on ? 'on' : 'off');
-  const track = document.getElementById('ws-track');
-  const thumb = document.getElementById('ws-thumb');
-  if (track) track.style.background = on ? 'var(--teal)' : 'var(--gray-200)';
-  if (thumb) thumb.style.left = on ? '22px' : '2px';
-  const sub = document.getElementById('web-search-sub');
-  if (sub) sub.textContent = on ? 'Slower but catches more items · tap to turn off' : 'Faster · uses pantry data only';
-}
-
-// Old fallback handler — used by receipt-modal file input
-async function handleReceiptUpload(input) {
+async function handleReceiptUpload(input){
   if(!input.files[0])return;
   const file=input.files[0];
   const base64=await fileToJpegBase64(file);
   const store=document.getElementById('receipt-store').value;
   const monthTarget=receiptMonthTarget;
   closeModal('receipt-modal');
-  processReceiptBase64(base64, monthTarget, store);
+  processReceiptBase64(base64,monthTarget,store);
   input.value='';
 }
 
-// ════════════════════════════════════════════════════
-// RECEIPT PROCESSING
-// ════════════════════════════════════════════════════
-// Core receipt processing — used by both scanner and file input paths
-async function processReceiptBase64(base64, monthTarget, store) {
-  receiptMonthTarget = monthTarget || 'current';
-  const targetKey = receiptTargetKey();
+async function processReceiptBase64(base64,monthTarget,store){
+  receiptMonthTarget=monthTarget||'current';
+  const targetKey=receiptTargetKey();
   document.getElementById('receipt-modal').classList.add('open');
-  showReceiptProcessing(webSearchEnabled() ? 'Reading receipt · looking up items online...' : 'Reading your receipt...');
-  if (!hasApiKey()) { showReceiptError('No API key set. Add your Anthropic API key in Settings first.'); return; }
-
-  // ── LEARNING CONTEXT — gets smarter with every scan ──
-  // 1. Abbreviation memory (raw receipt text → confirmed name, from your corrections)
-  const abbrevMap = getAbbrevMap();
-  const abbrevLines = Object.keys(abbrevMap).length
-    ? Object.entries(abbrevMap).map(([r,c]) => '"' + r + '" = ' + c).join('; ')
-    : '';
-
-  // 2. Known products from your pantry (real names + categories you've bought before)
-  const knownProducts = pantryItems.length
-    ? pantryItems.slice(0, 60).map(p => p.name + ' (' + p.category + ')').join('; ')
-    : '';
-
-  // Shopping list for optional matching
-  const listForMatch = shoppingList.map((it, i) => ({ i, name: it.name }));
-
-  const sk = store.toLowerCase();
-  const isCostco = sk.includes('costco');
-
-  const prompt = [
-    'Read this ' + store + ' receipt image carefully. Go through it line by line from top to bottom.',
-    'You have access to web search — use it when you are uncertain about an abbreviated or partially obscured item.',
-    'For example: if you see "KS ORG ACAI BW" and are unsure, search "Costco KS ORG ACAI BW" to confirm the product.',
-    'Search before guessing when confidence would be "low" without it.',
+  showReceiptProcessing(webSearchEnabled()?'Reading receipt · looking up items online...':'Reading your receipt...');
+  if(!hasApiKey()){showReceiptError('No API key set. Add your Anthropic API key in Settings first.');return;}
+  const abbrevMap=getAbbrevMap();
+  const abbrevLines=Object.keys(abbrevMap).length?Object.entries(abbrevMap).map(([r,c])=>'"'+r+'" = '+c).join('; '):'';
+  const knownProducts=pantryItems.length?pantryItems.slice(0,60).map(p=>p.name+' ('+p.category+')').join('; '):'';
+  const listForMatch=shoppingList.map((it,i)=>({i,name:it.name}));
+  const sk=store.toLowerCase();
+  const isCostco=sk.includes('costco');
+  const prompt=[
+    'Read this '+store+' receipt image carefully. Go through it line by line.',
+    webSearchEnabled()?'You have access to web search — use it when uncertain about an abbreviated item.':'',
+    'RULE — ONLY include items you can see printed on this receipt.',
     '',
-    'On a receipt, each product line has: item description on the LEFT, price on the RIGHT.',
-    'Some items span two lines (long name wraps). Treat them as one item.',
+    'RULE — DISCOUNT LINES: When a negative amount appears after an item, it is a discount for that item.',
+    'Record the net price, set onSale:true, originalPrice to the original.',
     '',
-    'RULE — ONLY include items you can actually see printed on this receipt.',
-    'Do not add, guess, or invent any item that is not visible on the receipt.',
+    'RULE — QUANTITIES: Many warehouse receipts print each unit on its own line.',
+    'If the same item appears on multiple lines, return ONE entry with "count" set to the number of lines, and "price" as the per-unit price.',
+    'Example: two EGGS lines at $5.99 each → {"name":"Eggs","price":5.99,"count":2}',
     '',
-    'RULE — DISCOUNT LINES:',
-    'When a negative amount appears on the line directly after an item, it is an instant discount:',
-    '  OLIPOP SODA          19.99',
-    '  -Member Savings       -5.00  ← this belongs to OLIPOP',
-    'Record OLIPOP at the net price (14.99), set onSale:true, originalPrice:19.99.',
-    'The discount line is NOT its own product.',
+    isCostco?'COSTCO ABBREVIATIONS: KS=Kirkland Signature, ORG=Organic, BNLS=Boneless, SKNLS=Skinless, GRND=Ground, BRST=Breast, SLMN=Salmon, CHKN=Chicken, PLN=Plain, VAN=Vanilla, FF=Fat Free, LF=Low Fat, GF=Gluten Free':'',
+    abbrevLines?'CONFIRMED ABBREVIATIONS (trust completely): '+abbrevLines:'',
+    knownProducts?'KNOWN PRODUCTS (use exact name if matched): '+knownProducts:'',
     '',
-    isCostco ? [
-      'RULE — COSTCO ABBREVIATIONS (expand these in the name field):',
-      'KS → Kirkland Signature, ORG → Organic, A2 → A2 protein,',
-      'PR/PK → Pack, WHL → Whole, BNLS → Boneless, SKNLS → Skinless,',
-      'GRND → Ground, BRST → Breast, SLMN → Salmon, CHKN → Chicken,',
-      'ATL → Atlantic, PLN → Plain, VAN → Vanilla, FF → Fat Free,',
-      'LF → Low Fat, GF → Gluten Free, TNDRLNS → Tenderloins.',
-      '',
-      'RULE — EXIT MARKER: The exit checker draws a diagonal pen line across the receipt.',
-      'This may hide part of a word. Use the visible letters + context to infer the full name.',
-      'E.g. "LIPOP" is likely OLIPOP; "RG WHT MSHRM" is likely Organic White Mushrooms.',
-    ].join('\n') : '',
-    abbrevLines ? 'RULE — CONFIRMED ABBREVIATIONS (the user corrected these before — trust them completely): ' + abbrevLines : '',
-    knownProducts ? 'PRODUCTS THIS HOUSEHOLD BUYS (if a receipt line matches one of these, use this exact name and category): ' + knownProducts : '',
+    'SKIP: store membership fees, subtotal line, cash back, bottle deposits.',
+    'CAPTURE tax as "tax" field and the printed grand total as "receiptTotal".',
     '',
-    'SKIP ONLY: store membership fees, grand total line, subtotal line, cash back, bottle deposits.',
-    'CAPTURE tax as a separate "tax" field in the response (not as a product item).',
-    'INCLUDE everything else: all food, drinks, snacks, dairy, meat, produce, frozen,',
-    'household supplies, personal care, pet food, prepared/ready-made meals, alcohol — regardless of price.',
+    'CATEGORIES: Protein, Produce, Dairy, Pantry Staples, Snacks, Beverages, Frozen, Ready-Made, Non-Grocery, Other',
     '',
-    'CATEGORIES (pick the best fit for each item):',
-    '- Protein (meat, fish, eggs, tofu)',
-    '- Produce (fresh fruit & vegetables)',
-    '- Dairy (milk, cheese, yogurt, butter)',
-    '- Pantry Staples (canned, dry goods, oils, condiments, baking)',
-    '- Snacks (chips, crackers, cookies, candy)',
-    '- Beverages (non-alcoholic drinks, soda, juice, sparkling water)',
-    '- Frozen (frozen meals, frozen veg, ice cream)',
-    '- Ready-Made (rotisserie chicken, deli, prepared salads, hot food, bakery items already made)',
-    '- Non-Grocery (beer, wine, liquor, and other non-food items mixed into the receipt)',
-    '- Other (anything that does not fit above)',
+    listForMatch.length?'SHOPPING LIST (set matchIndex if receipt item matches): '+JSON.stringify(listForMatch):'',
     '',
-    listForMatch.length
-      ? 'SHOPPING LIST — if a receipt item clearly matches one of these, set matchIndex to its i:\n' + JSON.stringify(listForMatch)
-      : '',
-    '',
-    'Return a JSON object (not array) with two fields:',
-    '{',
-    '  "tax": 4.23,',
-    '  "items": [{"rawText":"OLIPOP","name":"Olipop Sparkling Tonic","price":14.99,"originalPrice":19.99,"onSale":true,"quantity":"8-pack","category":"Beverages","confidence":"high","matchIndex":null}]',
-    '}',
-    'If no tax line is visible, set "tax": 0.',
-    '',
-    'confidence: "high"=clearly readable, "medium"=readable with minor uncertainty, "low"=partially obscured.',
-    'If the image is too blurry or dark to read anything, return [].',
+    'Return JSON object:',
+    '{"tax":4.23,"receiptTotal":128.47,"items":[{"rawText":"EGGS","name":"Eggs","price":5.99,"count":2,"originalPrice":null,"onSale":false,"quantity":null,"category":"Protein","confidence":"high","matchIndex":null}]}'
   ].filter(Boolean).join('\n');
-
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: apiHeaders(),
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-5-20250929',
-        max_tokens: 4000,
-        ...(webSearchEnabled() ? { tools: [{ type: 'web_search_20250305', name: 'web_search' }] } : {}),
-        messages: [{ role: 'user', content: [
-          { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: base64 } },
-          { type: 'text', text: prompt }
-        ]}]
-      })
-    });
-    const data = await res.json();
-    if (data.error) {
-      const msg = data.error.message || JSON.stringify(data.error);
-      if (/authentication|api[\s_-]?key|credential|401/i.test(msg) || res.status === 401) throw new Error(msg + '\n\n' + keyDiagnostic());
-      throw new Error(msg);
-    }
-    if (!data.content || !Array.isArray(data.content)) throw new Error('Unexpected response.');
-    const text = data.content.map(c => c.text || '').join('');
-
-    // Robust parsing — handles {tax, items} object OR plain array, never throws
-    let taxAmount = 0;
-    let rawItems = null;
-    const clean = text.replace(/```json|```/g, '').trim();
-
-    // Try object format first {tax:..., items:[...]}
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:apiHeaders(),body:JSON.stringify({model:'claude-sonnet-4-5-20250929',max_tokens:4000,...(webSearchEnabled()?{tools:[{type:'web_search_20250305',name:'web_search'}]}:{}),messages:[{role:'user',content:[{type:'image',source:{type:'base64',media_type:'image/jpeg',data:base64}},{type:'text',text:prompt}]}]})});
+    const data=await res.json();
+    if(data.error){const msg=data.error.message||JSON.stringify(data.error);if(/authentication|api[\s_-]?key|401/i.test(msg)||res.status===401)throw new Error(msg+'\n\n'+keyDiagnostic());throw new Error(msg);}
+    if(!data.content||!Array.isArray(data.content))throw new Error('Unexpected response.');
+    const text=data.content.map(c=>c.text||'').join('');
+    let taxAmount=0,receiptTotalParsed=0,rawItems=null;
+    const clean=text.replace(/```json|```/g,'').trim();
     try {
-      const objStart = clean.indexOf('{');
-      const arrStart = clean.indexOf('[');
-      if (objStart !== -1 && (arrStart === -1 || objStart < arrStart)) {
-        const objEnd = clean.lastIndexOf('}');
-        const parsed = JSON.parse(clean.slice(objStart, objEnd + 1));
-        if (parsed && Array.isArray(parsed.items)) {
-          rawItems = parsed.items;
-          taxAmount = Number(parsed.tax) || 0;
-        }
+      const objStart=clean.indexOf('{'),arrStart=clean.indexOf('[');
+      if(objStart!==-1&&(arrStart===-1||objStart<arrStart)){
+        const parsed=JSON.parse(clean.slice(objStart,clean.lastIndexOf('}')+1));
+        if(parsed&&Array.isArray(parsed.items)){rawItems=parsed.items;taxAmount=Number(parsed.tax)||0;receiptTotalParsed=Number(parsed.receiptTotal)||0;}
       }
-    } catch(e) { /* fall through */ }
-
-    // Fall back to plain array
-    if (!rawItems) {
-      rawItems = extractJsonArray(text);
-    }
-
-    if (!rawItems || rawItems.length === 0) throw new Error("Couldn't read any items. Try a clearer, well-lit photo.");
-    const items = rawItems
-      .filter(it => it && typeof it.name === 'string' && it.name.trim().length > 0)
-      .map(it => ({
-        rawText:       (it.rawText || '').trim(),
-        name:          it.name.trim(),
-        price:         Number(it.price) || 0,
-        originalPrice: it.originalPrice ? Number(it.originalPrice) : null,
-        onSale:        !!it.onSale,
-        quantity:      it.quantity || null,
-        category:      it.category || 'Other',
-        confidence:    it.confidence || 'medium',
-        matchIndex:    (it.matchIndex !== null && it.matchIndex !== undefined && !isNaN(Number(it.matchIndex))) ? Number(it.matchIndex) : null
-      }));
-    if (items.length === 0) throw new Error('Receipt scanned but no items found. Try again.');
+    } catch(e){}
+    if(!rawItems)rawItems=extractJsonArray(text);
+    if(!rawItems||!rawItems.length)throw new Error("Couldn't read any items. Try a clearer, well-lit photo.");
+    const items=rawItems.filter(it=>it&&typeof it.name==='string'&&it.name.trim().length>0).map(it=>({
+      rawText:(it.rawText||'').trim(),name:it.name.trim(),
+      price:Number(it.price)||0,count:Math.max(1,parseInt(it.count,10)||1),
+      originalPrice:it.originalPrice?Number(it.originalPrice):null,
+      onSale:!!it.onSale,quantity:it.quantity||null,category:it.category||'Other',
+      tracked:(it.category==='Non-Grocery')?false:true,confidence:it.confidence||'medium',
+      matchIndex:(it.matchIndex!==null&&it.matchIndex!==undefined&&!isNaN(Number(it.matchIndex)))?Number(it.matchIndex):null
+    }));
+    if(!items.length)throw new Error('Receipt scanned but no items found. Try again.');
     closeModal('receipt-modal');
-    openRecon(items, targetKey, store, taxAmount);
-  } catch(e) {
-    showReceiptError(e && e.message ? e.message : 'Could not read receipt. Try again.');
-  }
+    openRecon(items,targetKey,store,taxAmount,receiptTotalParsed);
+  } catch(e){showReceiptError(e&&e.message?e.message:'Could not read receipt. Try again.');}
 }
 
-// ── Abbreviation memory — learns from user corrections ──
-function getAbbrevMap() {
-  try { return JSON.parse(localStorage.getItem('pantry_abbrev_map')||'{}'); } catch(e) { return {}; }
+function getAbbrevMap(){try{return JSON.parse(localStorage.getItem('pantry_abbrev_map')||'{}');}catch(e){return {};}}
+function saveAbbrevMapping(rawText,cleanName){if(!rawText||!cleanName||rawText===cleanName)return;const map=getAbbrevMap();map[rawText.toUpperCase()]=cleanName;localStorage.setItem('pantry_abbrev_map',JSON.stringify(map));}
+
+// ════════════════════════════════════════════════════
+// RECONCILIATION
+// ════════════════════════════════════════════════════
+let reconState=null;
+function openRecon(items,targetKey,store,tax,receiptTotal){
+  items.forEach(it=>{
+    let mi=(it.matchIndex===0||it.matchIndex)?Number(it.matchIndex):null;
+    if(mi===null||isNaN(mi)||mi<0||mi>=shoppingList.length)it.matchIndex=null;else it.matchIndex=mi;
+    if(it.count===undefined||it.count===null)it.count=1;
+    if(it.tracked===undefined)it.tracked=(it.category!=='Non-Grocery');
+  });
+  reconState={items,targetKey,store,tax:Number(tax)||0,receiptTotal:Number(receiptTotal)||0};
+  renderRecon(); document.getElementById('recon-modal').classList.add('open');
 }
-function saveAbbrevMapping(rawText, cleanName) {
-  if (!rawText || !cleanName || rawText === cleanName) return;
-  const map = getAbbrevMap();
-  map[rawText.toUpperCase()] = cleanName;
-  localStorage.setItem('pantry_abbrev_map', JSON.stringify(map));
-}
-
-
-// ── Reconciliation ──
-let reconState = null;
-function openRecon(items, targetKey, store, tax) {
-  items.forEach(it=>{let mi=(it.matchIndex===0||it.matchIndex)?Number(it.matchIndex):null;if(mi===null||isNaN(mi)||mi<0||mi>=shoppingList.length)it.matchIndex=null;else it.matchIndex=mi;});
-  reconState={items,targetKey,store,tax:Number(tax)||0}; renderRecon(); document.getElementById('recon-modal').classList.add('open');
-}
-
-function renderRecon() {
-  const { items, store, targetKey, tax } = reconState;
-  const low = items.filter(i => i.confidence === 'low').length;
-  const subtotal = items.reduce((s,i) => s + (Number(i.price)||0), 0);
-  const total = subtotal + (tax || 0);
-  const sub = store + ' · ' + monthLabelFromKey(targetKey) +
-    (low ? ' · ' + low + ' item' + (low > 1 ? 's' : '') + ' need review' : ' · looking good');
-  document.getElementById('recon-sub').textContent = sub;
-  document.getElementById('recon-confirm-btn').textContent = 'Log ' + items.length + ' item' + (items.length !== 1 ? 's' : '') + ' · $' + total.toFixed(2) + ' total';
-
-  const CONF_COLOR = { high: 'var(--teal)', medium: 'var(--amber)', low: 'var(--red)' };
-
-  let html = '';
-  items.forEach((it, idx) => {
-    const dot   = CONF_COLOR[it.confidence] || CONF_COLOR.medium;
-    const price = it.price ? '$' + Number(it.price).toFixed(2) : '—';
-    const catColor = CATEGORY_COLORS[it.category] || '#888780';
-    const saleBadge = it.onSale ? '<span class="review-badge" style="background:#FEF3C7;color:#92400E;">Sale</span>' : '';
-    const origPrice = it.onSale && it.originalPrice ? '<div class="review-price-sub" style="text-decoration:line-through;color:var(--text-tertiary);">$' + Number(it.originalPrice).toFixed(2) + '</div>' : '';
-
-    html += '<div class="review-card" id="review-card-' + idx + '">' +
-      '<div class="review-card-main" onclick="openReconEdit(' + idx + ')">' +
-        '<div class="review-conf-dot" style="background:' + dot + ';"></div>' +
-        '<div class="review-card-body">' +
-          '<div class="review-item-name">' + escapeHtml(it.name) + '</div>' +
-          (it.rawText ? '<div class="review-item-raw">' + escapeHtml(it.rawText) + '</div>' : '') +
-          '<div class="review-item-badges">' +
-            '<span class="review-badge" style="background:' + catColor + '22;color:' + catColor + ';">' + escapeHtml(it.category || 'Other') + '</span>' +
-            (it.quantity ? '<span class="review-badge">' + escapeHtml(it.quantity) + '</span>' : '') +
-            saleBadge +
-          '</div>' +
-        '</div>' +
-        '<div class="review-card-price">' +
-          '<div class="review-price-num">' + price + '</div>' +
-          origPrice +
-          (it.confidence === 'low' ? '<div class="review-price-sub" style="color:var(--red);">Check ⚠️</div>' : '') +
-        '</div>' +
-      '</div>' +
-      '<div class="review-card-footer">' +
-        '<span class="review-edit-hint">Tap to edit name or price</span>' +
-        '<button class="review-delete-btn" onclick="deleteReconItem(' + idx + ')" title="Remove">' +
-          '<svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>' +
-        '</button>' +
-      '</div>' +
+function renderRecon(){
+  const{items,store,targetKey,tax}=reconState;
+  const CONF_COLOR={high:'var(--teal)',medium:'var(--amber)',low:'var(--red)'};
+  let html='';
+  const low=items.filter(i=>i.confidence==='low').length;
+  const subtotal=items.reduce((s,i)=>(s+(Number(i.price)||0)*(i.count||1)),0);
+  document.getElementById('recon-sub').textContent=store+' · '+monthLabelFromKey(targetKey)+(low?' · '+low+' to review':' · looking good');
+  document.getElementById('recon-confirm-btn').textContent='Log '+items.length+' item'+(items.length!==1?'s':'')+' · $'+(subtotal+(Number(tax)||0)).toFixed(2);
+  items.forEach((it,idx)=>{
+    const dot=CONF_COLOR[it.confidence]||CONF_COLOR.medium;
+    const lineTotal=(Number(it.price)||0)*(it.count||1);
+    const catColor=CATEGORY_COLORS[it.category]||'#888780';
+    const saleBadge=it.onSale?'<span class="review-badge" style="background:#FEF3C7;color:#92400E;">Sale</span>':'';
+    const origPrice=it.onSale&&it.originalPrice?'<div class="review-price-sub" style="text-decoration:line-through;color:var(--text-tertiary);">$'+Number(it.originalPrice).toFixed(2)+'</div>':'';
+    const countBadge=(it.count||1)>1?'<span class="review-badge">×'+(it.count||1)+'</span>':'';
+    html+='<div class="review-card" id="review-card-'+idx+'">'+
+      '<div class="review-card-main" onclick="openReconEdit('+idx+')">'+
+        '<div class="review-conf-dot" style="background:'+dot+';"></div>'+
+        '<div class="review-card-body">'+
+          '<div class="review-item-name">'+escapeHtml(it.name)+'</div>'+
+          (it.rawText?'<div class="review-item-raw">'+escapeHtml(it.rawText)+'</div>':'')+
+          '<div class="review-item-badges">'+
+            '<span class="review-badge" style="background:'+catColor+'22;color:'+catColor+';">'+escapeHtml(it.category||'Other')+'</span>'+
+            countBadge+saleBadge+
+          '</div>'+
+        '</div>'+
+        '<div class="review-card-price">'+
+          '<div class="review-price-num">$'+lineTotal.toFixed(2)+'</div>'+
+          origPrice+
+          ((it.count||1)>1?'<div class="review-price-sub">'+it.count+' × $'+Number(it.price).toFixed(2)+'</div>':'')+
+          (it.confidence==='low'?'<div class="review-price-sub" style="color:var(--red);">Check</div>':'')+
+        '</div>'+
+      '</div>'+
+      '<div class="review-card-footer">'+
+        '<span class="review-edit-hint">Tap to edit</span>'+
+        '<button class="review-delete-btn" onclick="deleteReconItem('+idx+')" title="Remove">'+
+          '<svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>'+
+        '</button>'+
+      '</div>'+
     '</div>';
   });
-
-  // Tax row
-  if (tax && tax > 0) {
-    html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--white);border-radius:var(--radius-lg);margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,0.07);">' +
-      '<span style="font-size:14px;color:var(--text-secondary);">Tax</span>' +
-      '<span style="font-size:15px;font-weight:600;color:var(--text-secondary);">$' + Number(tax).toFixed(2) + '</span>' +
-    '</div>';
-  }
-
-  // Total row
-  const reconSubtotal = items.reduce((s,i) => s + (Number(i.price)||0), 0);
-  html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--white);border-radius:var(--radius-lg);margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,0.07);">' +
-    '<span style="font-size:14px;font-weight:700;">Total</span>' +
-    '<span style="font-size:16px;font-weight:700;">$' + (reconSubtotal + (tax||0)).toFixed(2) + '</span>' +
+  if(tax&&tax>0)html+='<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--white);border-radius:var(--radius-lg);margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,0.07);"><span style="font-size:14px;color:var(--text-secondary);">Tax</span><span style="font-size:15px;font-weight:600;color:var(--text-secondary);">$'+Number(tax).toFixed(2)+'</span></div>';
+  const reconTotal=subtotal+(tax||0);
+  html+='<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--white);border-radius:var(--radius-lg);margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,0.07);"><span style="font-size:14px;font-weight:700;">Total</span><span style="font-size:16px;font-weight:700;">$'+reconTotal.toFixed(2)+'</span></div>';
+  const printed=Number(reconState.receiptTotal)||0;
+  if(printed>0){const diff=Math.round((printed-reconTotal)*100)/100;if(Math.abs(diff)<=0.05){html+='<div style="padding:9px 14px;margin-bottom:10px;background:var(--teal-light);border-radius:var(--radius-md);font-size:12px;color:var(--teal-dark);font-weight:600;">✓ Matches receipt total ($'+printed.toFixed(2)+')</div>';}else{html+='<div style="padding:9px 14px;margin-bottom:10px;background:var(--red-light);border-radius:var(--radius-md);font-size:12px;color:var(--red);font-weight:600;">⚠ Off by $'+Math.abs(diff).toFixed(2)+' from receipt total ($'+printed.toFixed(2)+') — check counts</div>';}}
+  html+='<button onclick="openReconAddItem()" style="width:100%;background:var(--white);border:1.5px dashed var(--border-strong);border-radius:var(--radius-lg);padding:14px;color:var(--text-secondary);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 1px 3px rgba(0,0,0,0.05);margin-bottom:12px;"><svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;"><path d="M12 5v14M5 12h14"/></svg>Add item scanner missed</button>';
+  html+='<div style="display:flex;gap:14px;align-items:center;padding:12px 2px 4px;font-size:10px;color:var(--text-tertiary);">'+
+    '<span style="display:flex;align-items:center;gap:4px;"><span style="width:8px;height:8px;border-radius:50%;background:var(--teal);display:inline-block;"></span>Certain</span>'+
+    '<span style="display:flex;align-items:center;gap:4px;"><span style="width:8px;height:8px;border-radius:50%;background:var(--amber);display:inline-block;"></span>Best guess</span>'+
+    '<span style="display:flex;align-items:center;gap:4px;"><span style="width:8px;height:8px;border-radius:50%;background:var(--red);display:inline-block;"></span>Needs review</span>'+
   '</div>';
-
-  // Add missed item button
-  html += '<button onclick="openReconAddItem()" style="width:100%;background:var(--white);border:1.5px dashed var(--border-strong);border-radius:var(--radius-lg);padding:14px;color:var(--text-secondary);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 1px 3px rgba(0,0,0,0.05);margin-bottom:12px;">' +
-    '<svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;"><path d="M12 5v14M5 12h14"/></svg>' +
-    'Add item scanner missed' +
-  '</button>';
-
-  // Confidence legend
-  html += '<div style="display:flex;gap:14px;align-items:center;padding:12px 2px 4px;font-size:10px;color:var(--text-tertiary);">' +
-    '<span style="display:flex;align-items:center;gap:4px;"><span style="width:8px;height:8px;border-radius:50%;background:var(--teal);display:inline-block;"></span>Certain</span>' +
-    '<span style="display:flex;align-items:center;gap:4px;"><span style="width:8px;height:8px;border-radius:50%;background:var(--amber);display:inline-block;"></span>Best guess</span>' +
-    '<span style="display:flex;align-items:center;gap:4px;"><span style="width:8px;height:8px;border-radius:50%;background:var(--red);display:inline-block;"></span>Needs review</span>' +
-  '</div>';
-
-  document.getElementById('recon-body').innerHTML = html;
+  document.getElementById('recon-body').innerHTML=html;
 }
 
-// ── Recon item editing ──
-let reconEditIdx = null;
-
-function openReconEdit(idx) {
-  reconEditIdx = idx;
-  const it = reconState.items[idx];
-  document.getElementById('recon-edit-title').textContent = 'Edit Item';
-  document.getElementById('recon-edit-name').value = it.name;
-  document.getElementById('recon-edit-category').value = it.category || 'Other';
-  // Price fields
-  const origPrice = Number(it.originalPrice) || 0;
-  const paid = Number(it.price) || 0;
-  const discount = origPrice > 0 ? Math.max(0, parseFloat((origPrice - paid).toFixed(2))) : 0;
-  document.getElementById('recon-edit-price').value = paid > 0 ? paid.toFixed(2) : '';
-  document.getElementById('recon-edit-orig-price').value = origPrice > 0 ? origPrice.toFixed(2) : '';
-  document.getElementById('recon-edit-discount').value = discount > 0 ? discount.toFixed(2) : '';
-  document.getElementById('recon-price-paid-display').textContent = paid > 0 ? '$' + paid.toFixed(2) : '$—';
+let reconEditIdx=null;
+function openReconEdit(idx){
+  reconEditIdx=idx; const it=reconState.items[idx];
+  document.getElementById('recon-edit-title').textContent='Edit Item';
+  document.getElementById('recon-edit-name').value=it.name;
+  document.getElementById('recon-edit-category').value=it.category||'Other';
+  const origPrice=Number(it.originalPrice)||0,paid=Number(it.price)||0;
+  const discount=origPrice>0?Math.max(0,parseFloat((origPrice-paid).toFixed(2))):0;
+  document.getElementById('recon-edit-price').value=paid>0?paid.toFixed(2):'';
+  document.getElementById('recon-edit-orig-price').value=origPrice>0?origPrice.toFixed(2):'';
+  document.getElementById('recon-edit-discount').value=discount>0?discount.toFixed(2):'';
+  document.getElementById('recon-price-paid-display').textContent=paid>0?'$'+paid.toFixed(2):'$—';
   setReconSaleToggle(!!it.onSale);
-  document.getElementById('recon-edit-delete-wrap').style.display = 'none';
+  document.getElementById('recon-edit-delete-wrap').style.display='none';
   document.getElementById('recon-edit-modal').classList.add('open');
-  setTimeout(() => document.getElementById('recon-edit-name').focus(), 120);
+  setTimeout(()=>document.getElementById('recon-edit-name').focus(),120);
 }
-
-function openReconAddItem() {
-  reconEditIdx = null;
-  document.getElementById('recon-edit-title').textContent = 'Add Missed Item';
-  document.getElementById('recon-edit-name').value = '';
-  document.getElementById('recon-edit-price').value = '';
-  document.getElementById('recon-edit-orig-price').value = '';
-  document.getElementById('recon-edit-discount').value = '';
-  document.getElementById('recon-price-paid-display').textContent = '$—';
-  document.getElementById('recon-edit-category').value = 'Other';
+function openReconAddItem(){
+  reconEditIdx=null;
+  document.getElementById('recon-edit-title').textContent='Add Missed Item';
+  document.getElementById('recon-edit-name').value='';
+  document.getElementById('recon-edit-price').value='';
+  document.getElementById('recon-edit-orig-price').value='';
+  document.getElementById('recon-edit-discount').value='';
+  document.getElementById('recon-price-paid-display').textContent='$—';
+  document.getElementById('recon-edit-category').value='Other';
   setReconSaleToggle(false);
-  document.getElementById('recon-edit-delete-wrap').style.display = 'none';
+  document.getElementById('recon-edit-delete-wrap').style.display='none';
   document.getElementById('recon-edit-modal').classList.add('open');
-  setTimeout(() => document.getElementById('recon-edit-name').focus(), 120);
+  setTimeout(()=>document.getElementById('recon-edit-name').focus(),120);
 }
-
-function setReconSaleToggle(on) {
-  document.getElementById('recon-edit-sale').checked = on;
-  document.getElementById('recon-sale-track').style.background = on ? 'var(--teal)' : 'var(--gray-200)';
-  document.getElementById('recon-sale-thumb').style.left = on ? '22px' : '2px';
-  document.getElementById('recon-sale-fields').style.display = on ? 'block' : 'none';
-  document.getElementById('recon-normal-price-wrap').style.display = on ? 'none' : 'block';
+function setReconSaleToggle(on){
+  document.getElementById('recon-edit-sale').checked=on;
+  document.getElementById('recon-sale-track').style.background=on?'var(--teal)':'var(--gray-200)';
+  document.getElementById('recon-sale-thumb').style.left=on?'22px':'2px';
+  document.getElementById('recon-sale-fields').style.display=on?'block':'none';
+  document.getElementById('recon-normal-price-wrap').style.display=on?'none':'block';
 }
-
-function toggleReconSale(on) {
-  setReconSaleToggle(on);
-  if (on) calcSalePrice();
+function toggleReconSale(on){setReconSaleToggle(on);if(on)calcSalePrice();}
+function calcSalePrice(){
+  const orig=parseFloat(document.getElementById('recon-edit-orig-price').value)||0;
+  const disc=parseFloat(document.getElementById('recon-edit-discount').value)||0;
+  const paid=Math.max(0,orig-disc);
+  document.getElementById('recon-price-paid-display').textContent=paid>0?'$'+paid.toFixed(2):'$—';
+  document.getElementById('recon-edit-price').value=paid>0?paid.toFixed(2):'';
 }
-
-function calcSalePrice() {
-  const orig = parseFloat(document.getElementById('recon-edit-orig-price').value) || 0;
-  const disc = parseFloat(document.getElementById('recon-edit-discount').value) || 0;
-  const paid = Math.max(0, orig - disc);
-  const display = document.getElementById('recon-price-paid-display');
-  display.textContent = paid > 0 ? '$' + paid.toFixed(2) : '$—';
-  // Write the calculated price into the hidden price field so saveReconEdit picks it up
-  document.getElementById('recon-edit-price').value = paid > 0 ? paid.toFixed(2) : '';
-}
-
-function saveReconEdit() {
-  const name = document.getElementById('recon-edit-name').value.trim();
-  if (!name) { showToast('Enter an item name'); return; }
-  const price = parseFloat(document.getElementById('recon-edit-price').value) || 0;
-  const category = document.getElementById('recon-edit-category').value;
-  const onSale = document.getElementById('recon-edit-sale').checked;
-  const originalPrice = onSale ? (parseFloat(document.getElementById('recon-edit-orig-price').value) || null) : null;
-  if (reconEditIdx !== null) {
-    const existing = reconState.items[reconEditIdx];
-    if (existing.rawText && existing.name !== name) saveAbbrevMapping(existing.rawText, name);
-    existing.name = name; existing.price = price; existing.category = category;
-    existing.onSale = onSale; existing.originalPrice = originalPrice;
-    existing.confidence = 'high';
+function saveReconEdit(){
+  const name=document.getElementById('recon-edit-name').value.trim();
+  if(!name){showToast('Enter an item name');return;}
+  const price=parseFloat(document.getElementById('recon-edit-price').value)||0;
+  const category=document.getElementById('recon-edit-category').value;
+  const onSale=document.getElementById('recon-edit-sale').checked;
+  const originalPrice=onSale?(parseFloat(document.getElementById('recon-edit-orig-price').value)||null):null;
+  if(reconEditIdx!==null){
+    const existing=reconState.items[reconEditIdx];
+    if(existing.rawText&&existing.name!==name)saveAbbrevMapping(existing.rawText,name);
+    existing.name=name;existing.price=price;existing.category=category;
+    existing.onSale=onSale;existing.originalPrice=originalPrice;existing.confidence='high';
   } else {
-    reconState.items.push({ rawText: '', name, price, quantity: null, category, onSale, originalPrice, confidence: 'high', matchIndex: null });
+    reconState.items.push({rawText:'',name,price,count:1,quantity:null,category,onSale,originalPrice,tracked:(category!=='Non-Grocery'),confidence:'high',matchIndex:null});
   }
-  closeModal('recon-edit-modal');
-  renderRecon();
+  closeModal('recon-edit-modal'); renderRecon();
 }
-
-function deleteReconItem(idx) {
-  reconState.items.splice(idx, 1);
-  renderRecon();
-}
-
-function cancelRecon() { document.getElementById('recon-modal').classList.remove('open'); reconState = null; }
-
-function confirmRecon() {
-  const { items, targetKey, store } = reconState;
-  const tax = reconState.tax || 0;
-
-  // LEARN: save abbreviation mappings first (safe, non-blocking)
-  try {
-    items.forEach(it => {
-      if (it.rawText && it.name && it.rawText.toLowerCase() !== it.name.toLowerCase()) {
-        saveAbbrevMapping(it.rawText, it.name);
-      }
-    });
-  } catch(e) { console.warn('Abbrev save error:', e); }
-
-  // AUTO-MATCH to shopping list
-  try {
-    const listCopy = shoppingList.filter(li => !li.checked);
-    items.forEach(it => {
-      const nameLower = it.name.toLowerCase();
-      const words = nameLower.split(' ').filter(w => w.length > 3);
-      const match = listCopy.find(li => {
-        const liLower = li.name.toLowerCase();
-        return liLower === nameLower || liLower.includes(nameLower) ||
-          nameLower.includes(liLower) || words.some(w => liLower.includes(w));
-      });
-      if (match) { match.checked = true; it._autoMatched = match.name; }
+function deleteReconItem(idx){reconState.items.splice(typeof idx==='number'?idx:0,1);renderRecon();}
+function cancelRecon(){document.getElementById('recon-modal').classList.remove('open');reconState=null;}
+function confirmRecon(){
+  const{items,targetKey,store}=reconState;
+  const tax=reconState.tax||0;
+  try{items.forEach(it=>{if(it.rawText&&it.name&&it.rawText.toLowerCase()!==it.name.toLowerCase())saveAbbrevMapping(it.rawText,it.name);});}catch(e){}
+  try{
+    const listCopy=shoppingList.filter(li=>!li.checked);
+    items.forEach(it=>{
+      const nameLower=it.name.toLowerCase();
+      const words=nameLower.split(' ').filter(w=>w.length>3);
+      const match=listCopy.find(li=>{const liLower=li.name.toLowerCase();return liLower===nameLower||liLower.includes(nameLower)||nameLower.includes(liLower)||words.some(w=>liLower.includes(w));});
+      if(match){match.checked=true;it._autoMatched=match.name;}
     });
     saveList();
-  } catch(e) { console.warn('List match error:', e); }
-
-  // LOG HAUL + SAVE PANTRY — most critical step
-  try {
-    logReceiptAsHaul(items, targetKey, store, tax);
-  } catch(e) {
-    console.error('Haul save error:', e);
-    showToast('Warning: some data may not have saved. Check Perspective.');
-  }
-
+  }catch(e){}
+  try{logReceiptAsHaul(items,targetKey,store,tax,reconState.receiptTotal||0);}
+  catch(e){console.error('Haul save error:',e);showToast('Warning: some data may not have saved.');}
   document.getElementById('recon-modal').classList.remove('open');
-  const checked = items.filter(i => i._autoMatched).length;
-  showToast(items.length + ' items logged' + (checked ? ' · ' + checked + ' checked off list' : ''));
-  reconState = null;
-  perspMonth = targetKey;
-  switchTab('perspective');
+  const checked=items.filter(i=>i._autoMatched).length;
+  showToast(items.length+' items logged'+(checked?' · '+checked+' checked off list':''));
+  reconState=null; perspMonth=targetKey; switchTab('perspective');
 }
 
-function escapeHtml(s) { return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-function showReceiptProcessing(msg) { const proc=document.getElementById('receipt-processing'); proc.style.display='block'; proc.innerHTML=`<div class="ai-spinner" style="margin:0 auto 12px;"></div><div style="font-size:14px;color:var(--text-secondary);">${msg}</div>`; showReceiptButtons(false); }
-function showReceiptError(msg) { const proc=document.getElementById('receipt-processing'); proc.style.display='block'; const safe=String(msg).replace(/</g,'&lt;').replace(/\n/g,'<br>'); proc.innerHTML=`<div style="background:var(--red-light);color:var(--red);border-radius:var(--radius-md);padding:12px 14px;font-size:13px;line-height:1.5;margin-bottom:14px;text-align:left;">${safe}</div><button class="btn-primary" onclick="resetReceiptModal()">Try again</button>`; }
-function resetReceiptModal() { document.getElementById('receipt-processing').style.display='none'; showReceiptButtons(true); }
-function extractJsonArray(text) {
-  if(!text)return null; let clean=text.replace(/```json/gi,'').replace(/```/g,'').trim();
-  const start=clean.indexOf('['),end=clean.lastIndexOf(']');
-  if(start!==-1&&end!==-1&&end>start)clean=clean.slice(start,end+1);
-  try{const parsed=JSON.parse(clean);return Array.isArray(parsed)?parsed:null;}catch(e){return null;}
-}
-function logReceiptAsHaul(items, monthKey, store, tax) {
-  const subtotal=items.reduce((s,it)=>s+(Number(it.price)||0),0);
-  const taxAmt = Number(tax)||0;
-  const total = subtotal + taxAmt;
+function logReceiptAsHaul(items,monthKey,store,tax,receiptPrinted){
+  let grocTotal=0,nonTotal=0;
+  items.forEach(it=>{const line=(Number(it.price)||0)*(it.count||1);if(it.tracked!==false)grocTotal+=line;else nonTotal+=line;});
+  const taxAmt=Number(tax)||0;
+  const budgetTotal=Math.round((grocTotal+taxAmt)*100)/100;
+  const everything=Math.round((grocTotal+nonTotal+taxAmt)*100)/100;
+  const printed=(Number(receiptPrinted)>0)?Math.round(Number(receiptPrinted)*100)/100:everything;
   const today=new Date().toISOString().split('T')[0]; const sKey=storeKey(store);
   if(!haulsData[monthKey])haulsData[monthKey]=[];
   haulsData[monthKey].push({
-    id:'haul-'+Date.now(),
-    name:store+' receipt',
-    totalAmount:Math.round(total*100)/100,
-    tax: taxAmt,
-    items: items.map(it=>({name:it.name,price:Number(it.price)||0,category:it.category||'Other',onSale:!!it.onSale})),
-    trips:[{store,storeKey:sKey,date:today,amount:Math.round(total*100)/100,items:items.length}]
+    id:'haul-'+Date.now(),name:store+' receipt',
+    totalAmount:budgetTotal,groceryTotal:Math.round(grocTotal*100)/100,
+    nonGroceryTotal:Math.round(nonTotal*100)/100,receiptTotal:printed,tax:taxAmt,
+    items:items.map(it=>({name:it.name,price:Number(it.price)||0,count:it.count||1,category:it.category||'Other',onSale:!!it.onSale,tracked:it.tracked!==false})),
+    trips:[{store,storeKey:sKey,date:today,amount:budgetTotal,items:items.length}]
   });
   localStorage.setItem('pantry_hauls',JSON.stringify(haulsData));
-  items.forEach(it=>{const name=it.name;const price=Number(it.price)||0;const entry={price,store,date:today,onSale:!!it.onSale,originalPrice:it.originalPrice||null};const existing=pantryItems.find(p=>p.name.toLowerCase()===name.toLowerCase());if(existing){existing.priceHistory.push(entry);existing.stockPct=100;existing.category=it.category||existing.category;}else{pantryItems.push({id:Date.now()+Math.random(),name,emoji:emojiFor(it.category),category:it.category||'Other',priceHistory:[entry],stockPct:100,avgDaysBetween:30});}});
-  localStorage.setItem('pantry_items',JSON.stringify(pantryItems)); renderHome(); renderPantry();
+  items.forEach(it=>{
+    const name=it.name;const price=Number(it.price)||0;
+    const entry={price,store,date:today,onSale:!!it.onSale,originalPrice:it.originalPrice||null,count:it.count||1};
+    const existing=pantryItems.find(p=>p.name.toLowerCase()===name.toLowerCase());
+    if(existing){existing.priceHistory.push(entry);existing.stockPct=100;existing.category=it.category||existing.category;}
+    else{pantryItems.push({id:Date.now()+Math.random(),name,emoji:emojiFor(it.category),category:it.category||'Other',priceHistory:[entry],stockPct:100,avgDaysBetween:30});}
+  });
+  localStorage.setItem('pantry_items',JSON.stringify(pantryItems));
+  renderHome(); renderPantry();
 }
-function emojiFor(category) { return {'Protein':'🥩','Produce':'🥦','Dairy':'🥛','Pantry Staples':'🥫','Snacks':'🍪','Beverages':'🥤','Frozen':'🧊','Ready-Made':'🍱','Non-Grocery':'🍺','Other':'🛒'}[category]||'🛒'; }
-// Convert image to base64, preserving format where possible.
-// Returns { base64, mediaType }. PNG screenshots stay PNG; camera photos become JPEG.
-function fileToBase64(file, maxDim=2000) {
-  return new Promise((resolve, reject) => {
-    const isPng = file.type === 'image/png' || file.name.toLowerCase().endsWith('.png');
-    const reader = new FileReader();
-    reader.onerror = () => reject(new Error('Could not read the file.'));
-    reader.onload = (e) => {
-      const img = new Image();
-      img.onload = () => {
-        try {
-          let w = img.naturalWidth, h = img.naturalHeight;
-          if (!w || !h) { reject(new Error('That image looks empty.')); return; }
+function emojiFor(category){return {'Protein':'🥩','Produce':'🥦','Dairy':'🥛','Pantry Staples':'🥫','Snacks':'🍪','Beverages':'🥤','Frozen':'🧊','Ready-Made':'🍱','Non-Grocery':'🛒','Other':'🛒'}[category]||'🛒';}
 
-          // Scale down if larger than maxDim on the long edge
-          if (w > maxDim || h > maxDim) {
-            const scale = maxDim / Math.max(w, h);
-            w = Math.round(w * scale); h = Math.round(h * scale);
-          }
-
-          const canvas = document.createElement('canvas');
-          canvas.width = w; canvas.height = h;
-          const ctx = canvas.getContext('2d');
-          ctx.fillStyle = '#ffffff';
-          ctx.fillRect(0, 0, w, h);
-          ctx.drawImage(img, 0, 0, w, h);
-
-          // Always JPEG for receipts/photos — far smaller than PNG.
-          // Iteratively lower quality (and dimensions if needed) until under ~7MB base64.
-          const MAX_BASE64_BYTES = 7 * 1024 * 1024; // 7MB target (well under the 10MB API limit)
-          let quality = 0.85;
-          let dataUrl = canvas.toDataURL('image/jpeg', quality);
-          let base64 = dataUrl.split(',')[1];
-
-          // Estimate byte size of base64 (~3/4 of string length)
-          const b64bytes = (str) => Math.ceil(str.length * 0.75);
-
-          // Step 1: drop quality
-          while (base64 && b64bytes(base64) > MAX_BASE64_BYTES && quality > 0.4) {
-            quality -= 0.12;
-            dataUrl = canvas.toDataURL('image/jpeg', quality);
-            base64 = dataUrl.split(',')[1];
-          }
-
-          // Step 2: if still too big, shrink dimensions and retry at moderate quality
-          let attempts = 0;
-          while (base64 && b64bytes(base64) > MAX_BASE64_BYTES && attempts < 4) {
-            attempts++;
-            w = Math.round(w * 0.8); h = Math.round(h * 0.8);
-            canvas.width = w; canvas.height = h;
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(0, 0, w, h);
-            ctx.drawImage(img, 0, 0, w, h);
-            dataUrl = canvas.toDataURL('image/jpeg', 0.8);
-            base64 = dataUrl.split(',')[1];
-          }
-
-          if (!base64) { reject(new Error('Could not process that image.')); return; }
-          resolve({ base64, mediaType: 'image/jpeg' });
-        } catch(err) {
-          reject(new Error('Could not process that image. If it is an iPhone HEIC photo, go to Camera → Formats → Most Compatible.'));
-        }
+function fileToBase64(file,maxDim=2000){
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onerror=()=>reject(new Error('Could not read the file.'));
+    reader.onload=(e)=>{
+      const img=new Image();
+      img.onload=()=>{
+        try{
+          let w=img.naturalWidth,h=img.naturalHeight;
+          if(!w||!h){reject(new Error('That image looks empty.'));return;}
+          if(w>maxDim||h>maxDim){const scale=maxDim/Math.max(w,h);w=Math.round(w*scale);h=Math.round(h*scale);}
+          const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
+          const ctx=canvas.getContext('2d');ctx.fillStyle='#ffffff';ctx.fillRect(0,0,w,h);ctx.drawImage(img,0,0,w,h);
+          const MAX_BYTES=7*1024*1024;
+          let quality=0.85;
+          let dataUrl=canvas.toDataURL('image/jpeg',quality);
+          let base64=dataUrl.split(',')[1];
+          const b64bytes=(str)=>Math.ceil(str.length*0.75);
+          while(base64&&b64bytes(base64)>MAX_BYTES&&quality>0.4){quality-=0.12;dataUrl=canvas.toDataURL('image/jpeg',quality);base64=dataUrl.split(',')[1];}
+          let attempts=0;
+          while(base64&&b64bytes(base64)>MAX_BYTES&&attempts<4){attempts++;w=Math.round(w*0.8);h=Math.round(h*0.8);canvas.width=w;canvas.height=h;ctx.fillStyle='#ffffff';ctx.fillRect(0,0,w,h);ctx.drawImage(img,0,0,w,h);dataUrl=canvas.toDataURL('image/jpeg',0.8);base64=dataUrl.split(',')[1];}
+          if(!base64){reject(new Error('Could not process that image.'));return;}
+          resolve({base64,mediaType:'image/jpeg'});
+        }catch(err){reject(new Error('Could not process that image.'));}
       };
-      img.onerror = () => reject(new Error('Could not open that image.'));
-      img.src = e.target.result;
+      img.onerror=()=>reject(new Error('Could not open that image.'));
+      img.src=e.target.result;
     };
     reader.readAsDataURL(file);
   });
 }
+function fileToJpegBase64(file,maxDim=2000){return fileToBase64(file,maxDim).then(r=>r.base64);}
 
-// Legacy alias used by receipt scanner (always outputs JPEG)
-function fileToJpegBase64(file, maxDim=2000) {
-  return fileToBase64(file, maxDim).then(r => r.base64);
-}
+function escapeHtml(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function showReceiptProcessing(msg){const proc=document.getElementById('receipt-processing');proc.style.display='block';proc.innerHTML=`<div class="ai-spinner" style="margin:0 auto 12px;"></div><div style="font-size:14px;color:var(--text-secondary);">${msg}</div>`;showReceiptButtons(false);}
+function showReceiptError(msg){const proc=document.getElementById('receipt-processing');proc.style.display='block';const safe=String(msg).replace(/</g,'&lt;').replace(/\n/g,'<br>');proc.innerHTML=`<div style="background:var(--red-light);color:var(--red);border-radius:var(--radius-md);padding:12px 14px;font-size:13px;line-height:1.5;margin-bottom:14px;text-align:left;">${safe}</div><button class="btn-primary" onclick="resetReceiptModal()">Try again</button>`;}
+function resetReceiptModal(){document.getElementById('receipt-processing').style.display='none';showReceiptButtons(true);}
+function extractJsonArray(text){if(!text)return null;let clean=text.replace(/```json/gi,'').replace(/```/g,'').trim();const start=clean.indexOf('['),end=clean.lastIndexOf(']');if(start!==-1&&end!==-1&&end>start)clean=clean.slice(start,end+1);try{const parsed=JSON.parse(clean);return Array.isArray(parsed)?parsed:null;}catch(e){return null;}}
 
 // ════════════════════════════════════════════════════
 // ONBOARDING
 // ════════════════════════════════════════════════════
-const ONBOARD_STEPS = 7;
-let onboardStep=0,obInvites=[],obStores=[],obReplayMode=false;
-function isOnboarded() { return localStorage.getItem('pantry_onboarded')==='true'; }
-function startOnboarding(replay) {
-  obReplayMode=!!replay; onboardStep=0; obInvites=replay?[...household.members]:[];
-  obStores=replay?[...household.stores]:['Costco','Detweilers'];
-  document.getElementById('ob-household-name').value=replay?(household.name==='My Household'?'':household.name):'';
-  document.getElementById('ob-admin-name').value=replay?household.admin:'';
-  document.getElementById('ob-budget').value=getBudgetForMonth(currentMonthKey());
-  document.getElementById('ob-api-key').value=replay?getApiKey():'';
-  buildOnboardProgress(); buildStoreChips(); renderInviteTags(); showOnboardStep(0);
+const ONBOARD_STEPS=7;
+let onboardStep=0;
+let onboardStores=[];
+let onboardInvites=[];
+function startOnboarding(force){
+  if(!force&&isOnboarded())return;
+  onboardStep=0; onboardStores=[]; onboardInvites=[];
+  document.getElementById('ob-household-name').value=household.name||'';
+  document.getElementById('ob-admin-name').value=household.admin||'';
+  document.getElementById('ob-api-key').value=getApiKey()||'';
+  document.getElementById('ob-budget').value=getBudgetForMonth(currentMonthKey())||DEFAULT_BUDGET;
+  buildStoreChips(); buildOnboardProgress(); setOnboardStep(0);
   document.getElementById('onboard').classList.add('open');
 }
-function buildOnboardProgress() { const wrap=document.getElementById('onboard-progress'); wrap.innerHTML=Array.from({length:ONBOARD_STEPS},(_,i)=>`<div class="onboard-dot ${i===0?'active':''}" data-dot="${i}"></div>`).join(''); }
-function showOnboardStep(n) {
-  onboardStep=n;
-  document.querySelectorAll('.onboard-step').forEach(s=>s.classList.remove('active'));
-  document.querySelector(`.onboard-step[data-step="${n}"]`).classList.add('active');
-  document.querySelectorAll('.onboard-dot').forEach((d,i)=>d.classList.toggle('active',i<=n));
-  const body=document.querySelector('.onboard-body'); if(body)body.scrollTop=0;
-  document.getElementById('onboard-next').textContent=n===0?'Get started':(n===ONBOARD_STEPS-1?"Let's go":'Continue');
-  document.getElementById('onboard-skip').style.display=(n===ONBOARD_STEPS-1)?'none':'block';
+function isOnboarded(){return !!localStorage.getItem('pantry_onboarded');}
+function buildOnboardProgress(){
+  const progress=document.getElementById('onboard-progress');
+  progress.innerHTML=Array.from({length:ONBOARD_STEPS},(_,i)=>`<div class="onboard-dot${i===0?' active':''}" id="ob-dot-${i}"></div>`).join('');
 }
-function onboardNext() {
-  if(onboardStep===1){const name=document.getElementById('ob-household-name').value.trim();const admin=document.getElementById('ob-admin-name').value.trim();if(!name){showToast('Name your household');return;}household.name=name;household.admin=admin;}
-  if(onboardStep===3){if(obStores.length===0){showToast('Pick at least one store');return;}household.stores=[...obStores];}
-  if(onboardStep===4){const b=parseFloat(document.getElementById('ob-budget').value);if(!b||b<=0){showToast('Enter a budget amount');return;}budgetByMonth[currentMonthKey()]=Math.round(b);}
-  if(onboardStep===5){const k=document.getElementById('ob-api-key').value.trim();if(k&&k.startsWith('sk-ant-'))setApiKey(k);else if(k&&!k.startsWith('sk-ant-')){showToast('Key should start with sk-ant-');return;}}
-  if(onboardStep<ONBOARD_STEPS-1)showOnboardStep(onboardStep+1);else finishOnboarding();
+function setOnboardStep(step){
+  document.querySelectorAll('.onboard-step').forEach(el=>el.classList.remove('active'));
+  const el=document.querySelector('.onboard-step[data-step="'+step+'"]');
+  if(el)el.classList.add('active');
+  document.querySelectorAll('.onboard-dot').forEach((d,i)=>d.classList.toggle('active',i<=step));
+  const isLast=(step===ONBOARD_STEPS-1);
+  document.getElementById('onboard-next').textContent=isLast?'Start using Pantry.':'Continue';
+  document.getElementById('onboard-skip').style.display=isLast?'none':'block';
+  onboardStep=step;
 }
-function skipOnboarding() { finishOnboarding(); }
-function finishOnboarding() {
-  household.members=[...obInvites]; if(obStores.length)household.stores=[...obStores];
-  saveHousehold(); saveBudgets(); refreshStoreDropdowns();
-  localStorage.setItem('pantry_onboarded','true');
+function onboardNext(){
+  if(onboardStep===1){household.name=document.getElementById('ob-household-name').value.trim()||'My Household';household.admin=document.getElementById('ob-admin-name').value.trim()||'Me';saveHousehold();}
+  if(onboardStep===2){household.members=onboardInvites.filter(Boolean);saveHousehold();}
+  if(onboardStep===3){household.stores=onboardStores.length>0?onboardStores:['Costco','Publix','Walmart'];saveHousehold();refreshStoreDropdowns();}
+  if(onboardStep===4){const b=parseFloat(document.getElementById('ob-budget').value)||DEFAULT_BUDGET;budgetByMonth[currentMonthKey()]=b;saveBudgets();}
+  if(onboardStep===5){const key=document.getElementById('ob-api-key').value.trim();if(key)setApiKey(key);}
+  if(onboardStep>=ONBOARD_STEPS-1){completeOnboarding();return;}
+  setOnboardStep(onboardStep+1);
+}
+function skipOnboarding(){
+  household.stores=onboardStores.length>0?onboardStores:['Costco','Publix','Walmart','Aldi'];
+  saveHousehold(); refreshStoreDropdowns();
+  completeOnboarding();
+}
+function completeOnboarding(){
+  localStorage.setItem('pantry_onboarded','1');
   document.getElementById('onboard').classList.remove('open');
-  renderHome(); switchTab('home');
-  if(obReplayMode)showToast('Settings updated');else showToast('Welcome to Pantry., '+(household.admin||'friend')+'!');
+  renderHome(); renderPlanList(); renderPerspective(); renderPantry();
+  refreshStoreDropdowns(); updateSettingsUI();
 }
-function addInviteTag() { const input=document.getElementById('ob-invite-input');const val=input.value.trim();if(!val)return;if(!obInvites.includes(val))obInvites.push(val);input.value='';renderInviteTags(); }
-function removeInviteTag(name) { obInvites=obInvites.filter(n=>n!==name); renderInviteTags(); }
-function renderInviteTags() { const wrap=document.getElementById('ob-invite-tags');if(!wrap)return;wrap.innerHTML=obInvites.map(n=>`<span class="invite-tag">${n}<button onclick="removeInviteTag('${n.replace(/'/g,"\\'")}')"><svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button></span>`).join('')||'<span style="font-size:13px;color:var(--text-tertiary);">No one added yet</span>'; }
-const SUGGESTED_STORES=['Costco','Detweilers','Publix','Walmart','Aldi',"Trader Joe's",'Whole Foods',"Sam's Club"];
-function buildStoreChips() {
-  const grid=document.getElementById('ob-store-grid');if(!grid)return;
-  const all=[...new Set([...SUGGESTED_STORES,...obStores])];
-  grid.innerHTML=all.map((name,i)=>{const sel=obStores.includes(name);const color=DEFAULT_STORE_DEFS[storeKey(name)]?.color||STORE_PALETTE[i%STORE_PALETTE.length];return `<div class="store-chip ${sel?'selected':''}" onclick="toggleStoreChip('${name.replace(/'/g,"\\'")}')"><span class="store-chip-dot" style="background:${color}"></span>${name}<span class="store-chip-check"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span></div>`;}).join('');
+function buildStoreChips(){
+  const stores=['Costco','Detweilers','Publix','Walmart','Aldi','Trader Joe\'s'];
+  const colors=['#E24B4A','#1D9E75','#378ADD','#FAC775','#9F77DD','#D85A30'];
+  onboardStores=[...household.stores];
+  const grid=document.getElementById('ob-store-grid');
+  grid.innerHTML=stores.map((s,i)=>
+    `<div class="store-chip${onboardStores.includes(s)?' selected':''}" onclick="toggleStoreChip('${s}',this)">` +
+    `<div class="store-chip-dot" style="background:${colors[i]}"></div>` +
+    `<span>${s}</span>` +
+    `<div class="store-chip-check"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>` +
+    `</div>`
+  ).join('');
 }
-function toggleStoreChip(name) { if(obStores.includes(name))obStores=obStores.filter(s=>s!==name);else obStores.push(name); buildStoreChips(); }
-function addCustomStore() { const input=document.getElementById('ob-custom-store');const val=input.value.trim();if(!val)return;if(!obStores.includes(val))obStores.push(val);input.value='';buildStoreChips(); }
+function toggleStoreChip(name,el){
+  el.classList.toggle('selected');
+  if(el.classList.contains('selected')&&!onboardStores.includes(name))onboardStores.push(name);
+  else onboardStores=onboardStores.filter(s=>s!==name);
+}
+function addCustomStore(){
+  const input=document.getElementById('ob-custom-store');const name=input.value.trim();if(!name)return;
+  if(!onboardStores.includes(name))onboardStores.push(name);
+  input.value=''; showToast(name+' added');
+}
+function addInviteTag(){
+  const input=document.getElementById('ob-invite-input');const name=input.value.trim();if(!name)return;
+  if(!onboardInvites.includes(name))onboardInvites.push(name);
+  input.value=''; renderInviteTags();
+}
+function removeInviteTag(name){onboardInvites=onboardInvites.filter(n=>n!==name);renderInviteTags();}
+function renderInviteTags(){
+  const tags=document.getElementById('ob-invite-tags');
+  tags.innerHTML=onboardInvites.map(n=>`<div class="invite-tag">${escapeHtml(n)}<button onclick="removeInviteTag('${n.replace(/'/g,"\\'")}')"><svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>`).join('');
+}
 
 // ════════════════════════════════════════════════════
 // SETTINGS
 // ════════════════════════════════════════════════════
-function openSettings() {
-  const key=currentMonthKey();
-  document.getElementById('set-household-name').textContent=household.name;
-  document.getElementById('set-household-sub').textContent='Admin: '+(household.admin||'You');
-  document.getElementById('set-family-sub').textContent=household.members.length?household.members.join(', '):'No members yet';
-  document.getElementById('set-stores-sub').textContent=household.stores.join(', ');
-  document.getElementById('set-budget-sub').textContent='$'+getBudgetForMonth(key).toLocaleString()+' / '+monthLabelFromKey(key);
-  const storedKey=getApiKey();
-  document.getElementById('set-api-key-sub').textContent=storedKey
-    ? '••••••••'+storedKey.slice(-4)+' · tap to change'
-    : 'Not set — required for AI features';
-  const bakTs = localStorage.getItem('pantry_bak_ts');
-  const bakSub = document.getElementById('set-backup-sub');
-  if (bakSub) bakSub.textContent = bakTs ? 'Auto-saved ' + new Date(bakTs).toLocaleDateString() + ' · tap to export' : 'Save all pantry data as a file';
+let greetTaps=0;let greetLast=0;
+function greetingTap(){const now=Date.now();if(now-greetLast>1500)greetTaps=0;greetTaps++;greetLast=now;if(greetTaps>=5){greetTaps=0;openSettings();showToast('Admin mode 🔓');}}
+function openSettings(){
+  updateSettingsUI();
   document.getElementById('settings-modal').classList.add('open');
 }
-
-function editApiKey() {
-  // Pre-fill with existing key if set (so user can see it's already saved)
-  // iOS will also offer Face ID autofill from Keychain if key was saved there previously
-  document.getElementById('api-key-input').value = getApiKey();
+function updateSettingsUI(){
+  const nameEl=document.getElementById('set-household-name');const subEl=document.getElementById('set-household-sub');const famEl=document.getElementById('set-family-sub');const storesEl=document.getElementById('set-stores-sub');const budgetEl=document.getElementById('set-budget-sub');const apiEl=document.getElementById('set-api-key-sub');
+  if(nameEl)nameEl.textContent=household.name||'My Household';
+  if(subEl)subEl.textContent='Admin: '+(household.admin||'—');
+  if(famEl)famEl.textContent=(household.members||[]).length?household.members.join(', '):'No members yet';
+  if(storesEl)storesEl.textContent=(household.stores||[]).slice(0,4).join(', ')||'None set';
+  if(budgetEl)budgetEl.textContent='$'+(getBudgetForMonth(currentMonthKey())||DEFAULT_BUDGET).toLocaleString()+' / month';
+  if(apiEl)apiEl.textContent=getApiKey()?'Key saved (sk-ant-***)':'Not set';
+  const backupSub=document.getElementById('set-backup-sub');
+  if(backupSub){const bk=localStorage.getItem('pantry_last_backup');backupSub.textContent=bk?'Last backup: '+new Date(bk).toLocaleDateString():'No backup yet';}
+}
+function editApiKey(){
+  closeModal('settings-modal');
+  document.getElementById('api-key-input').value=getApiKey()||'';
   document.getElementById('api-key-modal').classList.add('open');
-  // Focus triggers iOS Keychain autofill suggestion
-  setTimeout(() => document.getElementById('api-key-input').focus(), 150);
+  setTimeout(()=>document.getElementById('api-key-input').focus(),120);
 }
-
-function saveApiKey() {
-  const val = document.getElementById('api-key-input').value;
-  const clean = (val||'').replace(/[^A-Za-z0-9_-]/g, '');
-  if (!clean) { showToast('Enter your API key'); return; }
-  if (!clean.startsWith('sk-ant-')) { showToast('Key should start with sk-ant-'); return; }
-  setApiKey(clean);
-  closeModal('api-key-modal');
-  openSettings();
-  showToast('Key saved — say Yes if iOS offers to save to Keychain');
+function saveApiKey(){
+  const key=(document.getElementById('api-key-input').value||'').trim().replace(/[^A-Za-z0-9_-]/g,'');
+  if(!key){showToast('Key cannot be empty');return;}
+  setApiKey(key); closeModal('api-key-modal'); updateSettingsUI(); showToast('API key saved');
 }
-async function testConnection() {
-  const sub=document.getElementById('set-test-sub');
-  if(!hasApiKey()){sub.textContent='No key found — add one above first';sub.style.color='var(--red)';return;}
-  sub.textContent='Testing…'; sub.style.color='var(--text-tertiary)';
-  try {
-    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:apiHeaders(),body:JSON.stringify({model:'claude-sonnet-4-5-20250929',max_tokens:8,messages:[{role:'user',content:'ping'}]})});
-    const data=await res.json();
-    if(data.error){const msg=data.error.message||JSON.stringify(data.error);sub.textContent='✗ '+msg;sub.style.color='var(--red)';alert('Connection failed.\n\n'+msg+'\n\n'+keyDiagnostic());}
-    else{sub.textContent='✓ Connected — the key works';sub.style.color='var(--teal)';showToast('API key works!');}
-  } catch(e){sub.textContent='✗ Network/CORS error — could not reach Anthropic';sub.style.color='var(--red)';alert('Could not reach the API.\n\n'+(e&&e.message?e.message:e)+'\n\n'+keyDiagnostic());}
+async function testConnection(){
+  const status=document.getElementById('set-test-sub');
+  if(status)status.textContent='Testing…';
+  if(!hasApiKey()){if(status)status.textContent='No key set';showToast('Add an API key first');return;}
+  try{const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:apiHeaders(),body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:30,messages:[{role:'user',content:'Reply with one word: working'}]})});
+  const data=await res.json();
+  if(data.error){const e=data.error.message||data.error.type||JSON.stringify(data.error);if(status)status.textContent='Error: '+e;showToast('Connection error: '+e.slice(0,50));}
+  else{const reply=(data.content||[]).map(c=>c.text||'').join('').trim();if(status)status.textContent='Connected ✓ ('+reply+')';showToast('Connected!');}}
+  catch(e){if(status)status.textContent='Network error';showToast('Network error. Check your connection.');}
 }
-function editHousehold() { const name=prompt('Household name:',household.name);if(name===null)return;const admin=prompt('Admin name:',household.admin);if(name.trim())household.name=name.trim();if(admin!==null)household.admin=admin.trim();saveHousehold();openSettings();showToast('Household updated'); }
-function manageFamily() { const result=prompt('Family members (comma-separated):',household.members.join(', '));if(result===null)return;household.members=result.split(',').map(s=>s.trim()).filter(Boolean);saveHousehold();openSettings();showToast('Family updated'); }
-function manageStores() { const result=prompt('Your stores (comma-separated):',household.stores.join(', '));if(result===null)return;const list=result.split(',').map(s=>s.trim()).filter(Boolean);if(list.length===0){showToast('Keep at least one store');return;}household.stores=list;saveHousehold();refreshStoreDropdowns();openSettings();showToast('Stores updated'); }
-function resetAllData() { if(!confirm('This clears your list, pantry, hauls, budget, and household setup. Cannot be undone. Continue?'))return;['pantry_list','pantry_items','pantry_hauls','pantry_budgets','pantry_household','pantry_onboarded','pantry_active_month'].forEach(k=>localStorage.removeItem(k));location.reload(); }
-
-function exportData() {
-  try {
-    const backup = {
-      exportedAt: new Date().toISOString(),
-      version: 1,
-      pantry_list:      localStorage.getItem('pantry_list')      || '[]',
-      pantry_items:     localStorage.getItem('pantry_items')     || '[]',
-      pantry_hauls:     localStorage.getItem('pantry_hauls')     || '{}',
-      pantry_budgets:   localStorage.getItem('pantry_budgets')   || '{}',
-      pantry_household: localStorage.getItem('pantry_household') || 'null',
-      pantry_abbrev_map:localStorage.getItem('pantry_abbrev_map')|| '{}'
-    };
-
-    // Count what we're exporting
-    const items = JSON.parse(backup.pantry_items || '[]');
-    const list  = JSON.parse(backup.pantry_list  || '[]');
-    const hauls = JSON.parse(backup.pantry_hauls || '{}');
-    const haulCount = Object.values(hauls).flat().length;
-    const summary = `${items.length} pantry items, ${list.length} list items, ${haulCount} hauls`;
-
-    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement('a');
-    const date = new Date().toISOString().slice(0,10);
-    a.href = url; a.download = `pantry-backup-${date}.json`;
-    document.body.appendChild(a); a.click();
-    document.body.removeChild(a); URL.revokeObjectURL(url);
-    showToast('Exported: ' + summary);
-  } catch(e) {
-    alert('Export failed: ' + (e.message || e));
-  }
+function editHousehold(){
+  const name=prompt('Household name:',household.name||'My Household');if(name===null)return;
+  const admin=prompt('Your name (admin):',household.admin||'');if(admin===null)return;
+  household.name=name.trim()||household.name; household.admin=admin.trim()||household.admin;
+  saveHousehold(); updateSettingsUI(); showToast('Household updated');
 }
-
-function importData(input) {
-  if (!input.files[0]) return;
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    try {
-      const backup = JSON.parse(e.target.result);
-      if (!backup.version || !backup.pantry_items) {
-        alert('This doesn\'t look like a valid Pantry. backup file.');
-        return;
-      }
-      if (!confirm('This will replace your current data with the backup. Continue?')) return;
-      const keys = ['pantry_list','pantry_items','pantry_hauls','pantry_budgets','pantry_household','pantry_abbrev_map'];
-      keys.forEach(k => { if (backup[k]) localStorage.setItem(k, backup[k]); });
-      showToast('Data restored! Reloading...');
-      setTimeout(() => location.reload(), 1000);
-    } catch(e) {
-      alert('Could not read the backup file: ' + (e.message || e));
-    }
+function manageFamily(){
+  const members=(household.members||[]).slice();
+  const input=prompt('Family members (comma-separated):',members.join(', '));if(input===null)return;
+  household.members=input.split(',').map(s=>s.trim()).filter(Boolean);
+  saveHousehold(); updateSettingsUI(); showToast('Family updated');
+}
+function manageStores(){
+  const stores=(household.stores||[]).slice();
+  const input=prompt('Stores (comma-separated):',stores.join(', '));if(input===null)return;
+  household.stores=input.split(',').map(s=>s.trim()).filter(Boolean);
+  saveHousehold(); refreshStoreDropdowns(); updateSettingsUI(); showToast('Stores updated');
+}
+function resetAllData(){
+  if(!confirm('Delete ALL data? This cannot be undone.'))return;
+  if(!confirm('Are you sure? Your pantry, hauls, and budget history will be erased.'))return;
+  const keysToRemove=Object.keys(localStorage).filter(k=>k.startsWith('pantry_'));
+  keysToRemove.forEach(k=>localStorage.removeItem(k));
+  location.reload();
+}
+function exportData(){
+  const d={pantry_items:pantryItems,pantry_hauls:haulsData,pantry_list:shoppingList,pantry_budgets:budgetByMonth,pantry_household:household,pantry_abbrev_map:getAbbrevMap(),exported:new Date().toISOString()};
+  const blob=new Blob([JSON.stringify(d,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);const a=document.createElement('a');
+  a.href=url; a.download='pantry-backup-'+new Date().toISOString().split('T')[0]+'.json';
+  a.click(); URL.revokeObjectURL(url);
+  localStorage.setItem('pantry_last_backup',new Date().toISOString());
+  updateSettingsUI(); showToast('Backup saved!');
+}
+function importData(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=(e)=>{
+    try{
+      const d=JSON.parse(e.target.result);
+      if(d.pantry_items){pantryItems=d.pantry_items;localStorage.setItem('pantry_items',JSON.stringify(pantryItems));}
+      if(d.pantry_hauls){haulsData=d.pantry_hauls;localStorage.setItem('pantry_hauls',JSON.stringify(haulsData));}
+      if(d.pantry_list){shoppingList=d.pantry_list;localStorage.setItem('pantry_list',JSON.stringify(shoppingList));}
+      if(d.pantry_budgets){budgetByMonth=d.pantry_budgets;saveBudgets();}
+      if(d.pantry_household){household=d.pantry_household;saveHousehold();}
+      if(d.pantry_abbrev_map)localStorage.setItem('pantry_abbrev_map',JSON.stringify(d.pantry_abbrev_map));
+      refreshStoreDropdowns(); renderHome(); renderPlanList(); renderPerspective(); renderPantry(); updateSettingsUI();
+      showToast('Data restored!');
+    }catch(err){showToast('Could not import. Check the file.');}
   };
-  reader.readAsText(input.files[0]);
-  input.value = '';
+  reader.readAsText(file);input.value='';
 }
 
 // ════════════════════════════════════════════════════
 // HOME / BUDGET
 // ════════════════════════════════════════════════════
-function renderHome() {
-  const key=currentMonthKey(); const[y,m]=key.split('-').map(Number); const monthName=MONTH_NAMES[m-1];
-  const monthly=getBudgetForMonth(key); const spent=getSpentForMonth(key); const remaining=monthly-spent;
-  const daysLeft=daysLeftInMonth(key); const pct=monthly>0?Math.min(100,Math.round((spent/monthly)*100)):0;
-  document.getElementById('home-budget-label').innerHTML=`${monthName} Budget <span style="opacity:0.6;">· tap to edit</span>`;
-  document.getElementById('home-budget-amt').textContent='$'+monthly.toLocaleString();
+function renderHome(){
+  const mk=currentMonthKey();const budget=getBudgetForMonth(mk);const spent=getSpentForMonth(mk);
+  const remaining=budget-spent;const pct=Math.min(100,Math.round((spent/budget)*100));
+  const hauls=haulsData[mk]||[];const items=hauls.reduce((s,h)=>s+(h.trips||[]).reduce((a,t)=>a+t.items,0),0);
+  const onSale=hauls.reduce((s,h)=>{if(!h.items)return s;return s+(h.items.filter(it=>it.onSale).length||0);},0);
+  const greetEl=document.getElementById('home-greeting');
+  const n=new Date(); const h=n.getHours();
+  const greet=h<12?'Good morning':'h<17'?'Good afternoon':'Good evening';
+  document.getElementById('home-budget-amt').textContent='$'+spent.toFixed(0);
+  document.getElementById('home-budget-label').innerHTML='Spent · '+monthLabelFromKey(mk)+' <span style="opacity:0.6;">· tap to edit</span>';
   document.getElementById('home-remaining').textContent='$'+remaining.toFixed(2);
-  document.getElementById('home-days').textContent=daysLeft+(daysLeft===1?' day':' days');
+  const dl=daysLeftInMonth(mk);document.getElementById('home-days').textContent=dl+' days';
+  const pace=spent/budget;
+  const dayPassed=new Date(n.getFullYear(),n.getMonth()+1,0).getDate()-dl;const dayFraction=dayPassed/new Date(n.getFullYear(),n.getMonth()+1,0).getDate();
+  let paceLabel='On track'; let paceBg='rgba(255,255,255,0.2)';
+  if(pace>dayFraction+0.1){paceLabel='Over pace';paceBg='rgba(226,75,74,0.35)';}
+  else if(pace<dayFraction-0.2){paceLabel='Under budget';paceBg='rgba(255,255,255,0.25)';}
+  const pacePill=document.getElementById('home-pace-pill');
+  if(pacePill){pacePill.textContent=paceLabel;pacePill.style.background=paceBg;}
   document.getElementById('home-progress-fill').style.width=pct+'%';
   document.getElementById('home-spent-lbl').textContent='$'+spent.toFixed(2)+' spent';
-  document.getElementById('home-budget-lbl').textContent='$'+monthly.toLocaleString();
-  const lastDay=new Date(y,m,0).getDate(); const dayOfMonth=lastDay-daysLeft; const idealSpent=monthly*(dayOfMonth/lastDay);
-  const pacePill=document.getElementById('home-pace-pill');
-  if(spent<=idealSpent){pacePill.textContent='On track';pacePill.style.background='rgba(255,255,255,0.2)';}
-  else if(spent<=monthly){pacePill.textContent='Watch pace';pacePill.style.background='rgba(186,117,23,0.55)';}
-  else{pacePill.textContent='Over budget';pacePill.style.background='rgba(226,75,74,0.6)';}
-  document.getElementById('snap-target').textContent='$'+monthly.toLocaleString();
-  document.getElementById('snap-spent').textContent='$'+spent.toFixed(2);
-  document.getElementById('snap-remaining').textContent='$'+remaining.toFixed(2);
-  const nextKey=nextMonthKey(); const[ny,nm]=nextKey.split('-').map(Number);
-  const nextBudget=getBudgetForMonth(nextKey); const nextSet=budgetByMonth[nextKey]!=null;
-  document.getElementById('snap-next-row').style.display='flex';
-  document.getElementById('snap-next-label').textContent=MONTH_NAMES[nm-1]+' budget'+(nextSet?'':' (default)');
-  document.getElementById('snap-next-amt').textContent='$'+nextBudget.toLocaleString();
-  const hauls=haulsData[key]||[]; const itemsBought=hauls.reduce((s,h)=>s+h.trips.reduce((t,tr)=>t+tr.items,0),0);
+  document.getElementById('home-budget-lbl').textContent='$'+budget.toLocaleString();
   document.getElementById('home-hauls').textContent=hauls.length;
-  document.getElementById('home-items-bought').textContent=itemsBought;
-  document.getElementById('home-on-sale').textContent=shoppingList.filter(i=>i.onSale).length;
-  document.getElementById('qa-list-count').textContent=shoppingList.length+' items';
-  document.getElementById('qa-pantry-count').textContent=pantryItems.length+' items';
-  document.getElementById('qa-nudge-count').textContent=(aiNudges&&aiNudges.length)?aiNudges.length+' new':'Tap to view';
-  const badge=document.getElementById('ai-badge');
-  if(badge){const n=(aiNudges&&aiNudges.length)?aiNudges.length:0;badge.textContent=n;badge.style.display=n>0?'flex':'none';}
-  const perspSub=document.getElementById('qa-persp-sub');
-  if(perspSub)perspSub.textContent=monthName+' hauls';
+  document.getElementById('home-items-bought').textContent=items;
+  document.getElementById('home-on-sale').textContent=onSale;
+  document.getElementById('snap-target').textContent='$'+budget.toLocaleString();
+  document.getElementById('snap-spent').textContent='$'+spent.toFixed(2);
+  document.getElementById('snap-remaining').textContent='$'+Math.max(0,remaining).toFixed(2);
+  const qac=document.getElementById('qa-list-count');if(qac)qac.textContent=shoppingList.filter(i=>!i.checked).length+' items';
+  const qap=document.getElementById('qa-persp-sub');if(qap)qap.textContent=hauls.length+' haul'+(hauls.length!==1?'s':'');
+  const qan=document.getElementById('qa-pantry-count');if(qan)qan.textContent=pantryItems.length+' items tracked';
+  const nextKey=nextMonthKey();const nextRow=document.getElementById('snap-next-row');
+  if(nextRow){nextRow.style.display='flex';document.getElementById('snap-next-label').textContent='Next: '+monthLabelFromKey(nextKey);document.getElementById('snap-next-amt').textContent='$'+(getBudgetForMonth(nextKey)||budget).toLocaleString();}
 }
-let editingBudgetKey = null;
-function openEditBudget(monthKey) {
-  const key=monthKey||currentMonthKey(); editingBudgetKey=key;
-  const[y,m]=key.split('-').map(Number); const cmp=compareMonthKeys(key,currentMonthKey());
-  const tag=cmp===0?' (current)':cmp>0?' (upcoming)':'';
-  document.getElementById('edit-budget-title').textContent='Set '+MONTH_NAMES[m-1]+' '+y+' Budget'+tag;
-  document.getElementById('edit-budget-input').value=getBudgetForMonth(key);
+let editBudgetMonth=null;
+function openEditBudget(mk){
+  editBudgetMonth=mk||currentMonthKey();
+  const cur=getBudgetForMonth(editBudgetMonth);
+  document.getElementById('edit-budget-title').textContent='Budget · '+monthLabelFromKey(editBudgetMonth);
+  document.getElementById('edit-budget-input').value=cur;
   document.getElementById('edit-budget-modal').classList.add('open');
-  setTimeout(()=>document.getElementById('edit-budget-input').focus(),100);
+  setTimeout(()=>document.getElementById('edit-budget-input').select(),50);
 }
-function saveBudget() {
+function saveBudget(){
   const val=parseFloat(document.getElementById('edit-budget-input').value);
-  if(!val||val<=0){showToast('Enter a valid amount');return;}
-  const key=editingBudgetKey||currentMonthKey(); budgetByMonth[key]=Math.round(val); saveBudgets();
-  closeModal('edit-budget-modal'); renderHome(); if(currentTab==='perspective')renderPerspective();
-  const[y,m]=key.split('-').map(Number); showToast(MONTH_NAMES[m-1]+' budget set to $'+Math.round(val).toLocaleString());
+  if(!val||val<0){showToast('Enter a valid budget');return;}
+  budgetByMonth[editBudgetMonth]=val; saveBudgets(); closeModal('edit-budget-modal');
+  renderHome(); renderPerspective(); updateSettingsUI(); showToast('Budget updated');
 }
-function editNextMonthBudget() { openEditBudget(nextMonthKey()); }
-function checkMonthTurnover() {
-  const key=currentMonthKey(); const lastActive=localStorage.getItem('pantry_active_month');
-  if(lastActive&&lastActive!==key){if(budgetByMonth[key]==null&&budgetByMonth[lastActive]!=null){budgetByMonth[key]=budgetByMonth[lastActive];saveBudgets();}perspMonth=key;showToast('Welcome to '+monthLabelFromKey(key)+'!');}
-  localStorage.setItem('pantry_active_month',key);
+function editNextMonthBudget(){openEditBudget(nextMonthKey());}
+function checkMonthTurnover(){
+  const mk=currentMonthKey();
+  const pkArr=Object.keys(haulsData).sort();const prevKey=pkArr.filter(k=>k<mk).pop();
+  if(!prevKey)return;
+  const prevBudget=getBudgetForMonth(prevKey);const prevSpent=getSpentForMonth(prevKey);
+  const surplus=prevBudget-prevSpent;
+  if(surplus>0&&budgetByMonth[mk]==null){budgetByMonth[mk]=(getBudgetForMonth(mk)||DEFAULT_BUDGET);saveBudgets();}
+}
+
+// ════════════════════════════════════════════════════
+// RESTORE BANNER
+// ════════════════════════════════════════════════════
+function showRestoreBanner(){
+  if(document.getElementById('restore-banner'))return;
+  const b=document.createElement('div');b.id='restore-banner';
+  b.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:var(--red);color:white;padding:18px 20px;z-index:600;display:flex;flex-direction:column;gap:12px;';
+  b.innerHTML='<div style="font-size:15px;font-weight:700;">Pantry data not found</div>'+
+    '<div style="font-size:13px;opacity:0.9;">Safari may have cleared storage. Restore from backup to recover everything.</div>'+
+    '<label for="import-data-file" onclick="document.getElementById(\'restore-banner\').remove()" style="background:white;color:var(--red);border-radius:8px;padding:11px 16px;font-size:14px;font-weight:700;text-align:center;cursor:pointer;display:block;">Import Backup File</label>'+
+    '<button onclick="document.getElementById(\'restore-banner\').remove()" style="background:none;border:none;color:rgba(255,255,255,0.75);font-size:12px;cursor:pointer;text-align:left;padding:0;">Dismiss</button>';
+  document.body.appendChild(b);
 }
 
 // ════════════════════════════════════════════════════
 // UTILITIES
 // ════════════════════════════════════════════════════
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-function showToast(msg) { const toast=document.getElementById('toast-msg');toast.textContent=msg;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),2500); }
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+function closeDetailModal(){document.getElementById('pantry-detail-modal').classList.remove('open');}
+function showToast(msg){const t=document.getElementById('toast-msg');if(!t)return;t.textContent=msg;t.classList.add('show');clearTimeout(t._timer);t._timer=setTimeout(()=>t.classList.remove('show'),2400);}
 
 // ════════════════════════════════════════════════════
-// HAUL ITEM EDITING
+// DATA SAFETY
 // ════════════════════════════════════════════════════
-let hieState = null;
-let hieCount = 1;
-
-function openHaulItemEdit(haulId, itemIdx) {
-  const hauls = haulsData[perspMonth] || [];
-  const haul = hauls.find(h => h.id === haulId);
-  if (!haul || !haul.items || haul.items[itemIdx] === undefined) return;
-  const it = haul.items[itemIdx];
-  hieState = { haulId, itemIdx, monthKey: perspMonth };
-  hieCount = it.count || 1;
-  document.getElementById('hie-name').value = it.name || '';
-  document.getElementById('hie-price').value = it.price != null ? Number(it.price).toFixed(2) : '';
-  document.getElementById('hie-category').value = it.category || 'Other';
-  hieUpdateDisplay();
-  document.getElementById('haul-item-edit-modal').classList.add('open');
-  setTimeout(() => document.getElementById('hie-name').focus(), 80);
+function purgeLegacySeedData(){}  // disabled — real data preserved
+function autoBackup(){
+  try{const ts=new Date().toISOString();
+  localStorage.setItem('pantry_bak_items',JSON.stringify(pantryItems));
+  localStorage.setItem('pantry_bak_hauls',JSON.stringify(haulsData));
+  localStorage.setItem('pantry_bak_list',JSON.stringify(shoppingList));
+  localStorage.setItem('pantry_bak_budgets',JSON.stringify(budgetByMonth));
+  localStorage.setItem('pantry_bak_household',JSON.stringify(household));
+  localStorage.setItem('pantry_bak_ts',ts);
+  }catch(e){}
 }
-
-function hieUpdateDisplay() {
-  const price = parseFloat(document.getElementById('hie-price').value) || 0;
-  document.getElementById('hie-count-display').textContent = hieCount;
-  document.getElementById('hie-unit-price-lbl').textContent = price.toFixed(2);
-  document.getElementById('hie-line-total-lbl').textContent = (price * hieCount).toFixed(2);
-}
-
-function hieStep(delta) {
-  hieCount = Math.max(1, hieCount + delta);
-  hieUpdateDisplay();
-}
-
-function saveHaulItemEdit() {
-  if (!hieState) return;
-  const name = document.getElementById('hie-name').value.trim();
-  if (!name) { showToast('Enter an item name'); return; }
-  const price = parseFloat(document.getElementById('hie-price').value) || 0;
-  const category = document.getElementById('hie-category').value;
-  const hauls = haulsData[hieState.monthKey] || [];
-  const haul = hauls.find(h => h.id === hieState.haulId);
-  if (!haul || !haul.items) return;
-  const it = haul.items[hieState.itemIdx];
-  it.name = name;
-  it.price = price;
-  it.count = hieCount;
-  it.category = category;
-  recomputeHaulTotals(haul);
-  localStorage.setItem('pantry_hauls', JSON.stringify(haulsData));
-  closeModal('haul-item-edit-modal');
-  hieState = null;
-  renderPerspective();
-  renderHome();
-  const safeId = haul.id.replace(/[^a-zA-Z0-9_-]/g, '_');
-  setTimeout(() => {
-    const itemsEl = document.getElementById('haul-items-' + safeId);
-    if (itemsEl && itemsEl.style.display === 'none') toggleHaulItems(safeId);
-  }, 50);
-  showToast('Item updated');
-}
-
-function deleteHaulItem() {
-  if (!hieState) return;
-  if (!confirm('Remove this item from the haul?')) return;
-  const hauls = haulsData[hieState.monthKey] || [];
-  const haul = hauls.find(h => h.id === hieState.haulId);
-  if (!haul || !haul.items) return;
-  haul.items.splice(hieState.itemIdx, 1);
-  if (haul.trips && haul.trips.length === 1) haul.trips[0].items = haul.items.length;
-  recomputeHaulTotals(haul);
-  localStorage.setItem('pantry_hauls', JSON.stringify(haulsData));
-  closeModal('haul-item-edit-modal');
-  hieState = null;
-  renderPerspective();
-  renderHome();
-  showToast('Item removed from haul');
-}
-
-function recomputeHaulTotals(haul) {
-  if (!haul.items) return;
-  let total = 0;
-  haul.items.forEach(it => { total += (Number(it.price) || 0) * (it.count || 1); });
-  haul.totalAmount = Math.round((total + (Number(haul.tax) || 0)) * 100) / 100;
-  if (haul.trips && haul.trips.length === 1) haul.trips[0].amount = haul.totalAmount;
+function autoRestore(){
+  try{
+    const hasBakItems=localStorage.getItem('pantry_bak_items');
+    const isEmpty=pantryItems.length===0&&Object.keys(haulsData).length===0;
+    if(isEmpty&&hasBakItems){
+      const bakItems=JSON.parse(hasBakItems);const bakHauls=JSON.parse(localStorage.getItem('pantry_bak_hauls')||'{}');
+      const bakList=JSON.parse(localStorage.getItem('pantry_bak_list')||'[]');const bakBudgets=JSON.parse(localStorage.getItem('pantry_bak_budgets')||'{}');
+      if(bakItems.length>0||Object.keys(bakHauls).length>0){
+        pantryItems=bakItems; haulsData=bakHauls; shoppingList=bakList; budgetByMonth=bakBudgets;
+        localStorage.setItem('pantry_items',JSON.stringify(pantryItems));localStorage.setItem('pantry_hauls',JSON.stringify(haulsData));localStorage.setItem('pantry_list',JSON.stringify(shoppingList));saveBudgets();
+        showToast('Data restored from backup');
+      }
+    }
+  }catch(e){}
 }
 
 // ════════════════════════════════════════════════════
 // INIT
 // ════════════════════════════════════════════════════
-function purgeLegacySeedData() { /* intentionally disabled — user data is real now */ }
-
-// ── Auto-backup: runs on every load, saves a copy if we have data ──
-function autoBackup() {
-  try {
-    if (pantryItems.length > 0 || Object.keys(haulsData).length > 0 || shoppingList.length > 0) {
-      localStorage.setItem('pantry_bak_items',  localStorage.getItem('pantry_items')  || '[]');
-      localStorage.setItem('pantry_bak_hauls',  localStorage.getItem('pantry_hauls')  || '{}');
-      localStorage.setItem('pantry_bak_list',   localStorage.getItem('pantry_list')   || '[]');
-      localStorage.setItem('pantry_bak_ts',     new Date().toISOString());
-    }
-  } catch(e) {}
-}
-function showRestoreBanner() {
-  if (document.getElementById('restore-banner')) return;
-  const b = document.createElement('div');
-  b.id = 'restore-banner';
-  b.style.cssText = 'position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:var(--red);color:white;padding:18px 20px;z-index:600;display:flex;flex-direction:column;gap:12px;';
-  b.innerHTML =
-    '<div style="font-size:15px;font-weight:700;">Pantry data not found</div>' +
-    '<div style="font-size:13px;opacity:0.9;">Safari may have cleared local storage. Restore from your backup file to recover everything.</div>' +
-    '<label for="import-data-file" onclick="document.getElementById(\'restore-banner\').remove()" style="background:white;color:var(--red);border-radius:8px;padding:11px 16px;font-size:14px;font-weight:700;text-align:center;cursor:pointer;display:block;">Import Backup File</label>' +
-    '<button onclick="document.getElementById(\'restore-banner\').remove()" style="background:none;border:none;color:rgba(255,255,255,0.75);font-size:12px;cursor:pointer;text-align:left;padding:0;">Dismiss</button>';
-  document.body.appendChild(b);
-}
-
-// ── Auto-restore: if data is empty but backup exists, restore silently ──
-function autoRestore() {
-  const hasData = pantryItems.length > 0 || Object.keys(haulsData).length > 0 || shoppingList.length > 0;
-  if (hasData) return; // all good
-  try {
-    const bakItems = JSON.parse(localStorage.getItem('pantry_bak_items') || 'null');
-    const bakHauls = JSON.parse(localStorage.getItem('pantry_bak_hauls') || 'null');
-    const bakList  = JSON.parse(localStorage.getItem('pantry_bak_list')  || 'null');
-    const ts = localStorage.getItem('pantry_bak_ts');
-    if (bakItems && bakItems.length > 0) {
-      pantryItems  = bakItems;
-      haulsData    = bakHauls || {};
-      shoppingList = bakList  || [];
-      localStorage.setItem('pantry_items', JSON.stringify(pantryItems));
-      localStorage.setItem('pantry_hauls', JSON.stringify(haulsData));
-      localStorage.setItem('pantry_list',  JSON.stringify(shoppingList));
-      const when = ts ? ' (backup from ' + new Date(ts).toLocaleDateString() + ')' : '';
-      showToast('Data restored from backup' + when);
-    }
-  } catch(e) {}
-}
-
 document.addEventListener('DOMContentLoaded', () => {
-  autoRestore();      // restore if data is missing
-  // Request durable storage — prevents iOS 7-day eviction
-  if (navigator.storage && navigator.storage.persist) {
-    navigator.storage.persist().catch(() => {});
-  }
-  // If data is still empty after auto-restore, surface a recovery banner
-  const stillEmpty = pantryItems.length === 0 && Object.keys(haulsData).length === 0;
-  if (stillEmpty && isOnboarded()) { showRestoreBanner(); }
-
-  autoBackup();       // save backup now that we have confirmed data
-  checkMonthTurnover();
+  autoRestore();
+  autoBackup();
+  if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});
+  if(pantryItems.length===0&&Object.keys(haulsData).length===0&&isOnboarded())showRestoreBanner();
   refreshStoreDropdowns();
-  // Safe renders — errors in one tab don't blank the others
-  try { renderHome(); }        catch(e) { console.error('renderHome', e); }
-  try { renderPlanList(); }    catch(e) { console.error('renderPlan', e); }
-  try { renderPerspective(); } catch(e) { console.error('renderPersp', e); }
-  try { renderPantry(); }      catch(e) { console.error('renderPantry', e); }
-  if (!isOnboarded()) startOnboarding(false);
+  renderHome();
+  renderPlanList();
+  perspMonth=currentMonthKey();
+  checkMonthTurnover();
+  if(!isOnboarded())startOnboarding();
+  else{renderPerspective();renderPantry();}
+  updateSettingsUI();
+
+  // Receipt store dropdown population
+  const recSel=document.getElementById('receipt-store');
+  if(recSel)recSel.innerHTML=household.stores.concat(['Other']).map(s=>`<option>${s}</option>`).join('');
+
+  // Web search toggle initial state
+  const on=webSearchEnabled();
+  const track=document.getElementById('ws-track');const thumb=document.getElementById('ws-thumb');
+  if(track)track.style.background=on?'var(--teal)':'var(--gray-200)';
+  if(thumb)thumb.style.left=on?'22px':'2px';
+
+  // Quick-add: submit on Enter
+  const qa=document.getElementById('quick-add-input');
+  if(qa)qa.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();quickAddItem();}});
 });
-document.addEventListener('visibilitychange',()=>{if(!document.hidden){checkMonthTurnover();renderHome();}});
 </script>
 </body>
 </html>
