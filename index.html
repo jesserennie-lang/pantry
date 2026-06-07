@@ -1151,57 +1151,73 @@ function renderPerspective() {
     haul.trips.forEach(trip=>{const sc=(STORES[trip.storeKey]||STORES.other).color;tripsHtml+=`<div class="haul-trip-row"><div class="trip-store-dot" style="background:${sc}"></div><div class="trip-info"><div class="trip-store">${trip.store}</div><div class="trip-date">${formatDate(trip.date)} · ${trip.items} items</div></div><div class="trip-amount">$${trip.amount.toFixed(2)}</div></div>`;});
     const storeNames=haul.trips.map(t=>t.store).join(' + ');
 
-    // Items list (from stored receipt data)
-    let itemsHtml = '';
-    if (haul.items && haul.items.length > 0) {
-      haul.items.forEach(it => {
-        const cc = CATEGORY_COLORS[it.category] || '#888780';
-        const saleTag = it.onSale ? ' <span style="font-size:10px;color:var(--amber);font-weight:700;">SALE</span>' : '';
-        itemsHtml += `<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 16px;border-bottom:0.5px solid var(--border);">` +
-          `<div style="display:flex;align-items:center;gap:9px;min-width:0;flex:1;">` +
-          `<div style="width:8px;height:8px;border-radius:50%;background:${cc};flex-shrink:0;"></div>` +
-          `<span style="font-size:13px;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(it.name)}${saleTag}</span>` +
-          `</div><span style="font-size:13px;font-weight:600;flex-shrink:0;margin-left:12px;">$${Number(it.price).toFixed(2)}</span></div>`;
+    // Build items from stored data, or reconstruct from pantry price history
+    let displayItems = haul.items && haul.items.length > 0 ? haul.items : null;
+
+    if (!displayItems && haul.trips.length > 0) {
+      // Reconstruct from pantry: find items bought from this store on the haul date(s)
+      const haulDates = new Set(haul.trips.map(t => t.date));
+      const haulStores = new Set(haul.trips.map(t => t.store));
+      const found = [];
+      pantryItems.forEach(p => {
+        p.priceHistory.forEach(entry => {
+          if (haulDates.has(entry.date) && haulStores.has(entry.store)) {
+            found.push({ name: p.name, price: entry.price, category: p.category, onSale: !!entry.onSale });
+          }
+        });
       });
-      if (haul.tax) {
-        itemsHtml += `<div style="display:flex;justify-content:space-between;padding:7px 16px;border-bottom:0.5px solid var(--border);"><span style="font-size:13px;color:var(--text-tertiary);">Tax</span><span style="font-size:13px;color:var(--text-tertiary);">$${Number(haul.tax).toFixed(2)}</span></div>`;
-      }
+      if (found.length > 0) displayItems = found;
+    }
+
+    const hasItems = displayItems && displayItems.length > 0;
+
+    let itemsHtml = '';
+    if (hasItems) {
+      displayItems.forEach(it => {
+        const cc = CATEGORY_COLORS[it.category] || '#888780';
+        const saleTag = it.onSale ? `<span style="font-size:10px;color:var(--amber);font-weight:700;margin-left:4px;">SALE</span>` : '';
+        itemsHtml += `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 16px;border-bottom:0.5px solid var(--border);">` +
+          `<div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0;">` +
+          `<div style="width:8px;height:8px;border-radius:50%;background:${cc};flex-shrink:0;"></div>` +
+          `<span style="font-size:13px;">${escapeHtml(it.name)}${saleTag}</span>` +
+          `</div><span style="font-size:13px;font-weight:600;flex-shrink:0;padding-left:10px;">$${Number(it.price).toFixed(2)}</span></div>`;
+      });
+      if (haul.tax) itemsHtml += `<div style="display:flex;justify-content:space-between;padding:7px 16px;border-bottom:0.5px solid var(--border);"><span style="font-size:13px;color:var(--text-tertiary);">Tax</span><span style="font-size:13px;color:var(--text-tertiary);">$${Number(haul.tax).toFixed(2)}</span></div>`;
       itemsHtml += `<div style="display:flex;justify-content:space-between;padding:9px 16px;"><span style="font-size:13px;font-weight:700;">Total</span><span style="font-size:14px;font-weight:700;">$${haul.totalAmount.toFixed(2)}</span></div>`;
     }
 
-    const hasItems = haul.items && haul.items.length > 0;
+    const safeId = haul.id.replace(/[^a-zA-Z0-9_-]/g, '_');
+
     html += `<div class="haul-group">` +
-      `<div class="haul-label"><span>Haul ${idx+1} · ${storeNames}</span><span style="cursor:pointer;color:var(--teal);font-weight:600;letter-spacing:0;" onclick="openHaulEditor('${haul.id}')">Edit</span></div>` +
-      `<div class="haul-card">` +
+      `<div class="haul-label"><span>Haul ${idx+1} · ${storeNames}</span><span style="cursor:pointer;color:var(--teal);font-weight:600;" onclick="openHaulEditor('${haul.id}')">Edit</span></div>` +
+      `<div class="haul-card" id="haul-card-${safeId}">` +
         `<div class="haul-card-header" style="cursor:pointer;" onclick="openHaulEditor('${haul.id}')">` +
           `<div><div class="haul-title">${escapeHtml(haul.name)}</div><div class="haul-date">${formatDate(haul.trips[0].date)}${haul.trips.length>1?' – '+formatDate(haul.trips[haul.trips.length-1].date):''}</div></div>` +
           `<div style="text-align:right;"><div class="haul-total">$${haul.totalAmount.toFixed(2)}</div><div class="haul-sub">${haul.trips.length} store${haul.trips.length>1?'s':''} · ${haul.trips.reduce((s,t)=>s+t.items,0)} items</div></div>` +
         `</div>` +
         `<div class="haul-trips">${tripsHtml}</div>` +
         (hasItems
-          ? `<button onclick="event.stopPropagation();toggleHaulItems('${haul.id}')" style="width:100%;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px 16px;border-top:0.5px solid var(--border);border:none;border-top:0.5px solid var(--border);background:none;cursor:pointer;font-size:12px;font-weight:600;color:var(--text-secondary);">` +
-            `<svg id="haul-chevron-${haul.id}" viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;transition:transform 0.25s;"><path d="M6 9l6 6 6-6"/></svg>` +
-            `<span id="haul-toggle-lbl-${haul.id}">Show ${haul.items.length} items</span>` +
-          `</button>` +
-          `<div id="haul-items-${haul.id}" style="display:none;border-top:0.5px solid var(--border);">${itemsHtml}</div>`
+          ? `<div id="haul-toggle-${safeId}" onclick="toggleHaulItems('${safeId}')" style="display:flex;align-items:center;justify-content:center;gap:6px;padding:10px 16px;border-top:0.5px solid var(--border);cursor:pointer;font-size:12px;font-weight:600;color:var(--teal);-webkit-tap-highlight-color:transparent;">` +
+            `<svg id="haul-chevron-${safeId}" viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;transition:transform 0.22s;"><path d="M6 9l6 6 6-6"/></svg>` +
+            `<span id="haul-lbl-${safeId}">Show ${displayItems.length} items</span>` +
+          `</div>` +
+          `<div id="haul-items-${safeId}" style="display:none;">${itemsHtml}</div>`
           : '') +
       `</div></div>`;
   });
-  container.innerHTML=html;
+  container.innerHTML = html;
 }
 
-function toggleHaulItems(id) {
-  const el = document.getElementById('haul-items-' + id);
-  const chevron = document.getElementById('haul-chevron-' + id);
-  const lbl = document.getElementById('haul-toggle-lbl-' + id);
-  if (!el) return;
-  const open = el.style.display === 'block';
-  el.style.display = open ? 'none' : 'block';
-  if (chevron) chevron.style.transform = open ? 'rotate(0deg)' : 'rotate(180deg)';
-  if (lbl) {
-    const haul = (haulsData[perspMonth]||[]).find(h => h.id === id);
-    lbl.textContent = open ? 'Show ' + (haul?.items?.length||0) + ' items' : 'Hide items';
-  }
+function toggleHaulItems(safeId) {
+  const itemsEl   = document.getElementById('haul-items-'   + safeId);
+  const chevronEl = document.getElementById('haul-chevron-' + safeId);
+  const lblEl     = document.getElementById('haul-lbl-'     + safeId);
+  const toggleEl  = document.getElementById('haul-toggle-'  + safeId);
+  if (!itemsEl) return;
+  const isOpen = itemsEl.style.display !== 'none';
+  itemsEl.style.display = isOpen ? 'none' : 'block';
+  if (chevronEl) chevronEl.style.transform = isOpen ? '' : 'rotate(180deg)';
+  if (lblEl)     lblEl.textContent = isOpen ? 'Show ' + itemsEl.querySelectorAll('[style*="border-bottom"]').length + ' items' : 'Hide items';
 }
 
 function formatDate(dateStr) { const[y,m,d]=dateStr.split('-').map(Number); return MONTH_NAMES[m-1].substring(0,3)+' '+d; }
