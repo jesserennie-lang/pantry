@@ -169,7 +169,7 @@
   .search-wrap input:focus { outline: none; }
   .pantry-item { display: flex; align-items: center; padding: 12px 16px; gap: 12px; background: var(--white); border-bottom: 0.5px solid var(--border); cursor: pointer; transition: background 0.12s; }
   .pantry-item:active { background: var(--gray-50); }
-  .pantry-icon { width: 40px; height: 40px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+  .pantry-icon { width: 40px; height: 40px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .pantry-info { flex: 1; min-width: 0; }
   .pantry-name { font-size: 14px; font-weight: 500; }
   .pantry-sub { font-size: 11px; color: var(--text-tertiary); margin-top: 2px; }
@@ -432,7 +432,7 @@
     <div class="ai-header-title">AI Suggestions</div>
     <div class="ai-header-sub">Powered by your pantry + spending patterns</div>
     <div class="ai-chip-row">
-      <div class="ai-chip" onclick="generateNudges()">🔄 Refresh</div>
+      <div class="ai-chip" onclick="generateNudges()">Refresh</div>
       <div class="ai-chip" onclick="sendAiMessage('What should I buy this week?')">This week's picks</div>
       <div class="ai-chip" onclick="sendAiMessage('How can I stretch my budget?')">Stretch budget</div>
       <div class="ai-chip" onclick="sendAiMessage('What am I running low on?')">Running low</div>
@@ -477,7 +477,7 @@
   <div class="modal-sheet" onclick="event.stopPropagation()">
     <div class="modal-handle"></div>
     <div class="modal-title" id="edit-budget-title">Set Budget</div>
-    <div class="form-group"><label class="form-label">Monthly Grocery Budget</label><input class="form-input" id="edit-budget-input" placeholder="$800" type="number" step="10" inputmode="decimal"></div>
+    <div class="form-group"><label class="form-label">Monthly Grocery Budget</label><input class="form-input" id="edit-budget-input" placeholder="$850" type="number" step="10" inputmode="decimal"></div>
     <div style="padding:0 20px 8px;"><p style="font-size:12px;color:var(--text-tertiary);line-height:1.5;">YNAB-style: surplus rolls into your pantry buffer.</p></div>
     <div style="padding:8px 20px 16px;"><button class="btn-primary" onclick="saveBudget()">Save Budget</button></div>
   </div>
@@ -664,7 +664,7 @@
       <div class="onboard-hero-icon"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg></div>
       <div class="onboard-title">Monthly budget</div>
       <div class="onboard-text">Set your grocery budget. Surplus builds your pantry buffer, not permission to spend more.</div>
-      <div class="form-group" style="padding:0;"><label class="form-label">Monthly grocery budget</label><input class="form-input" id="ob-budget" placeholder="$800" type="number" step="10" inputmode="decimal" value="800"></div>
+      <div class="form-group" style="padding:0;"><label class="form-label">Monthly grocery budget</label><input class="form-input" id="ob-budget" placeholder="$850" type="number" step="10" inputmode="decimal" value="850"></div>
     </div>
     <div class="onboard-step" data-step="5">
       <div class="onboard-hero-icon" style="background:var(--teal-light);"><svg viewBox="0 0 24 24" style="stroke:var(--teal);"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg></div>
@@ -846,7 +846,7 @@ function currentMonthKey() { const n=new Date(); return `${n.getFullYear()}-${St
 function nextMonthKey() { const n=new Date(); let y=n.getFullYear(),m=n.getMonth()+2; if(m>12){m-=12;y+=1;} return `${y}-${String(m).padStart(2,'0')}`; }
 function monthLabelFromKey(key) { const[y,m]=key.split('-').map(Number); return MONTH_NAMES[m-1]+' '+y; }
 let budgetByMonth = JSON.parse(localStorage.getItem('pantry_budgets')||'null')||{};
-const DEFAULT_BUDGET = 800;
+const DEFAULT_BUDGET = 850;
 function getBudgetForMonth(key) { return budgetByMonth[key]!=null?budgetByMonth[key]:DEFAULT_BUDGET; }
 function saveBudgets() { localStorage.setItem('pantry_budgets',JSON.stringify(budgetByMonth)); }
 function getSpentForMonth(key) { return (haulsData[key]||[]).reduce((s,h)=>s+h.totalAmount,0); }
@@ -1118,9 +1118,56 @@ function renderPerspective() {
     let tripsHtml='';
     haul.trips.forEach(trip=>{const sc=(STORES[trip.storeKey]||STORES.other).color;tripsHtml+=`<div class="haul-trip-row"><div class="trip-store-dot" style="background:${sc}"></div><div class="trip-info"><div class="trip-store">${trip.store}</div><div class="trip-date">${formatDate(trip.date)} · ${trip.items} items</div></div><div class="trip-amount">$${trip.amount.toFixed(2)}</div></div>`;});
     const storeNames=haul.trips.map(t=>t.store).join(' + ');
-    html+=`<div class="haul-group"><div class="haul-label"><span>Haul ${idx+1} · ${storeNames}</span><span style="cursor:pointer;color:var(--teal);font-weight:600;letter-spacing:0;" onclick="openHaulEditor('${haul.id}')">Edit</span></div><div class="haul-card" onclick="openHaulEditor('${haul.id}')" style="cursor:pointer;"><div class="haul-card-header"><div><div class="haul-title">${escapeHtml(haul.name)}</div><div class="haul-date">${formatDate(haul.trips[0].date)}${haul.trips.length>1?' – '+formatDate(haul.trips[haul.trips.length-1].date):''}</div></div><div><div class="haul-total">$${haul.totalAmount.toFixed(2)}</div><div class="haul-sub">${haul.trips.length} store${haul.trips.length>1?'s':''} · ${haul.trips.reduce((s,t)=>s+t.items,0)} items</div></div></div><div class="haul-trips">${tripsHtml}</div></div></div>`;
+
+    // Items list (from stored receipt data)
+    let itemsHtml = '';
+    if (haul.items && haul.items.length > 0) {
+      haul.items.forEach(it => {
+        const cc = CATEGORY_COLORS[it.category] || '#888780';
+        const saleTag = it.onSale ? ' <span style="font-size:10px;color:var(--amber);font-weight:700;">SALE</span>' : '';
+        itemsHtml += `<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 16px;border-bottom:0.5px solid var(--border);">` +
+          `<div style="display:flex;align-items:center;gap:9px;min-width:0;flex:1;">` +
+          `<div style="width:8px;height:8px;border-radius:50%;background:${cc};flex-shrink:0;"></div>` +
+          `<span style="font-size:13px;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(it.name)}${saleTag}</span>` +
+          `</div><span style="font-size:13px;font-weight:600;flex-shrink:0;margin-left:12px;">$${Number(it.price).toFixed(2)}</span></div>`;
+      });
+      if (haul.tax) {
+        itemsHtml += `<div style="display:flex;justify-content:space-between;padding:7px 16px;border-bottom:0.5px solid var(--border);"><span style="font-size:13px;color:var(--text-tertiary);">Tax</span><span style="font-size:13px;color:var(--text-tertiary);">$${Number(haul.tax).toFixed(2)}</span></div>`;
+      }
+      itemsHtml += `<div style="display:flex;justify-content:space-between;padding:9px 16px;"><span style="font-size:13px;font-weight:700;">Total</span><span style="font-size:14px;font-weight:700;">$${haul.totalAmount.toFixed(2)}</span></div>`;
+    }
+
+    const hasItems = haul.items && haul.items.length > 0;
+    html += `<div class="haul-group">` +
+      `<div class="haul-label"><span>Haul ${idx+1} · ${storeNames}</span><span style="cursor:pointer;color:var(--teal);font-weight:600;letter-spacing:0;" onclick="openHaulEditor('${haul.id}')">Edit</span></div>` +
+      `<div class="haul-card">` +
+        `<div class="haul-card-header" onclick="openHaulEditor('${haul.id}')" style="cursor:pointer;">` +
+          `<div><div class="haul-title">${escapeHtml(haul.name)}</div><div class="haul-date">${formatDate(haul.trips[0].date)}${haul.trips.length>1?' – '+formatDate(haul.trips[haul.trips.length-1].date):''}</div></div>` +
+          `<div style="text-align:right;"><div class="haul-total">$${haul.totalAmount.toFixed(2)}</div><div class="haul-sub">${haul.trips.length} store${haul.trips.length>1?'s':''} · ${haul.trips.reduce((s,t)=>s+t.items,0)} items</div></div>` +
+        `</div>` +
+        `<div class="haul-trips">${tripsHtml}</div>` +
+        (hasItems ? `<div onclick="toggleHaulItems('${haul.id}')" style="display:flex;align-items:center;justify-content:center;gap:6px;padding:10px 16px;border-top:0.5px solid var(--border);cursor:pointer;font-size:12px;font-weight:600;color:var(--text-secondary);">` +
+          `<svg id="haul-chevron-${haul.id}" viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;transition:transform 0.2s;"><path d="M6 9l6 6 6-6"/></svg>` +
+          `<span id="haul-toggle-lbl-${haul.id}">Show ${haul.items.length} items</span>` +
+        `</div>` : '') +
+        (hasItems ? `<div id="haul-items-${haul.id}" style="display:none;border-top:0.5px solid var(--border);">${itemsHtml}</div>` : '') +
+      `</div></div>`;
   });
   container.innerHTML=html;
+}
+
+function toggleHaulItems(id) {
+  const el = document.getElementById('haul-items-' + id);
+  const chevron = document.getElementById('haul-chevron-' + id);
+  const lbl = document.getElementById('haul-toggle-lbl-' + id);
+  if (!el) return;
+  const open = el.style.display === 'block';
+  el.style.display = open ? 'none' : 'block';
+  if (chevron) chevron.style.transform = open ? 'rotate(0deg)' : 'rotate(180deg)';
+  if (lbl) {
+    const haul = (haulsData[perspMonth]||[]).find(h => h.id === id);
+    lbl.textContent = open ? 'Show ' + (haul?.items?.length||0) + ' items' : 'Hide items';
+  }
 }
 
 function formatDate(dateStr) { const[y,m,d]=dateStr.split('-').map(Number); return MONTH_NAMES[m-1].substring(0,3)+' '+d; }
@@ -1194,7 +1241,7 @@ function renderPantry(filter) {
       const prevPrice=item.priceHistory.length>1?item.priceHistory[item.priceHistory.length-2].price:null;
       const trend=prevPrice?(lastEntry.price>prevPrice?'↑':lastEntry.price<prevPrice?'↓':'→'):'';
       const trendColor=trend==='↑'?'var(--red)':trend==='↓'?'var(--teal)':'var(--gray-400)';
-      html+=`<div class="pantry-item" onclick="openPantryDetail(${item.id})"><div class="pantry-icon" style="background:${CATEGORY_COLORS[cat]||'#888780'}22;">${item.emoji}</div><div class="pantry-info"><div class="pantry-name">${item.name}</div><div class="pantry-sub">${item.priceHistory.length}x purchased</div><div class="stock-bar-wrap"><div class="stock-bar"><div class="stock-fill" style="width:${stock}%;background:${stockColor};"></div></div></div></div><div class="pantry-right"><div class="pantry-price">${lastPrice} <span style="color:${trendColor};font-size:11px;">${trend}</span></div><div class="pantry-store">${lastStore}</div></div></div>`;
+      html+=`<div class="pantry-item" onclick="openPantryDetail(${item.id})"><div class="pantry-icon" style="background:${CATEGORY_COLORS[cat]||'#888780'}15;border:1px solid ${CATEGORY_COLORS[cat]||'#888780'}30;"><div style="width:12px;height:12px;border-radius:50%;background:${CATEGORY_COLORS[cat]||'#888780'};"></div></div><div class="pantry-info"><div class="pantry-name">${item.name}</div><div class="pantry-sub">${item.priceHistory.length}x purchased</div><div class="stock-bar-wrap"><div class="stock-bar"><div class="stock-fill" style="width:${stock}%;background:${stockColor};"></div></div></div></div><div class="pantry-right"><div class="pantry-price">${lastPrice} <span style="color:${trendColor};font-size:11px;">${trend}</span></div><div class="pantry-store">${lastStore}</div></div></div>`;
     });
   });
   container.innerHTML=html||`<div class="empty-state"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg><h3>Empty pantry</h3><p>Scan a receipt or add items to start tracking prices.</p></div>`;
@@ -1534,7 +1581,8 @@ async function processReceiptBase64(base64, monthTarget, store) {
     abbrevLines ? 'RULE — CONFIRMED ABBREVIATIONS (the user corrected these before — trust them completely): ' + abbrevLines : '',
     knownProducts ? 'PRODUCTS THIS HOUSEHOLD BUYS (if a receipt line matches one of these, use this exact name and category): ' + knownProducts : '',
     '',
-    'SKIP ONLY: store membership fees, tax, grand total, subtotal, cash back, bottle deposits.',
+    'SKIP ONLY: store membership fees, grand total line, subtotal line, cash back, bottle deposits.',
+    'CAPTURE tax as a separate "tax" field in the response (not as a product item).',
     'INCLUDE everything else: all food, drinks, snacks, dairy, meat, produce, frozen,',
     'household supplies, personal care, pet food, prepared/ready-made meals, alcohol — regardless of price.',
     '',
@@ -1554,8 +1602,12 @@ async function processReceiptBase64(base64, monthTarget, store) {
       ? 'SHOPPING LIST — if a receipt item clearly matches one of these, set matchIndex to its i:\n' + JSON.stringify(listForMatch)
       : '',
     '',
-    'Return ONLY a JSON array, no markdown:',
-    '[{"rawText":"OLIPOP","name":"Olipop Sparkling Tonic","price":14.99,"originalPrice":19.99,"onSale":true,"quantity":"8-pack","category":"Beverages","confidence":"high","matchIndex":null}]',
+    'Return a JSON object (not array) with two fields:',
+    '{',
+    '  "tax": 4.23,',
+    '  "items": [{"rawText":"OLIPOP","name":"Olipop Sparkling Tonic","price":14.99,"originalPrice":19.99,"onSale":true,"quantity":"8-pack","category":"Beverages","confidence":"high","matchIndex":null}]',
+    '}',
+    'If no tax line is visible, set "tax": 0.',
     '',
     'confidence: "high"=clearly readable, "medium"=readable with minor uncertainty, "low"=partially obscured.',
     'If the image is too blurry or dark to read anything, return [].',
@@ -1583,7 +1635,17 @@ async function processReceiptBase64(base64, monthTarget, store) {
     }
     if (!data.content || !Array.isArray(data.content)) throw new Error('Unexpected response.');
     const text = data.content.map(c => c.text || '').join('');
-    const rawItems = extractJsonArray(text);
+
+    // Parse response — now a {tax, items} object, but fall back to plain array for safety
+    let taxAmount = 0;
+    let rawItems = null;
+    const clean = text.replace(/```json|```/g,'').trim();
+    try {
+      const parsed = JSON.parse(clean.slice(clean.indexOf('{') > -1 && clean.indexOf('{') < (clean.indexOf('[') || 9999) ? clean.indexOf('{') : clean.indexOf('['), clean.lastIndexOf(clean.indexOf('{') > -1 && clean.indexOf('{') < (clean.indexOf('[') || 9999) ? '}' : ']') + 1));
+      if (parsed && parsed.items) { rawItems = parsed.items; taxAmount = Number(parsed.tax) || 0; }
+      else if (Array.isArray(parsed)) rawItems = parsed;
+    } catch(e) { rawItems = extractJsonArray(text); }
+
     if (!rawItems || rawItems.length === 0) throw new Error("Couldn't read any items. Try a clearer, well-lit photo.");
     const items = rawItems
       .filter(it => it && typeof it.name === 'string' && it.name.trim().length > 0)
@@ -1600,7 +1662,7 @@ async function processReceiptBase64(base64, monthTarget, store) {
       }));
     if (items.length === 0) throw new Error('Receipt scanned but no items found. Try again.');
     closeModal('receipt-modal');
-    openRecon(items, targetKey, store);
+    openRecon(items, targetKey, store, taxAmount);
   } catch(e) {
     showReceiptError(e && e.message ? e.message : 'Could not read receipt. Try again.');
   }
@@ -1620,18 +1682,20 @@ function saveAbbrevMapping(rawText, cleanName) {
 
 // ── Reconciliation ──
 let reconState = null;
-function openRecon(items,targetKey,store) {
+function openRecon(items, targetKey, store, tax) {
   items.forEach(it=>{let mi=(it.matchIndex===0||it.matchIndex)?Number(it.matchIndex):null;if(mi===null||isNaN(mi)||mi<0||mi>=shoppingList.length)it.matchIndex=null;else it.matchIndex=mi;});
-  reconState={items,targetKey,store}; renderRecon(); document.getElementById('recon-modal').classList.add('open');
+  reconState={items,targetKey,store,tax:Number(tax)||0}; renderRecon(); document.getElementById('recon-modal').classList.add('open');
 }
 
 function renderRecon() {
-  const { items, store, targetKey } = reconState;
+  const { items, store, targetKey, tax } = reconState;
   const low = items.filter(i => i.confidence === 'low').length;
+  const subtotal = items.reduce((s,i) => s + (Number(i.price)||0), 0);
+  const total = subtotal + (tax || 0);
   const sub = store + ' · ' + monthLabelFromKey(targetKey) +
     (low ? ' · ' + low + ' item' + (low > 1 ? 's' : '') + ' need review' : ' · looking good');
   document.getElementById('recon-sub').textContent = sub;
-  document.getElementById('recon-confirm-btn').textContent = 'Log ' + items.length + ' item' + (items.length !== 1 ? 's' : '') + ' to Pantry';
+  document.getElementById('recon-confirm-btn').textContent = 'Log ' + items.length + ' item' + (items.length !== 1 ? 's' : '') + ' · $' + total.toFixed(2) + ' total';
 
   const CONF_COLOR = { high: 'var(--teal)', medium: 'var(--amber)', low: 'var(--red)' };
 
@@ -1670,8 +1734,23 @@ function renderRecon() {
     '</div>';
   });
 
+  // Tax row
+  if (tax && tax > 0) {
+    html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--white);border-radius:var(--radius-lg);margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,0.07);">' +
+      '<span style="font-size:14px;color:var(--text-secondary);">Tax</span>' +
+      '<span style="font-size:15px;font-weight:600;color:var(--text-secondary);">$' + Number(tax).toFixed(2) + '</span>' +
+    '</div>';
+  }
+
+  // Total row
+  const reconSubtotal = items.reduce((s,i) => s + (Number(i.price)||0), 0);
+  html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--white);border-radius:var(--radius-lg);margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,0.07);">' +
+    '<span style="font-size:14px;font-weight:700;">Total</span>' +
+    '<span style="font-size:16px;font-weight:700;">$' + (reconSubtotal + (tax||0)).toFixed(2) + '</span>' +
+  '</div>';
+
   // Add missed item button
-  html += '<button onclick="openReconAddItem()" style="width:100%;background:var(--white);border:1.5px dashed var(--border-strong);border-radius:var(--radius-lg);padding:14px;color:var(--text-secondary);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 1px 3px rgba(0,0,0,0.05);">' +
+  html += '<button onclick="openReconAddItem()" style="width:100%;background:var(--white);border:1.5px dashed var(--border-strong);border-radius:var(--radius-lg);padding:14px;color:var(--text-secondary);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 1px 3px rgba(0,0,0,0.05);margin-bottom:12px;">' +
     '<svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;"><path d="M12 5v14M5 12h14"/></svg>' +
     'Add item scanner missed' +
   '</button>';
@@ -1781,7 +1860,7 @@ function confirmRecon() {
   });
 
   saveList();
-  logReceiptAsHaul(items, targetKey, store);
+  logReceiptAsHaul(items, targetKey, store, reconState.tax || 0);
   document.getElementById('recon-modal').classList.remove('open');
 
   const checked = items.filter(i => i._autoMatched).length;
@@ -1802,10 +1881,20 @@ function extractJsonArray(text) {
   if(start!==-1&&end!==-1&&end>start)clean=clean.slice(start,end+1);
   try{const parsed=JSON.parse(clean);return Array.isArray(parsed)?parsed:null;}catch(e){return null;}
 }
-function logReceiptAsHaul(items,monthKey,store) {
-  const total=items.reduce((s,it)=>s+(Number(it.price)||0),0); const today=new Date().toISOString().split('T')[0]; const sKey=storeKey(store);
+function logReceiptAsHaul(items, monthKey, store, tax) {
+  const subtotal=items.reduce((s,it)=>s+(Number(it.price)||0),0);
+  const taxAmt = Number(tax)||0;
+  const total = subtotal + taxAmt;
+  const today=new Date().toISOString().split('T')[0]; const sKey=storeKey(store);
   if(!haulsData[monthKey])haulsData[monthKey]=[];
-  haulsData[monthKey].push({id:'haul-'+Date.now(),name:store+' receipt',totalAmount:Math.round(total*100)/100,trips:[{store,storeKey:sKey,date:today,amount:Math.round(total*100)/100,items:items.length}]});
+  haulsData[monthKey].push({
+    id:'haul-'+Date.now(),
+    name:store+' receipt',
+    totalAmount:Math.round(total*100)/100,
+    tax: taxAmt,
+    items: items.map(it=>({name:it.name,price:Number(it.price)||0,category:it.category||'Other',onSale:!!it.onSale})),
+    trips:[{store,storeKey:sKey,date:today,amount:Math.round(total*100)/100,items:items.length}]
+  });
   localStorage.setItem('pantry_hauls',JSON.stringify(haulsData));
   items.forEach(it=>{const name=it.name;const price=Number(it.price)||0;const entry={price,store,date:today,onSale:!!it.onSale,originalPrice:it.originalPrice||null};const existing=pantryItems.find(p=>p.name.toLowerCase()===name.toLowerCase());if(existing){existing.priceHistory.push(entry);existing.stockPct=100;existing.category=it.category||existing.category;}else{pantryItems.push({id:Date.now()+Math.random(),name,emoji:emojiFor(it.category),category:it.category||'Other',priceHistory:[entry],stockPct:100,avgDaysBetween:30});}});
   localStorage.setItem('pantry_items',JSON.stringify(pantryItems)); renderHome(); renderPantry();
@@ -2064,11 +2153,7 @@ function showToast(msg) { const toast=document.getElementById('toast-msg');toast
 // ════════════════════════════════════════════════════
 // INIT
 // ════════════════════════════════════════════════════
-function purgeLegacySeedData() {
-  const DATA_VERSION='clean-v1'; if(localStorage.getItem('pantry_data_version')===DATA_VERSION)return;
-  try{const list=JSON.parse(localStorage.getItem('pantry_list')||'[]');const items=JSON.parse(localStorage.getItem('pantry_items')||'[]');const looksLikeSeed=items.some(i=>i&&(i.id===101||i.name==='Organic Salmon'))||list.some(i=>i&&i.id===1&&i.name==='Organic Salmon');if(looksLikeSeed){['pantry_list','pantry_items','pantry_hauls','pantry_budgets'].forEach(k=>localStorage.removeItem(k));shoppingList=[];pantryItems=[];haulsData={};budgetByMonth={};}}catch(e){}
-  localStorage.setItem('pantry_data_version','clean-v1');
-}
+function purgeLegacySeedData() { /* intentionally disabled — user data is real now */ }
 document.addEventListener('DOMContentLoaded',()=>{
   purgeLegacySeedData(); checkMonthTurnover(); refreshStoreDropdowns();
   renderHome(); renderPlanList(); renderPerspective(); renderPantry();
