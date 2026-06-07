@@ -607,8 +607,8 @@
       </label>
       <!-- Library: picks from photo library -->
       <input type="file" id="receipt-library-input" accept="image/*" style="opacity:0;position:absolute;width:0;height:0;pointer-events:none;" onchange="handleReceiptUpload(this)">
-      <label for="receipt-library-input" class="btn-ghost" style="display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;user-select:none;margin-bottom:4px;" id="receipt-library-label">
-        <svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      <label for="receipt-library-input" id="receipt-library-label" style="display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;user-select:none;width:100%;background:none;color:var(--teal);border:1.5px solid var(--teal);border-radius:var(--radius-md);padding:11px 20px;font-size:14px;font-weight:600;margin-bottom:4px;">
+        <svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
         Upload from Library
       </label>
     </div>
