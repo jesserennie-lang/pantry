@@ -109,7 +109,15 @@
   .plan-progress-labels strong { color: var(--text-primary); }
   .list-item { display: flex; align-items: center; padding: 12px 16px; gap: 12px; background: var(--white); border-bottom: 0.5px solid var(--border); cursor: pointer; transition: background 0.12s; }
   .list-item:active { background: var(--gray-50); }
-  .list-item.checked { opacity: 0.55; }
+    .list-item.checked { opacity: 0.55; }
+  .quick-add-bar { position: sticky; top: 0; z-index: 20; display: flex; gap: 8px; padding: 10px 16px; background: var(--white); border-bottom: 0.5px solid var(--border); }
+  .quick-add-input { flex: 1; background: var(--gray-100); border: none; border-radius: var(--radius-md); padding: 11px 14px; font-size: 16px; color: var(--text-primary); }
+  .quick-add-input:focus { outline: 2px solid var(--teal); outline-offset: -1px; background: var(--white); }
+  .quick-add-input::placeholder { color: var(--text-tertiary); }
+  .quick-add-btn { width: 46px; flex-shrink: 0; background: var(--teal); border: none; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .quick-add-btn:active { background: var(--teal-dark); }
+  .quick-add-btn svg { width: 20px; height: 20px; stroke: white; fill: none; stroke-width: 2.75; stroke-linecap: round; }
+  .pill-instore { background: var(--amber-light); color: var(--amber); padding: 1px 7px; font-size: 10px; }
   /* Swipe — YNAB style: delete reveals from right, grows with swipe */
   .swipe-wrap { position: relative; overflow: hidden; border-bottom: 0.5px solid var(--border); }
   .swipe-wrap .list-item { border-bottom: none; position: relative; z-index: 1; will-change: transform; background: var(--white); user-select: none; -webkit-user-select: none; }
@@ -383,7 +391,12 @@
       <div class="plan-progress-labels"><span id="plan-checked-lbl"><strong>0</strong> of 0 checked</span><span id="plan-est-total">Est. <strong>$0.00</strong></span></div>
     </div>
   </div>
+    <div class="quick-add-bar">
+    <input type="text" id="quick-add-input" class="quick-add-input" placeholder="Add an item on the fly…" autocomplete="off" enterkeyhint="done" onkeydown="if(event.key==='Enter'){event.preventDefault();quickAddItem();}">
+    <button class="quick-add-btn" onclick="quickAddItem()" aria-label="Add item"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+  </div>
   <div id="plan-list-container"></div>
+
   <div style="padding:16px 20px 8px;"><button class="btn-primary" onclick="openAddItem()"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Add Item</button></div>
   <div style="padding:0 20px 8px;"><button class="btn-ghost" style="width:100%;" onclick="openListImport()">📷 Import from photo</button></div>
   <div style="padding:0 20px 24px;"><button class="btn-ghost" style="width:100%;" onclick="switchTab('pantry')">Browse Pantry to add</button></div>
@@ -929,6 +942,9 @@ function renderPlanList() {
   document.getElementById('plan-progress-fill').style.width = total ? Math.round((checked/total)*100)+'%' : '0%';
   document.getElementById('plan-checked-lbl').innerHTML = `<strong>${checked}</strong> of ${total} checked`;
   document.getElementById('plan-est-total').innerHTML = `Est. <strong>$${estTotal.toFixed(2)}</strong>`;
+    const inStoreCount = shoppingList.filter(i => i.addedInStore).length;
+  const planSub = document.getElementById('plan-subtitle');
+  if (planSub) planSub.textContent = inStoreCount ? inStoreCount + ' added in-store · plan these next time' : 'Your shopping list';
   const uncheckedItems = shoppingList.filter(i=>!i.checked);
   const checkedItems = shoppingList.filter(i=>i.checked);
   const byCategory = {};
@@ -949,6 +965,7 @@ function renderPlanList() {
 // ── BUG FIX: salePill was missing from renderListItem — caused ReferenceError on every render ──
 function renderListItem(item) {
   const salePill = item.onSale ? `<span class="pill pill-teal" style="padding:1px 7px;font-size:10px;">Sale</span>` : '';
+  const inStorePill = item.addedInStore ? `<span class="pill pill-instore">In-store</span>` : '';
   const price = item.lastPrice ? `$${item.lastPrice.toFixed(2)}` : '–';
   return `<div class="swipe-wrap" id="swipe-wrap-${item.id}">
     <div class="swipe-action-delete" id="swipe-del-${item.id}" onclick="deleteItem(${item.id})">Delete</div>
@@ -956,11 +973,36 @@ function renderListItem(item) {
       <div class="check-circle ${item.checked?'done':''}"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
       <div class="item-info">
         <div class="item-name">${escapeHtml(item.name)}</div>
-        <div class="item-meta">${escapeHtml(item.store)} ${salePill}</div>
+        <div class="item-meta">${escapeHtml(item.store)} ${salePill}${inStorePill}</div>
       </div>
       <div class="item-price-col"><div class="item-price">${price}</div></div>
     </div>
   </div>`;
+}
+function quickAddItem() {
+  const input = document.getElementById('quick-add-input');
+  const name = (input.value || '').trim();
+  if (!name) { input.focus(); return; }
+  const pantryMatch = pantryItems.find(p => p.name.toLowerCase() === name.toLowerCase());
+  const lastEntry = pantryMatch && pantryMatch.priceHistory && pantryMatch.priceHistory.length
+    ? pantryMatch.priceHistory[pantryMatch.priceHistory.length - 1] : null;
+  const defaultStore = household.stores[0] || 'Other';
+  shoppingList.push({
+    id: Date.now() + Math.random(),
+    name,
+    category: (pantryMatch && pantryMatch.category) || 'Other',
+    lastPrice: lastEntry ? lastEntry.price : null,
+    store: lastEntry ? lastEntry.store : defaultStore,
+    onSale: false,
+    checked: false,
+    qty: 1,
+    addedInStore: true
+  });
+  saveList();
+  input.value = '';
+  renderPlanList();
+  showToast(name + ' added · in-store');
+  setTimeout(() => { const el = document.getElementById('quick-add-input'); if (el) el.focus(); }, 30);
 }
 
 function handleListItemTap(e,id) { const el=document.getElementById('swipe-item-'+id); if(el&&Math.abs(el._swipeX||0)>5)return; toggleItem(id); }
