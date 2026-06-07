@@ -2214,9 +2214,126 @@ function autoRestore(){
 }
 
 // ════════════════════════════════════════════════════
+// RECOVERY MODE  (?recover in URL)
+// ════════════════════════════════════════════════════
+function showRecoveryMode() {
+  document.body.innerHTML = '';
+  const el = document.createElement('div');
+  el.style.cssText = 'font-family:-apple-system,sans-serif;max-width:430px;margin:0 auto;padding:24px 20px;background:#F8F7F4;min-height:100vh;';
+  el.innerHTML = '<div style="font-size:24px;font-weight:700;margin-bottom:4px;">Pantry. Recovery</div>' +
+    '<div style="font-size:13px;color:#666;margin-bottom:24px;line-height:1.5;">Load your backup to restore data. This runs on the same domain as the app so it writes to the right place.</div>' +
+    '<div style="background:white;border-radius:14px;padding:16px;margin-bottom:14px;border:0.5px solid rgba(0,0,0,0.1);">' +
+      '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#888;margin-bottom:12px;">Load backup file</div>' +
+      '<input type="file" id="rec-file" accept=".json,text/plain" style="display:none;" onchange="recLoad(this)">' +
+      '<label for="rec-file" style="display:flex;align-items:center;justify-content:center;gap:8px;background:#1D9E75;color:white;border-radius:10px;padding:14px;font-size:15px;font-weight:600;cursor:pointer;">' +
+        'Select backup .json file' +
+      '</label>' +
+    '</div>' +
+    '<div id="rec-results" style="background:white;border-radius:14px;padding:16px;margin-bottom:14px;border:0.5px solid rgba(0,0,0,0.1);display:none;"></div>' +
+    '<div style="background:white;border-radius:14px;padding:16px;border:0.5px solid rgba(0,0,0,0.1);">' +
+      '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#888;margin-bottom:10px;">What is already in this browser</div>' +
+      '<div id="rec-current"></div>' +
+    '</div>';
+  document.body.appendChild(el);
+  recShowCurrent();
+}
+window._recData = null;
+function recLoad(input) {
+  const file = input.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onerror = () => recShowResult('<div style="color:#E24B4A;padding:10px;">Could not read the file.</div>', null);
+  reader.onload = function(e) {
+    const text = e.target.result;
+    let d;
+    try { d = JSON.parse(text); } catch(err) {
+      recShowResult(
+        '<div style="background:#FCEBEB;color:#E24B4A;border-radius:8px;padding:10px 12px;font-size:13px;">Not valid JSON: ' + err.message + '<br><br>First 300 chars of file:<br><code style="font-size:10px;word-break:break-all;">' + recEsc(text.slice(0,300)) + '</code></div>',
+        null
+      );
+      return;
+    }
+    const keys = Object.keys(d);
+    const pantryKeys = keys.filter(function(k){ return k.startsWith('pantry_'); });
+    const itemCount = Array.isArray(d.pantry_items) ? d.pantry_items.length : (d.pantry_items ? '?' : 0);
+    const haulCount = (d.pantry_hauls && typeof d.pantry_hauls === 'object') ? Object.keys(d.pantry_hauls).length : 0;
+    const listCount = Array.isArray(d.pantry_list) ? d.pantry_list.length : 0;
+    let html = '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#888;margin-bottom:10px;">What is in this file</div>';
+    if (pantryKeys.length === 0) {
+      html += '<div style="background:#FAEEDA;color:#7a4e0c;border-radius:8px;padding:10px 12px;font-size:13px;margin-bottom:10px;">No pantry_ keys found in this file.<br>Keys present: ' + recEsc(keys.slice(0,10).join(', ')) + '</div>';
+    } else {
+      html += '<div style="margin-bottom:12px;">';
+      var rows = [['Pantry items', itemCount], ['Haul months', haulCount], ['Shopping list items', listCount]];
+      rows.forEach(function(r) {
+        var ok = Number(r[1]) > 0;
+        html += '<div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:0.5px solid #eee;"><span style="font-size:14px;">' + r[0] + '</span><span style="font-weight:700;color:' + (ok ? '#1D9E75' : '#ccc') + ';">' + r[1] + '</span></div>';
+      });
+      html += '</div>';
+      html += '<button id="rec-restore-btn" style="width:100%;background:#1D9E75;color:white;border:none;border-radius:10px;padding:14px;font-size:15px;font-weight:600;cursor:pointer;margin-bottom:8px;">Write data to browser &amp; open app</button>';
+    }
+    recShowResult(html, d);
+  };
+  reader.readAsText(file);
+  input.value = '';
+}
+function recShowResult(html, data) {
+  window._recData = data;
+  var el = document.getElementById('rec-results');
+  if (!el) return;
+  el.style.display = 'block';
+  el.innerHTML = html;
+  if (data) {
+    var btn = document.getElementById('rec-restore-btn');
+    if (btn) btn.onclick = recRestore;
+  }
+}
+function recRestore() {
+  var d = window._recData; if (!d) { alert('No file loaded.'); return; }
+  var count = 0;
+  var saves = [
+    ['pantry_items',    function(v){ return Array.isArray(v); }],
+    ['pantry_hauls',    function(v){ return typeof v === 'object' && !Array.isArray(v); }],
+    ['pantry_list',     function(v){ return Array.isArray(v); }],
+    ['pantry_budgets',  function(v){ return typeof v === 'object' && !Array.isArray(v); }],
+    ['pantry_household',function(v){ return typeof v === 'object' && !Array.isArray(v); }],
+    ['pantry_abbrev_map',function(v){ return typeof v === 'object'; }],
+  ];
+  saves.forEach(function(pair) {
+    try {
+      var key = pair[0], valid = pair[1];
+      var val = d[key];
+      if (val != null && valid(val)) {
+        if (key === 'pantry_household' && !Array.isArray(val.stores)) val.stores = ['Costco','Publix','Walmart'];
+        localStorage.setItem(key, JSON.stringify(val));
+        count++;
+      }
+    } catch(e) {}
+  });
+  localStorage.setItem('pantry_onboarded','1');
+  alert('Saved ' + count + ' sections. Tap OK to open the app.');
+  window.location.href = window.location.pathname;
+}
+function recShowCurrent() {
+  var el = document.getElementById('rec-current'); if (!el) return;
+  var keys = [['pantry_items','Pantry items'],['pantry_hauls','Haul months'],['pantry_list','Shopping list']];
+  var html = '';
+  keys.forEach(function(pair) {
+    try {
+      var raw = localStorage.getItem(pair[0]);
+      if (!raw) { html += '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:0.5px solid #eee;"><span style="font-size:14px;">' + pair[1] + '</span><span style="color:#ccc;font-weight:600;">Empty</span></div>'; return; }
+      var val = JSON.parse(raw);
+      var count = Array.isArray(val) ? val.length + ' items' : Object.keys(val).length + ' keys';
+      html += '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:0.5px solid #eee;"><span style="font-size:14px;">' + pair[1] + '</span><span style="color:#1D9E75;font-weight:600;">' + count + '</span></div>';
+    } catch(e) { html += '<div style="padding:8px 0;font-size:13px;color:#E24B4A;">' + pair[1] + ': error</div>'; }
+  });
+  el.innerHTML = html || '<div style="font-size:13px;color:#888;">Nothing stored yet.</div>';
+}
+function recEsc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ════════════════════════════════════════════════════
 // INIT
 // ════════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
+  if(window.location.search.includes('recover')){showRecoveryMode();return;}
   autoRestore();
   autoBackup();
   if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});
