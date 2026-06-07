@@ -599,10 +599,17 @@
           <span id="ws-thumb" style="position:absolute;top:2px;width:22px;height:22px;background:white;border-radius:50%;transition:left 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.2);"></span>
         </label>
       </div>
+      <!-- Camera: opens native camera directly -->
       <input type="file" id="receipt-file-input" accept="image/*" capture="environment" style="opacity:0;position:absolute;width:0;height:0;pointer-events:none;" onchange="handleReceiptUpload(this)">
-      <label for="receipt-file-input" class="btn-primary" style="margin-bottom:12px;cursor:pointer;user-select:none;" id="receipt-camera-label">
+      <label for="receipt-file-input" class="btn-primary" style="margin-bottom:10px;cursor:pointer;user-select:none;" id="receipt-camera-label">
         <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
-        Take Photo or Upload
+        Take Photo
+      </label>
+      <!-- Library: picks from photo library -->
+      <input type="file" id="receipt-library-input" accept="image/*" style="opacity:0;position:absolute;width:0;height:0;pointer-events:none;" onchange="handleReceiptUpload(this)">
+      <label for="receipt-library-input" class="btn-ghost" style="display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;user-select:none;margin-bottom:4px;" id="receipt-library-label">
+        <svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        Upload from Library
       </label>
     </div>
     <div id="receipt-processing" style="display:none;padding:0 20px 16px;text-align:center;"><div class="ai-spinner" style="margin:0 auto 12px;"></div><div style="font-size:14px;color:var(--text-secondary);">Reading your receipt...</div></div>
@@ -1492,7 +1499,12 @@ function confirmListImport() {
 let receiptMonthTarget = 'current';
 function receiptTargetKey() { const n=new Date(); let y=n.getFullYear(),m=n.getMonth()+1; if(receiptMonthTarget==='next'){m+=1;if(m>12){m=1;y+=1;}} return `${y}-${String(m).padStart(2,'0')}`; }
 function setReceiptMonth(target) { receiptMonthTarget=target; document.getElementById('seg-current').classList.toggle('active',target==='current'); document.getElementById('seg-next').classList.toggle('active',target==='next'); }
-function showReceiptButtons(visible) { const l=document.getElementById('receipt-camera-label'); if(l)l.style.display=visible?'flex':'none'; }
+function showReceiptButtons(visible) {
+  const camera = document.getElementById('receipt-camera-label');
+  const library = document.getElementById('receipt-library-label');
+  if (camera)  camera.style.display  = visible ? 'flex' : 'none';
+  if (library) library.style.display = visible ? 'flex' : 'none';
+}
 function openReceiptModal() {
   openFallbackReceiptModal();
 }
