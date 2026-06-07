@@ -2083,13 +2083,27 @@ function importData(input){
     var d;
     try{ d=JSON.parse(raw); }
     catch(err){ alert('That file is not valid JSON.\n\n'+err.message+'\n\nStart of file:\n'+String(raw).slice(0,160)); return; }
+    // Values may be live arrays/objects OR JSON strings (older export saved raw localStorage strings).
+    function val(key){
+      var v=d[key];
+      if(v==null) return null;
+      var tries=0;
+      while(typeof v==='string'&&tries<3){ try{ v=JSON.parse(v); }catch(e){ return null; } tries++; }
+      return v;
+    }
     var count=0; var summary=[];
-    try{ if(Array.isArray(d.pantry_items)){ localStorage.setItem('pantry_items',JSON.stringify(d.pantry_items)); count++; summary.push(d.pantry_items.length+' pantry items'); } }catch(e){}
-    try{ if(d.pantry_hauls&&typeof d.pantry_hauls==='object'&&!Array.isArray(d.pantry_hauls)){ localStorage.setItem('pantry_hauls',JSON.stringify(d.pantry_hauls)); count++; var hm=Object.keys(d.pantry_hauls).length; var hi=0; Object.values(d.pantry_hauls).forEach(function(a){ if(Array.isArray(a)) hi+=a.length; }); summary.push(hm+' haul month(s), '+hi+' hauls'); } }catch(e){}
-    try{ if(Array.isArray(d.pantry_list)){ localStorage.setItem('pantry_list',JSON.stringify(d.pantry_list)); summary.push(d.pantry_list.length+' list items'); } }catch(e){}
-    try{ if(d.pantry_budgets&&typeof d.pantry_budgets==='object'){ localStorage.setItem('pantry_budgets',JSON.stringify(d.pantry_budgets)); } }catch(e){}
-    try{ if(d.pantry_household&&typeof d.pantry_household==='object'){ var hh=d.pantry_household; if(!Array.isArray(hh.stores)) hh.stores=['Costco','Publix','Walmart']; localStorage.setItem('pantry_household',JSON.stringify(hh)); } }catch(e){}
-    try{ if(d.pantry_abbrev_map) localStorage.setItem('pantry_abbrev_map',JSON.stringify(d.pantry_abbrev_map)); }catch(e){}
+    var items=val('pantry_items');
+    if(Array.isArray(items)){ localStorage.setItem('pantry_items',JSON.stringify(items)); count++; summary.push(items.length+' pantry items'); }
+    var hauls=val('pantry_hauls');
+    if(hauls&&typeof hauls==='object'&&!Array.isArray(hauls)){ localStorage.setItem('pantry_hauls',JSON.stringify(hauls)); count++; var hm=Object.keys(hauls).length; var hi=0; Object.keys(hauls).forEach(function(k){ if(Array.isArray(hauls[k])) hi+=hauls[k].length; }); summary.push(hm+' haul month(s), '+hi+' hauls'); }
+    var list=val('pantry_list');
+    if(Array.isArray(list)){ localStorage.setItem('pantry_list',JSON.stringify(list)); summary.push(list.length+' list items'); }
+    var budgets=val('pantry_budgets');
+    if(budgets&&typeof budgets==='object'){ localStorage.setItem('pantry_budgets',JSON.stringify(budgets)); }
+    var hh=val('pantry_household');
+    if(hh&&typeof hh==='object'){ if(!Array.isArray(hh.stores)) hh.stores=['Costco','Publix','Walmart']; localStorage.setItem('pantry_household',JSON.stringify(hh)); }
+    var abbrev=val('pantry_abbrev_map');
+    if(abbrev&&typeof abbrev==='object'){ localStorage.setItem('pantry_abbrev_map',JSON.stringify(abbrev)); }
     if(count===0){
       var keys=Object.keys(d);
       alert('No Pantry data found in that file.\n\nThe file contains these keys:\n'+(keys.length?keys.join(', '):'(none)')+'\n\nExpected pantry_items and/or pantry_hauls.');
@@ -2268,11 +2282,13 @@ function recLoad(input) {
       );
       return;
     }
+    function rv(k){ var v=d[k]; if(v==null) return null; var t=0; while(typeof v==='string'&&t<3){ try{v=JSON.parse(v);}catch(e){return null;} t++; } return v; }
     const keys = Object.keys(d);
     const pantryKeys = keys.filter(function(k){ return k.startsWith('pantry_'); });
-    const itemCount = Array.isArray(d.pantry_items) ? d.pantry_items.length : (d.pantry_items ? '?' : 0);
-    const haulCount = (d.pantry_hauls && typeof d.pantry_hauls === 'object') ? Object.keys(d.pantry_hauls).length : 0;
-    const listCount = Array.isArray(d.pantry_list) ? d.pantry_list.length : 0;
+    var _it=rv('pantry_items'), _ha=rv('pantry_hauls'), _li=rv('pantry_list');
+    const itemCount = Array.isArray(_it) ? _it.length : 0;
+    const haulCount = (_ha && typeof _ha === 'object' && !Array.isArray(_ha)) ? Object.keys(_ha).length : 0;
+    const listCount = Array.isArray(_li) ? _li.length : 0;
     let html = '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#888;margin-bottom:10px;">What is in this file</div>';
     if (pantryKeys.length === 0) {
       html += '<div style="background:#FAEEDA;color:#7a4e0c;border-radius:8px;padding:10px 12px;font-size:13px;margin-bottom:10px;">No pantry_ keys found in this file.<br>Keys present: ' + recEsc(keys.slice(0,10).join(', ')) + '</div>';
@@ -2304,6 +2320,7 @@ function recShowResult(html, data) {
 }
 function recRestore() {
   var d = window._recData; if (!d) { alert('No file loaded.'); return; }
+  function rv(k){ var v=d[k]; if(v==null) return null; var t=0; while(typeof v==='string'&&t<3){ try{v=JSON.parse(v);}catch(e){return null;} t++; } return v; }
   var count = 0;
   var saves = [
     ['pantry_items',    function(v){ return Array.isArray(v); }],
@@ -2316,7 +2333,7 @@ function recRestore() {
   saves.forEach(function(pair) {
     try {
       var key = pair[0], valid = pair[1];
-      var val = d[key];
+      var val = rv(key);
       if (val != null && valid(val)) {
         if (key === 'pantry_household' && !Array.isArray(val.stores)) val.stores = ['Costco','Publix','Walmart'];
         localStorage.setItem(key, JSON.stringify(val));
