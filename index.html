@@ -830,6 +830,38 @@
     </div>
   </div>
 </div>
+<div class="modal-overlay" id="haul-item-edit-modal" onclick="closeModal('haul-item-edit-modal')" style="z-index:450;">
+  <div class="modal-sheet" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px 4px;">
+      <div class="modal-title" style="padding:0;">Edit Item</div>
+      <button class="icon-btn" onclick="closeModal('haul-item-edit-modal')"><svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="form-group"><label class="form-label">Item Name</label><input class="form-input" id="hie-name" type="text"></div>
+    <div class="form-group">
+      <label class="form-label">Unit Price ($)</label>
+      <input class="form-input" id="hie-price" type="number" step="0.01" inputmode="decimal" placeholder="0.00" oninput="hieUpdateDisplay()">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Quantity</label>
+      <div style="display:flex;align-items:center;gap:16px;padding:4px 0;">
+        <button type="button" onclick="hieStep(-1)" style="width:40px;height:40px;border-radius:var(--radius-md);border:1.5px solid var(--border-strong);background:var(--white);font-size:22px;font-weight:600;display:flex;align-items:center;justify-content:center;cursor:pointer;">−</button>
+        <span id="hie-count-display" style="font-size:22px;font-weight:700;min-width:36px;text-align:center;">1</span>
+        <button type="button" onclick="hieStep(1)" style="width:40px;height:40px;border-radius:var(--radius-md);border:1.5px solid var(--border-strong);background:var(--white);font-size:22px;font-weight:600;display:flex;align-items:center;justify-content:center;cursor:pointer;">+</button>
+        <span style="font-size:12px;color:var(--text-tertiary);">× $<span id="hie-unit-price-lbl">0.00</span> = $<span id="hie-line-total-lbl">0.00</span></span>
+      </div>
+    </div>
+    <div class="form-group"><label class="form-label">Category</label>
+      <select class="form-input" id="hie-category">
+        <option>Protein</option><option>Produce</option><option>Dairy</option>
+        <option>Pantry Staples</option><option>Snacks</option><option>Beverages</option>
+        <option>Frozen</option><option>Ready-Made</option><option>Non-Grocery</option><option>Other</option>
+      </select>
+    </div>
+    <div style="padding:0 20px 8px;"><button class="btn-primary" onclick="saveHaulItemEdit()">Save Changes</button></div>
+    <div style="padding:0 20px 16px;"><button class="btn-ghost" style="width:100%;border-color:var(--red);color:var(--red);" onclick="deleteHaulItem()">Remove from Haul</button></div>
+  </div>
+</div>
 
 <div class="toast" id="toast-msg"></div>
 
@@ -1214,7 +1246,7 @@ function renderPerspective() {
 
     const hasItems = displayItems && displayItems.length > 0;
 
-    let itemsHtml = '';
+        let itemsHtml = '';
     if (hasItems) {
       displayItems.forEach(it => {
         const cc = CATEGORY_COLORS[it.category] || '#888780';
@@ -1228,6 +1260,7 @@ function renderPerspective() {
       if (haul.tax) itemsHtml += `<div style="display:flex;justify-content:space-between;padding:7px 16px;border-bottom:0.5px solid var(--border);"><span style="font-size:13px;color:var(--text-tertiary);">Tax</span><span style="font-size:13px;color:var(--text-tertiary);">$${Number(haul.tax).toFixed(2)}</span></div>`;
       itemsHtml += `<div style="display:flex;justify-content:space-between;padding:9px 16px;"><span style="font-size:13px;font-weight:700;">Total</span><span style="font-size:14px;font-weight:700;">$${haul.totalAmount.toFixed(2)}</span></div>`;
     }
+
 
     const safeId = haul.id.replace(/[^a-zA-Z0-9_-]/g, '_');
 
@@ -2347,6 +2380,92 @@ function checkMonthTurnover() {
 // ════════════════════════════════════════════════════
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 function showToast(msg) { const toast=document.getElementById('toast-msg');toast.textContent=msg;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),2500); }
+
+// ════════════════════════════════════════════════════
+// HAUL ITEM EDITING
+// ════════════════════════════════════════════════════
+let hieState = null;
+let hieCount = 1;
+
+function openHaulItemEdit(haulId, itemIdx) {
+  const hauls = haulsData[perspMonth] || [];
+  const haul = hauls.find(h => h.id === haulId);
+  if (!haul || !haul.items || haul.items[itemIdx] === undefined) return;
+  const it = haul.items[itemIdx];
+  hieState = { haulId, itemIdx, monthKey: perspMonth };
+  hieCount = it.count || 1;
+  document.getElementById('hie-name').value = it.name || '';
+  document.getElementById('hie-price').value = it.price != null ? Number(it.price).toFixed(2) : '';
+  document.getElementById('hie-category').value = it.category || 'Other';
+  hieUpdateDisplay();
+  document.getElementById('haul-item-edit-modal').classList.add('open');
+  setTimeout(() => document.getElementById('hie-name').focus(), 80);
+}
+
+function hieUpdateDisplay() {
+  const price = parseFloat(document.getElementById('hie-price').value) || 0;
+  document.getElementById('hie-count-display').textContent = hieCount;
+  document.getElementById('hie-unit-price-lbl').textContent = price.toFixed(2);
+  document.getElementById('hie-line-total-lbl').textContent = (price * hieCount).toFixed(2);
+}
+
+function hieStep(delta) {
+  hieCount = Math.max(1, hieCount + delta);
+  hieUpdateDisplay();
+}
+
+function saveHaulItemEdit() {
+  if (!hieState) return;
+  const name = document.getElementById('hie-name').value.trim();
+  if (!name) { showToast('Enter an item name'); return; }
+  const price = parseFloat(document.getElementById('hie-price').value) || 0;
+  const category = document.getElementById('hie-category').value;
+  const hauls = haulsData[hieState.monthKey] || [];
+  const haul = hauls.find(h => h.id === hieState.haulId);
+  if (!haul || !haul.items) return;
+  const it = haul.items[hieState.itemIdx];
+  it.name = name;
+  it.price = price;
+  it.count = hieCount;
+  it.category = category;
+  recomputeHaulTotals(haul);
+  localStorage.setItem('pantry_hauls', JSON.stringify(haulsData));
+  closeModal('haul-item-edit-modal');
+  hieState = null;
+  renderPerspective();
+  renderHome();
+  const safeId = haul.id.replace(/[^a-zA-Z0-9_-]/g, '_');
+  setTimeout(() => {
+    const itemsEl = document.getElementById('haul-items-' + safeId);
+    if (itemsEl && itemsEl.style.display === 'none') toggleHaulItems(safeId);
+  }, 50);
+  showToast('Item updated');
+}
+
+function deleteHaulItem() {
+  if (!hieState) return;
+  if (!confirm('Remove this item from the haul?')) return;
+  const hauls = haulsData[hieState.monthKey] || [];
+  const haul = hauls.find(h => h.id === hieState.haulId);
+  if (!haul || !haul.items) return;
+  haul.items.splice(hieState.itemIdx, 1);
+  if (haul.trips && haul.trips.length === 1) haul.trips[0].items = haul.items.length;
+  recomputeHaulTotals(haul);
+  localStorage.setItem('pantry_hauls', JSON.stringify(haulsData));
+  closeModal('haul-item-edit-modal');
+  hieState = null;
+  renderPerspective();
+  renderHome();
+  showToast('Item removed from haul');
+}
+
+function recomputeHaulTotals(haul) {
+  if (!haul.items) return;
+  let total = 0;
+  haul.items.forEach(it => { total += (Number(it.price) || 0) * (it.count || 1); });
+  haul.totalAmount = Math.round((total + (Number(haul.tax) || 0)) * 100) / 100;
+  if (haul.trips && haul.trips.length === 1) haul.trips[0].amount = haul.totalAmount;
+}
 
 // ════════════════════════════════════════════════════
 // INIT
