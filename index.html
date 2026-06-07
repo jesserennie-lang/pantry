@@ -488,7 +488,7 @@
     <div class="modal-handle"></div>
     <div class="modal-title">Add to Shopping List</div>
     <div class="form-group"><label class="form-label">Item Name</label><input class="form-input" id="new-item-name" placeholder="e.g. Organic Salmon" type="text"></div>
-    <div class="form-group"><label class="form-label">Category</label><select class="form-input" id="new-item-category"><option>Protein</option><option>Produce</option><option>Dairy</option><option>Pantry Staples</option><option>Snacks</option><option>Beverages</option><option>Frozen</option><option>Other</option></select></div>
+    <div class="form-group"><label class="form-label">Category</label><select class="form-input" id="new-item-category"><option>Protein</option><option>Produce</option><option>Dairy</option><option>Pantry Staples</option><option>Snacks</option><option>Beverages</option><option>Frozen</option><option>Ready-Made</option><option>Non-Grocery</option><option>Other</option></select></div>
     <div class="form-group"><label class="form-label">Last Price (optional)</label><input class="form-input" id="new-item-price" placeholder="$0.00" type="number" step="0.01"></div>
     <div class="form-group"><label class="form-label">Store</label><select class="form-input" id="new-item-store"></select></div>
     <div style="padding:0 20px 16px;"><button class="btn-primary" onclick="addItemToList()">Add to List</button></div>
@@ -503,7 +503,7 @@
       <button class="icon-btn" onclick="closeModal('edit-item-modal')"><svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
     </div>
     <div class="form-group"><label class="form-label">Item Name</label><input class="form-input" id="edit-item-name" type="text"></div>
-    <div class="form-group"><label class="form-label">Category</label><select class="form-input" id="edit-item-category"><option>Protein</option><option>Produce</option><option>Dairy</option><option>Pantry Staples</option><option>Snacks</option><option>Beverages</option><option>Frozen</option><option>Other</option></select></div>
+    <div class="form-group"><label class="form-label">Category</label><select class="form-input" id="edit-item-category"><option>Protein</option><option>Produce</option><option>Dairy</option><option>Pantry Staples</option><option>Snacks</option><option>Beverages</option><option>Frozen</option><option>Ready-Made</option><option>Non-Grocery</option><option>Other</option></select></div>
     <div class="form-group"><label class="form-label">Price</label><input class="form-input" id="edit-item-price" type="number" step="0.01" inputmode="decimal"></div>
     <div class="form-group"><label class="form-label">Store</label><select class="form-input" id="edit-item-store"></select></div>
     <div class="form-group"><label class="form-label">On Sale?</label><select class="form-input" id="edit-item-sale"><option value="no">No</option><option value="yes">Yes — on sale</option></select></div>
@@ -724,12 +724,24 @@
       <button class="icon-btn" onclick="closeModal('recon-edit-modal')"><svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
     </div>
     <div class="form-group"><label class="form-label">Item Name</label><input class="form-input" id="recon-edit-name" type="text"></div>
-    <div class="form-group"><label class="form-label">Price ($)</label><input class="form-input" id="recon-edit-price" type="number" step="0.01" inputmode="decimal"></div>
+    <div class="form-group"><label class="form-label">Price Paid ($)</label><input class="form-input" id="recon-edit-price" type="number" step="0.01" inputmode="decimal"></div>
+    <div class="form-group">
+      <label class="form-label">On Sale?</label>
+      <div style="display:flex;align-items:center;gap:10px;background:var(--gray-50);border-radius:var(--radius-md);padding:12px 14px;">
+        <label style="position:relative;display:inline-block;width:46px;height:26px;cursor:pointer;flex-shrink:0;">
+          <input type="checkbox" id="recon-edit-sale" style="opacity:0;width:0;height:0;" onchange="toggleReconSale(this.checked)">
+          <span id="recon-sale-track" style="position:absolute;inset:0;background:var(--gray-200);border-radius:13px;transition:0.2s;"></span>
+          <span id="recon-sale-thumb" style="position:absolute;left:2px;top:2px;width:22px;height:22px;background:white;border-radius:50%;transition:0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.2);"></span>
+        </label>
+        <span style="font-size:13px;color:var(--text-secondary);flex:1;">This item was on sale / discounted</span>
+      </div>
+    </div>
+    <div class="form-group" id="recon-orig-price-wrap" style="display:none;"><label class="form-label">Original Price (before discount)</label><input class="form-input" id="recon-edit-orig-price" type="number" step="0.01" inputmode="decimal" placeholder="$0.00"></div>
     <div class="form-group"><label class="form-label">Category</label>
       <select class="form-input" id="recon-edit-category">
         <option>Protein</option><option>Produce</option><option>Dairy</option>
         <option>Pantry Staples</option><option>Snacks</option><option>Beverages</option>
-        <option>Frozen</option><option>Other</option>
+        <option>Frozen</option><option>Ready-Made</option><option>Non-Grocery</option><option>Other</option>
       </select>
     </div>
     <div style="padding:0 20px 8px;"><button class="btn-primary" onclick="saveReconEdit()">Save</button></div>
@@ -816,7 +828,7 @@ function refreshStoreDropdowns() {
   if (itemSel) itemSel.innerHTML = opts;
   if (haulSel) haulSel.innerHTML = opts;
 }
-const CATEGORY_COLORS = {'Protein':'#E24B4A','Produce':'#1D9E75','Dairy':'#378ADD','Pantry Staples':'#BA7517','Snacks':'#9F77DD','Beverages':'#5DCAA5','Frozen':'#85B7EB','Other':'#888780'};
+const CATEGORY_COLORS = {'Protein':'#E24B4A','Produce':'#1D9E75','Dairy':'#378ADD','Pantry Staples':'#BA7517','Snacks':'#9F77DD','Beverages':'#5DCAA5','Frozen':'#85B7EB','Ready-Made':'#D8742E','Non-Grocery':'#7A7A75','Other':'#888780'};
 const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 function currentMonthKey() { const n=new Date(); return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}`; }
 function nextMonthKey() { const n=new Date(); let y=n.getFullYear(),m=n.getMonth()+2; if(m>12){m-=12;y+=1;} return `${y}-${String(m).padStart(2,'0')}`; }
@@ -1435,10 +1447,16 @@ async function processReceiptBase64(base64, monthTarget, store) {
   showReceiptProcessing('Reading your receipt...');
   if (!hasApiKey()) { showReceiptError('No API key set. Add your Anthropic API key in Settings first.'); return; }
 
-  // Abbreviation memory (learned from past corrections)
+  // ── LEARNING CONTEXT — gets smarter with every scan ──
+  // 1. Abbreviation memory (raw receipt text → confirmed name, from your corrections)
   const abbrevMap = getAbbrevMap();
   const abbrevLines = Object.keys(abbrevMap).length
-    ? Object.entries(abbrevMap).map(([r,c]) => '"' + r + '" = ' + c).join(', ')
+    ? Object.entries(abbrevMap).map(([r,c]) => '"' + r + '" = ' + c).join('; ')
+    : '';
+
+  // 2. Known products from your pantry (real names + categories you've bought before)
+  const knownProducts = pantryItems.length
+    ? pantryItems.slice(0, 60).map(p => p.name + ' (' + p.category + ')').join('; ')
     : '';
 
   // Shopping list for optional matching
@@ -1475,11 +1493,24 @@ async function processReceiptBase64(base64, monthTarget, store) {
       'This may hide part of a word. Use the visible letters + context to infer the full name.',
       'E.g. "LIPOP" is likely OLIPOP; "RG WHT MSHRM" is likely Organic White Mushrooms.',
     ].join('\n') : '',
-    abbrevLines ? 'CONFIRMED NAMES from past scans (trust these): ' + abbrevLines : '',
+    abbrevLines ? 'RULE — CONFIRMED ABBREVIATIONS (the user corrected these before — trust them completely): ' + abbrevLines : '',
+    knownProducts ? 'PRODUCTS THIS HOUSEHOLD BUYS (if a receipt line matches one of these, use this exact name and category): ' + knownProducts : '',
     '',
     'SKIP ONLY: store membership fees, tax, grand total, subtotal, cash back, bottle deposits.',
     'INCLUDE everything else: all food, drinks, snacks, dairy, meat, produce, frozen,',
-    'household supplies, personal care, pet food — regardless of price.',
+    'household supplies, personal care, pet food, prepared/ready-made meals, alcohol — regardless of price.',
+    '',
+    'CATEGORIES (pick the best fit for each item):',
+    '- Protein (meat, fish, eggs, tofu)',
+    '- Produce (fresh fruit & vegetables)',
+    '- Dairy (milk, cheese, yogurt, butter)',
+    '- Pantry Staples (canned, dry goods, oils, condiments, baking)',
+    '- Snacks (chips, crackers, cookies, candy)',
+    '- Beverages (non-alcoholic drinks, soda, juice, sparkling water)',
+    '- Frozen (frozen meals, frozen veg, ice cream)',
+    '- Ready-Made (rotisserie chicken, deli, prepared salads, hot food, bakery items already made)',
+    '- Non-Grocery (beer, wine, liquor, and other non-food items mixed into the receipt)',
+    '- Other (anything that does not fit above)',
     '',
     listForMatch.length
       ? 'SHOPPING LIST — if a receipt item clearly matches one of these, set matchIndex to its i:\n' + JSON.stringify(listForMatch)
@@ -1488,7 +1519,6 @@ async function processReceiptBase64(base64, monthTarget, store) {
     'Return ONLY a JSON array, no markdown:',
     '[{"rawText":"OLIPOP","name":"Olipop Sparkling Tonic","price":14.99,"originalPrice":19.99,"onSale":true,"quantity":"8-pack","category":"Beverages","confidence":"high","matchIndex":null}]',
     '',
-    'Categories: Protein, Produce, Dairy, Pantry Staples, Snacks, Beverages, Frozen, Household, Other.',
     'confidence: "high"=clearly readable, "medium"=readable with minor uncertainty, "low"=partially obscured.',
     'If the image is too blurry or dark to read anything, return [].',
   ].filter(Boolean).join('\n');
@@ -1627,7 +1657,9 @@ function openReconEdit(idx) {
   document.getElementById('recon-edit-name').value = it.name;
   document.getElementById('recon-edit-price').value = it.price || '';
   document.getElementById('recon-edit-category').value = it.category || 'Other';
-  document.getElementById('recon-edit-delete-wrap').style.display = 'none'; // delete via card button now
+  document.getElementById('recon-edit-orig-price').value = it.originalPrice || '';
+  setReconSaleToggle(!!it.onSale);
+  document.getElementById('recon-edit-delete-wrap').style.display = 'none';
   document.getElementById('recon-edit-modal').classList.add('open');
   setTimeout(() => document.getElementById('recon-edit-name').focus(), 120);
 }
@@ -1638,9 +1670,22 @@ function openReconAddItem() {
   document.getElementById('recon-edit-name').value = '';
   document.getElementById('recon-edit-price').value = '';
   document.getElementById('recon-edit-category').value = 'Other';
+  document.getElementById('recon-edit-orig-price').value = '';
+  setReconSaleToggle(false);
   document.getElementById('recon-edit-delete-wrap').style.display = 'none';
   document.getElementById('recon-edit-modal').classList.add('open');
   setTimeout(() => document.getElementById('recon-edit-name').focus(), 120);
+}
+
+function setReconSaleToggle(on) {
+  document.getElementById('recon-edit-sale').checked = on;
+  document.getElementById('recon-sale-track').style.background = on ? 'var(--teal)' : 'var(--gray-200)';
+  document.getElementById('recon-sale-thumb').style.left = on ? '22px' : '2px';
+  document.getElementById('recon-orig-price-wrap').style.display = on ? 'block' : 'none';
+}
+
+function toggleReconSale(on) {
+  setReconSaleToggle(on);
 }
 
 function saveReconEdit() {
@@ -1648,12 +1693,16 @@ function saveReconEdit() {
   if (!name) { showToast('Enter an item name'); return; }
   const price = parseFloat(document.getElementById('recon-edit-price').value) || 0;
   const category = document.getElementById('recon-edit-category').value;
+  const onSale = document.getElementById('recon-edit-sale').checked;
+  const originalPrice = onSale ? (parseFloat(document.getElementById('recon-edit-orig-price').value) || null) : null;
   if (reconEditIdx !== null) {
     const existing = reconState.items[reconEditIdx];
     if (existing.rawText && existing.name !== name) saveAbbrevMapping(existing.rawText, name);
-    existing.name = name; existing.price = price; existing.category = category; existing.confidence = 'high';
+    existing.name = name; existing.price = price; existing.category = category;
+    existing.onSale = onSale; existing.originalPrice = originalPrice;
+    existing.confidence = 'high';
   } else {
-    reconState.items.push({ rawText: '', name, price, quantity: null, category, confidence: 'high', matchIndex: null });
+    reconState.items.push({ rawText: '', name, price, quantity: null, category, onSale, originalPrice, confidence: 'high', matchIndex: null });
   }
   closeModal('recon-edit-modal');
   renderRecon();
@@ -1668,6 +1717,14 @@ function cancelRecon() { document.getElementById('recon-modal').classList.remove
 
 function confirmRecon() {
   const { items, targetKey, store } = reconState;
+
+  // LEARN: save the rawText → name mapping for every item that has both.
+  // This means the next scan recognizes these items instantly, even partially obscured.
+  items.forEach(it => {
+    if (it.rawText && it.name && it.rawText.toLowerCase() !== it.name.toLowerCase()) {
+      saveAbbrevMapping(it.rawText, it.name);
+    }
+  });
 
   // Auto-match to shopping list by name similarity — no manual matching needed
   const listCopy = shoppingList.filter(li => !li.checked);
@@ -1711,10 +1768,10 @@ function logReceiptAsHaul(items,monthKey,store) {
   if(!haulsData[monthKey])haulsData[monthKey]=[];
   haulsData[monthKey].push({id:'haul-'+Date.now(),name:store+' receipt',totalAmount:Math.round(total*100)/100,trips:[{store,storeKey:sKey,date:today,amount:Math.round(total*100)/100,items:items.length}]});
   localStorage.setItem('pantry_hauls',JSON.stringify(haulsData));
-  items.forEach(it=>{const name=it.name;const price=Number(it.price)||0;const existing=pantryItems.find(p=>p.name.toLowerCase()===name.toLowerCase());if(existing){existing.priceHistory.push({price,store,date:today});existing.stockPct=100;}else{pantryItems.push({id:Date.now()+Math.random(),name,emoji:emojiFor(it.category),category:it.category||'Other',priceHistory:[{price,store,date:today}],stockPct:100,avgDaysBetween:30});}});
+  items.forEach(it=>{const name=it.name;const price=Number(it.price)||0;const entry={price,store,date:today,onSale:!!it.onSale,originalPrice:it.originalPrice||null};const existing=pantryItems.find(p=>p.name.toLowerCase()===name.toLowerCase());if(existing){existing.priceHistory.push(entry);existing.stockPct=100;existing.category=it.category||existing.category;}else{pantryItems.push({id:Date.now()+Math.random(),name,emoji:emojiFor(it.category),category:it.category||'Other',priceHistory:[entry],stockPct:100,avgDaysBetween:30});}});
   localStorage.setItem('pantry_items',JSON.stringify(pantryItems)); renderHome(); renderPantry();
 }
-function emojiFor(category) { return {'Protein':'🥩','Produce':'🥦','Dairy':'🥛','Pantry Staples':'🥫','Snacks':'🍪','Beverages':'🥤','Frozen':'🧊','Other':'🛒'}[category]||'🛒'; }
+function emojiFor(category) { return {'Protein':'🥩','Produce':'🥦','Dairy':'🥛','Pantry Staples':'🥫','Snacks':'🍪','Beverages':'🥤','Frozen':'🧊','Ready-Made':'🍱','Non-Grocery':'🍺','Other':'🛒'}[category]||'🛒'; }
 // Convert image to base64, preserving format where possible.
 // Returns { base64, mediaType }. PNG screenshots stay PNG; camera photos become JPEG.
 function fileToBase64(file, maxDim=2000) {
