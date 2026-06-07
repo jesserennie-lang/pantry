@@ -587,6 +587,18 @@
       </div>
       <label class="form-label">Store</label>
       <select class="form-input" id="receipt-store" style="margin-bottom:16px;"></select>
+      <!-- Web search toggle -->
+      <div style="display:flex;align-items:center;justify-content:space-between;background:var(--gray-50);border-radius:var(--radius-md);padding:11px 14px;margin-bottom:16px;">
+        <div>
+          <div style="font-size:13px;font-weight:600;color:var(--text-primary);">🔍 Web search</div>
+          <div style="font-size:11px;color:var(--text-tertiary);margin-top:2px;" id="web-search-sub">Look up uncertain items online</div>
+        </div>
+        <label style="position:relative;display:inline-block;width:46px;height:26px;cursor:pointer;flex-shrink:0;">
+          <input type="checkbox" id="web-search-toggle" style="opacity:0;width:0;height:0;" onchange="saveWebSearchPref(this.checked)">
+          <span id="ws-track" style="position:absolute;inset:0;border-radius:13px;transition:background 0.2s;"></span>
+          <span id="ws-thumb" style="position:absolute;top:2px;width:22px;height:22px;background:white;border-radius:50%;transition:left 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.2);"></span>
+        </label>
+      </div>
       <input type="file" id="receipt-file-input" accept="image/*" capture="environment" style="opacity:0;position:absolute;width:0;height:0;pointer-events:none;" onchange="handleReceiptUpload(this)">
       <label for="receipt-file-input" class="btn-primary" style="margin-bottom:12px;cursor:pointer;user-select:none;" id="receipt-camera-label">
         <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
@@ -1421,7 +1433,30 @@ function openFallbackReceiptModal() {
   document.getElementById('receipt-processing').style.display = 'none';
   document.getElementById('receipt-file-input').value = '';
   showReceiptButtons(true);
+  // Sync the web search toggle to saved preference
+  const on = webSearchEnabled();
+  const toggle = document.getElementById('web-search-toggle');
+  const track = document.getElementById('ws-track');
+  const thumb = document.getElementById('ws-thumb');
+  if (toggle) toggle.checked = on;
+  if (track) track.style.background = on ? 'var(--teal)' : 'var(--gray-200)';
+  if (thumb) thumb.style.left = on ? '22px' : '2px';
+  const sub = document.getElementById('web-search-sub');
+  if (sub) sub.textContent = on ? 'Slower but catches more items · tap to turn off' : 'Faster · uses pantry data only';
   document.getElementById('receipt-modal').classList.add('open');
+}
+
+function webSearchEnabled() {
+  return localStorage.getItem('pantry_web_search') !== 'off'; // on by default
+}
+function saveWebSearchPref(on) {
+  localStorage.setItem('pantry_web_search', on ? 'on' : 'off');
+  const track = document.getElementById('ws-track');
+  const thumb = document.getElementById('ws-thumb');
+  if (track) track.style.background = on ? 'var(--teal)' : 'var(--gray-200)';
+  if (thumb) thumb.style.left = on ? '22px' : '2px';
+  const sub = document.getElementById('web-search-sub');
+  if (sub) sub.textContent = on ? 'Slower but catches more items · tap to turn off' : 'Faster · uses pantry data only';
 }
 
 // Old fallback handler — used by receipt-modal file input
@@ -1444,7 +1479,7 @@ async function processReceiptBase64(base64, monthTarget, store) {
   receiptMonthTarget = monthTarget || 'current';
   const targetKey = receiptTargetKey();
   document.getElementById('receipt-modal').classList.add('open');
-  showReceiptProcessing('Reading your receipt...');
+  showReceiptProcessing(webSearchEnabled() ? 'Reading receipt · looking up items online...' : 'Reading your receipt...');
   if (!hasApiKey()) { showReceiptError('No API key set. Add your Anthropic API key in Settings first.'); return; }
 
   // ── LEARNING CONTEXT — gets smarter with every scan ──
@@ -1467,6 +1502,9 @@ async function processReceiptBase64(base64, monthTarget, store) {
 
   const prompt = [
     'Read this ' + store + ' receipt image carefully. Go through it line by line from top to bottom.',
+    'You have access to web search — use it when you are uncertain about an abbreviated or partially obscured item.',
+    'For example: if you see "KS ORG ACAI BW" and are unsure, search "Costco KS ORG ACAI BW" to confirm the product.',
+    'Search before guessing when confidence would be "low" without it.',
     '',
     'On a receipt, each product line has: item description on the LEFT, price on the RIGHT.',
     'Some items span two lines (long name wraps). Treat them as one item.',
@@ -1530,6 +1568,7 @@ async function processReceiptBase64(base64, monthTarget, store) {
       body: JSON.stringify({
         model: 'claude-sonnet-4-5-20250929',
         max_tokens: 4000,
+        ...(webSearchEnabled() ? { tools: [{ type: 'web_search_20250305', name: 'web_search' }] } : {}),
         messages: [{ role: 'user', content: [
           { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: base64 } },
           { type: 'text', text: prompt }
