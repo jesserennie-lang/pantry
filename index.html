@@ -1047,7 +1047,7 @@ function switchTab(tab) {
   document.getElementById('screen-'+tab).classList.add('active');
   document.getElementById('tab-'+tab).classList.add('active');
   currentTab = tab;
-  if(tab==='home'){renderHome();setTimeout(()=>checkCurrentSales(true),300);}
+  if(tab==='home') renderHome();
   if(tab==='plan') renderPlanList();
   if(tab==='perspective') renderPerspective();
   if(tab==='pantry') renderPantry();
@@ -1743,37 +1743,21 @@ function deletePantryItem() {
 // ════════════════════════════════════════════════════
 // ── Pantry inventory for AI context ──────────────
 function buildPantryInventory() {
-  if (!pantryItems.length) return 'Pantry is empty — scan some receipts to start tracking.';
-  const cats = {};
-  const inStock = pantryItems.filter(p => (p.stockPct||0) > 10);
-  if (!inStock.length) return 'No items currently in stock.';
-  inStock.forEach(p => {
-    if (!cats[p.category]) cats[p.category] = [];
-    const last = p.priceHistory && p.priceHistory.length ? p.priceHistory[p.priceHistory.length-1] : null;
-    const stock = p.stockPct > 70 ? 'well stocked' : p.stockPct > 35 ? 'some' : 'low';
-    cats[p.category].push(p.name + ' (' + stock + (last ? ', $'+last.price.toFixed(2) : '') + ')');
-  });
-  return Object.entries(cats).map(([cat,items]) => cat + ': ' + items.join(', ')).join('\n');
+  if (!pantryItems.length) return 'Pantry empty — scan receipts to track.';
+  const inStock = pantryItems.filter(p=>(p.stockPct||0)>10).slice(0,25);
+  if (!inStock.length) return 'Nothing in stock right now.';
+  return inStock.map(p=>p.name+(p.stockPct>70?' (well stocked)':p.stockPct>35?' (some)':' (low)')).join(', ');
 }
 
 // ── Recipe Chat ───────────────────────────────────
 let recipeHistory = [];
 
 function getRecipeSystemCtx() {
-  return `You are a practical cooking assistant for the ${household.name||'Rennie Family'}. Your goal is to help them cook good meals using what they already have, stretching their grocery budget.
+  return `You are a cooking assistant for the ${household.name||'Rennie Family'}. Help them cook meals using what they already have to stretch their budget.
 
-CURRENT PANTRY (what they have in stock right now):
-${buildPantryInventory()}
+PANTRY (in stock): ${buildPantryInventory()}
 
-BUDGET: $${BUDGET.remaining.toFixed(2)} remaining this month of $${BUDGET.monthly} total.
-
-RULES:
-- Prioritize meals that USE items they already have
-- When suggesting additional ingredients, choose cheap staples (eggs, pasta, rice, canned goods, onions, garlic, spices)
-- Give specific recipes with ingredients and rough steps
-- Keep it practical and family-friendly
-- If they ask about a specific ingredient, build around it using what else is in the pantry
-- Mention estimated cost if you can`;
+Budget left: $${BUDGET.remaining.toFixed(2)} of $${BUDGET.monthly}/mo. Prioritize using what they have. Suggest cheap additions only (eggs, pasta, rice, canned goods). Be specific and practical.`;
 }
 
 async function sendRecipeMessage(prefill) {
@@ -1791,7 +1775,7 @@ async function sendRecipeMessage(prefill) {
       method:'POST', headers:apiHeaders(),
       body: JSON.stringify({
         model:'claude-sonnet-4-5-20250929',
-        max_tokens:1500,
+        max_tokens:800,
         system: getRecipeSystemCtx(),
         messages: recipeHistory
       })
@@ -1863,20 +1847,16 @@ function getSalePatterns() {
   return out.sort((a,b)=>(a.daysUntilNextSale??9999)-(b.daysUntilNextSale??9999));
 }
 function buildSaleContext(patterns) {
-  if (!patterns.length) return 'No sale history yet.';
-  return patterns.map(p=>{
-    const parts = ['- '+p.name+' ('+p.store+')'];
-    parts.push('on sale '+p.saleCount+'x');
-    if (p.avgCycle) parts.push('avg cycle '+p.avgCycle+'d');
-    if (p.avgDiscount) parts.push('avg '+p.avgDiscount+'% off');
-    parts.push('last sale '+p.daysSinceSale+'d ago');
-    if (p.daysUntilNextSale!=null) {
-      if (p.daysUntilNextSale<=0) parts.push('** OVERDUE **');
-      else if (p.daysUntilNextSale<=7) parts.push('** DUE IN '+p.daysUntilNextSale+'d **');
-      else parts.push('next in ~'+p.daysUntilNextSale+'d');
-    }
-    return parts.join(' | ');
-  }).join('\n');
+  if (!patterns.length) return 'No sale history.';
+  return patterns.slice(0,12).filter(p=>p.daysUntilNextSale==null||p.daysUntilNextSale<=30).map(p=>{
+    const parts=[`- ${p.name}`];
+    if(p.avgCycle) parts.push(`${p.avgCycle}d cycle`);
+    if(p.avgDiscount) parts.push(`${p.avgDiscount}% off`);
+    parts.push(`last ${p.daysSinceSale}d ago`);
+    if(p.daysUntilNextSale!=null&&p.daysUntilNextSale<=14)
+      parts.push(p.daysUntilNextSale<=0?'**OVERDUE**':'**due '+p.daysUntilNextSale+'d**');
+    return parts.join('|');
+  }).join('; ');
 }
 // ── Home Sale Watch ────────────────────────────────
 let saleCheckCache = null;
@@ -1933,105 +1913,84 @@ async function checkCurrentSales(auto) {
   const btn=document.getElementById('sale-check-btn');
   const status=document.getElementById('sale-check-status');
   if(btn){btn.textContent='Checking…';btn.disabled=true;}
-  if(status){status.style.display='block';status.textContent='Searching store circulars…';}
-  const stores=household.stores.filter(s=>s!=='Other').slice(0,5).join(', ');
-  const items=pantryItems.slice(0,50).map(p=>p.name).join(', ');
+  if(status){status.style.display='block';status.textContent='Searching circulars…';}
+  const stores=household.stores.filter(s=>s!=='Other').slice(0,4).join(', ');
+  const items=pantryItems.slice(0,25).map(p=>p.name).join(', ');
   const today=new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
-  const msg=`Today is ${today}. Search current weekly sale circulars for: ${stores}. Find which of these items are on sale RIGHT NOW: ${items}. Return ONLY JSON array: [{"item":"name","store":"store","salePrice":0.00,"origPrice":0.00,"saleEnds":"timeframe","confidence":"confirmed|likely","source":"where found"}] or [] if nothing found.`;
-
+  const msg=`Today: ${today}. Search current sales at ${stores} for these items: ${items}. Return ONLY JSON: [{"item":"name","store":"store","salePrice":0.00,"origPrice":0.00,"saleEnds":"timeframe","confidence":"confirmed|likely"}] or []`;
   async function tryCall(useSearch){
-    const body={model:'claude-sonnet-4-5-20250929',max_tokens:2000,messages:[{role:'user',content:msg}]};
+    const body={model:'claude-sonnet-4-5-20250929',max_tokens:600,messages:[{role:'user',content:msg}]};
     if(useSearch) body.tools=[{type:'web_search_20250305',name:'web_search'}];
     const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:apiHeaders(),body:JSON.stringify(body)});
     return res.json();
   }
-
   try{
     let data=await tryCall(true);
-    if(data.error&&(data.error.type==='invalid_request_error'||String(data.error.message||'').toLowerCase().includes('tool'))){
-      data=await tryCall(false);
-    }
+    if(data.error&&(data.error.type==='invalid_request_error'||String(data.error.message||'').toLowerCase().includes('tool'))){data=await tryCall(false);}
     if(data.error) throw new Error(data.error.message||JSON.stringify(data.error));
     const text=data.content.filter(c=>c.type==='text').map(c=>c.text).join('');
     saleCheckCache=extractJsonArray(text)||[];
     saleCheckTime=Date.now();
     renderHomeAlerts();
-    if(status){status.style.display='block';status.textContent='Updated '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+' · '+saleCheckCache.length+' confirmed sale'+(saleCheckCache.length!==1?'s':'');}
+    if(status){status.style.display='block';status.textContent='Updated '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+' · '+saleCheckCache.length+' sale'+(saleCheckCache.length!==1?'s':'');}
   }catch(e){
-    if(status){status.style.display='block';status.textContent='Error: '+(e&&e.message?e.message.slice(0,80):'unknown');}
+    if(status){status.style.display='block';status.textContent='Check failed: '+(e&&e.message?e.message.slice(0,60):'unknown');}
   }
   if(btn){btn.textContent='Check now';btn.disabled=false;}
 }
 let aiLoaded = false;
 let aiNudges = [];
 function buildPurchaseContext() {
-  return pantryItems.map(item=>{const n=item.priceHistory.length;const last=item.priceHistory[n-1];const prev=n>1?item.priceHistory[n-2]:null;const trend=prev?(last.price>prev.price?'rising':last.price<prev.price?'falling':'stable'):'first purchase';return `- ${item.name} | $${last.price.toFixed(2)} (${trend}) | stock: ${item.stockPct}% | last: ${last.date} | ${last.store} | bought ${n}x`;}).join('\n');
+  return pantryItems.slice(0,20).map(item=>{
+    const n=item.priceHistory.length; const last=item.priceHistory[n-1];
+    return `- ${item.name} $${last.price.toFixed(2)} | stock ${item.stockPct}% | ${last.store} | x${n}`;
+  }).join('\n');
 }
 async function generateNudges() {
   aiLoaded=true;
   const container=document.getElementById('ai-nudges-container');
-  container.innerHTML=`<div class="ai-loading"><div class="ai-spinner"></div>Analyzing your pantry…</div>`;
-  if(!hasApiKey()){
-    container.innerHTML=`<div class="ai-loading" style="padding:32px 20px;"><div style="font-size:15px;font-weight:600;margin-bottom:8px;">API key needed</div><div style="font-size:13px;color:var(--text-secondary);line-height:1.5;margin-bottom:16px;">Add your Anthropic API key in Settings.</div><button class="btn-primary" onclick="openSettings()">Open Settings</button></div>`;
-    return;
-  }
+  container.innerHTML=`<div class="ai-loading"><div class="ai-spinner"></div>Analyzing…</div>`;
+  if(!hasApiKey()){container.innerHTML=`<div class="ai-loading" style="padding:32px 20px;"><div style="font-size:15px;font-weight:600;margin-bottom:8px;">API key needed</div><div style="font-size:13px;color:var(--text-secondary);line-height:1.5;margin-bottom:16px;">Add your Anthropic API key in Settings.</div><button class="btn-primary" onclick="openSettings()">Open Settings</button></div>`;return;}
   const today=new Date();
   const daysLeft=new Date(today.getFullYear(),today.getMonth()+1,0).getDate()-today.getDate();
   const patterns=getSalePatterns();
-  const stores=household.stores.filter(s=>s!=='Other').slice(0,5).join(', ');
+  const stores=household.stores.filter(s=>s!=='Other').slice(0,4).join(', ');
   const dateStr=today.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
-  const pantryInv=buildPantryInventory();
-  const prompt=`You are the AI brain of Pantry., a YNAB-style grocery tracker for the ${household.name||'Rennie Family'}.
+  const prompt=`Pantry app AI for ${household.name||'family'} who shops at ${stores}.
 
-STORES: ${stores}
+PANTRY IN STOCK: ${buildPantryInventory()}
 
-WHAT THEY HAVE IN STOCK RIGHT NOW:
-${pantryInv}
+SALE PATTERNS (** = due/overdue): ${buildSaleContext(patterns)}
 
-FULL PURCHASE HISTORY (for sale pattern context):
-${buildPurchaseContext()}
+TODAY: ${dateStr} | Days left: ${daysLeft} | Budget: $${BUDGET.remaining.toFixed(2)} remaining of $${BUDGET.monthly}
 
-SALE PATTERNS (** = due or overdue):
-${buildSaleContext(patterns)}
+Search current weekly sales at ${stores}. Find items on sale this week with prices and end dates. Include 1-2 meal ideas using pantry above. YNAB philosophy: surplus = resilience.
 
-TODAY: ${dateStr} | Days left: ${daysLeft} | Budget remaining: $${BUDGET.remaining.toFixed(2)} of $${BUDGET.monthly}/mo
-
-Search the web for current weekly sales at ${stores}. Find which items are on sale this week. Note sale durations.
-
-Also suggest 1-2 specific budget-stretching meal ideas using items from the pantry above.
-
-Return ONLY a valid JSON array, no markdown:
-[{"type":"sale_alert|stock_up|meal|budget|produce|deal","title":"max 5 words","text":"2-3 specific sentences with prices, recipes, or end dates","action":"Add to list","item":"item name or null","urgent":true,"saleSource":"store/source","saleEnds":"timeframe or null"}]`;
+Return ONLY JSON array:
+[{"type":"sale_alert|stock_up|meal|budget|deal","title":"5 words","text":"2 sentences with prices/dates","action":"Add to list","item":"name or null","urgent":true,"saleSource":"store","saleEnds":"timeframe"}]`;
 
   async function tryCall(useSearch){
-    const body={model:'claude-sonnet-4-5-20250929',max_tokens:2000,messages:[{role:'user',content:prompt}]};
+    const body={model:'claude-sonnet-4-5-20250929',max_tokens:800,messages:[{role:'user',content:prompt}]};
     if(useSearch) body.tools=[{type:'web_search_20250305',name:'web_search'}];
     const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:apiHeaders(),body:JSON.stringify(body)});
     return res.json();
   }
-
   try{
     let data=await tryCall(true);
-    // If web search not supported for this key, retry without it
     if(data.error&&(data.error.type==='invalid_request_error'||String(data.error.message||'').toLowerCase().includes('tool'))){
-      container.innerHTML=`<div class="ai-loading"><div class="ai-spinner"></div>Generating suggestions…</div>`;
       data=await tryCall(false);
     }
     if(data.error) throw new Error(data.error.message||JSON.stringify(data.error));
     const text=data.content.map(c=>c.text||'').join('');
     const parsed=extractJsonArray(text);
-    if(!parsed||!parsed.length) throw new Error('No suggestions returned — response was: '+text.slice(0,120));
+    if(!parsed||!parsed.length) throw new Error('No suggestions in response. Response: '+text.slice(0,100));
     aiNudges=parsed;
     renderNudges(aiNudges);
     const badge=document.getElementById('ai-badge');
     if(badge){badge.textContent=aiNudges.filter(n=>n.urgent||n.type==='sale_alert').length||aiNudges.length;badge.style.display='flex';}
   }catch(e){
     const msg=e&&e.message?e.message:'Unknown error';
-    container.innerHTML=`<div class="ai-loading" style="padding:24px 20px;">
-      <div style="font-size:14px;font-weight:600;margin-bottom:8px;color:var(--text-primary);">Could not load suggestions</div>
-      <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:16px;word-break:break-all;">${escapeHtml(msg)}</div>
-      <button class="btn-primary" onclick="generateNudges()">Retry</button>
-    </div>`;
+    container.innerHTML=`<div class="ai-loading" style="padding:24px 20px;"><div style="font-size:14px;font-weight:600;margin-bottom:8px;">Could not load suggestions</div><div style="font-size:12px;color:var(--text-tertiary);margin-bottom:16px;word-break:break-all;">${escapeHtml(msg)}</div><button class="btn-primary" onclick="generateNudges()">Retry</button></div>`;
   }
 }
 const TYPE_COLORS={protein:{icon:'#E24B4A',iconBg:'#FCEBEB'},produce:{icon:'#1D9E75',iconBg:'#E1F5EE'},staple:{icon:'#BA7517',iconBg:'#FAEEDA'},deal:{icon:'#1D9E75',iconBg:'#E1F5EE'},budget:{icon:'#378ADD',iconBg:'#E6F1FB'},sale_alert:{icon:'#E24B4A',iconBg:'#FCEBEB'},stock_up:{icon:'#1D9E75',iconBg:'#E1F5EE'},meal:{icon:'#BA7517',iconBg:'#FAEEDA'}};
