@@ -1808,21 +1808,28 @@ async function checkCurrentSales(auto) {
   const stores=household.stores.filter(s=>s!=='Other').slice(0,5).join(', ');
   const items=pantryItems.slice(0,50).map(p=>p.name).join(', ');
   const today=new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
-  const msg=`Today is ${today}. Search current weekly sale circulars for: ${stores}. Find which of these items are on sale RIGHT NOW: ${items}. Check store websites, apps, circular aggregators. Note sale duration. Return ONLY JSON array: [{"item":"name","store":"store","salePrice":0.00,"origPrice":0.00,"saleEnds":"timeframe","confidence":"confirmed|likely","source":"where found"}] or [] if nothing found.`;
+  const msg=`Today is ${today}. Search current weekly sale circulars for: ${stores}. Find which of these items are on sale RIGHT NOW: ${items}. Return ONLY JSON array: [{"item":"name","store":"store","salePrice":0.00,"origPrice":0.00,"saleEnds":"timeframe","confidence":"confirmed|likely","source":"where found"}] or [] if nothing found.`;
+
+  async function tryCall(useSearch){
+    const body={model:'claude-sonnet-4-5-20250929',max_tokens:2000,messages:[{role:'user',content:msg}]};
+    if(useSearch) body.tools=[{type:'web_search_20250305',name:'web_search'}];
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:apiHeaders(),body:JSON.stringify(body)});
+    return res.json();
+  }
+
   try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:apiHeaders(),
-      body:JSON.stringify({model:'claude-sonnet-4-5-20250929',max_tokens:2000,
-        tools:[{type:'web_search_20250305',name:'web_search'}],
-        messages:[{role:'user',content:msg}]})});
-    const data=await res.json();
-    if(data.error) throw new Error(data.error.message);
+    let data=await tryCall(true);
+    if(data.error&&(data.error.type==='invalid_request_error'||String(data.error.message||'').toLowerCase().includes('tool'))){
+      data=await tryCall(false);
+    }
+    if(data.error) throw new Error(data.error.message||JSON.stringify(data.error));
     const text=data.content.filter(c=>c.type==='text').map(c=>c.text).join('');
     saleCheckCache=extractJsonArray(text)||[];
     saleCheckTime=Date.now();
     renderHomeAlerts();
     if(status){status.style.display='block';status.textContent='Updated '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+' · '+saleCheckCache.length+' confirmed sale'+(saleCheckCache.length!==1?'s':'');}
   }catch(e){
-    if(status){status.style.display='block';status.textContent='Could not check right now. Try again later.';}
+    if(status){status.style.display='block';status.textContent='Error: '+(e&&e.message?e.message.slice(0,80):'unknown');}
   }
   if(btn){btn.textContent='Check now';btn.disabled=false;}
 }
@@ -1834,8 +1841,11 @@ function buildPurchaseContext() {
 async function generateNudges() {
   aiLoaded=true;
   const container=document.getElementById('ai-nudges-container');
-  container.innerHTML=`<div class="ai-loading"><div class="ai-spinner"></div>Checking sales and analyzing your pantry…</div>`;
-  if(!hasApiKey()){container.innerHTML=`<div class="ai-loading" style="padding:32px 20px;"><div style="font-size:15px;font-weight:600;margin-bottom:8px;">API key needed</div><div style="font-size:13px;color:var(--text-secondary);line-height:1.5;margin-bottom:16px;">Add your Anthropic API key in Settings.</div><button class="btn-primary" onclick="openSettings()">Open Settings</button></div>`;return;}
+  container.innerHTML=`<div class="ai-loading"><div class="ai-spinner"></div>Analyzing your pantry…</div>`;
+  if(!hasApiKey()){
+    container.innerHTML=`<div class="ai-loading" style="padding:32px 20px;"><div style="font-size:15px;font-weight:600;margin-bottom:8px;">API key needed</div><div style="font-size:13px;color:var(--text-secondary);line-height:1.5;margin-bottom:16px;">Add your Anthropic API key in Settings.</div><button class="btn-primary" onclick="openSettings()">Open Settings</button></div>`;
+    return;
+  }
   const today=new Date();
   const daysLeft=new Date(today.getFullYear(),today.getMonth()+1,0).getDate()-today.getDate();
   const patterns=getSalePatterns();
@@ -1843,34 +1853,50 @@ async function generateNudges() {
   const dateStr=today.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
   const prompt=`You are the AI brain of Pantry., a YNAB-style grocery tracker for the ${household.name||'Rennie Family'}.
 
-STORES THEY SHOP: ${stores}
+STORES: ${stores}
 
 PANTRY HISTORY:
 ${buildPurchaseContext()}
 
-SALE PATTERNS (** = due or overdue):
+SALE PATTERNS (** = due or overdue for sale based on purchase history):
 ${buildSaleContext(patterns)}
 
-TODAY: ${dateStr} | Days left: ${daysLeft} | Budget remaining: $${BUDGET.remaining.toFixed(2)} of $${BUDGET.monthly}/mo
+TODAY: ${dateStr} | Days left in month: ${daysLeft} | Budget remaining: $${BUDGET.remaining.toFixed(2)} of $${BUDGET.monthly}/mo
 
-TASK: 1) Search web for current weekly sales at ${stores}. 2) Find which of this family's items are on sale THIS WEEK with prices. 3) Note sale duration (Costco Instant Savings = 4-6 wks; Publix BOGO = 1 wk; Aldi Finds = 1-2 wks). 4) Flag ** items as predicted on sale. 5) YNAB: surplus = pantry resilience not overspending.
+Search the web for current weekly sale circulars at ${stores}. Find which of this family's regular items are on sale THIS WEEK. Include prices, savings, and sale end dates. Note typical durations: Costco Instant Savings run 4-6 weeks; Publix BOGO = 1 week; Aldi Finds = 1-2 weeks. Flag items marked ** as predicted on sale based on cycle. Apply YNAB philosophy: surplus = pantry resilience, not overspending.
 
-Generate 5-6 specific recommendations. Return ONLY valid JSON array, no markdown:
-[{"type":"sale_alert|stock_up|budget|produce|deal","title":"max 5 words","text":"2-3 sentences with prices and end dates.","action":"Add to list","item":"item name or null","urgent":true,"saleSource":"store/source","saleEnds":"timeframe or null"}]`;
+Return ONLY a valid JSON array, no other text:
+[{"type":"sale_alert|stock_up|budget|produce|deal","title":"max 5 words","text":"2-3 sentences with specific prices and end dates","action":"Add to list","item":"item name or null","urgent":true,"saleSource":"store or website","saleEnds":"timeframe or null"}]`;
+
+  async function tryCall(useSearch){
+    const body={model:'claude-sonnet-4-5-20250929',max_tokens:2000,messages:[{role:'user',content:prompt}]};
+    if(useSearch) body.tools=[{type:'web_search_20250305',name:'web_search'}];
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:apiHeaders(),body:JSON.stringify(body)});
+    return res.json();
+  }
+
   try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:apiHeaders(),
-      body:JSON.stringify({model:'claude-sonnet-4-5-20250929',max_tokens:2500,
-        tools:[{type:'web_search_20250305',name:'web_search'}],
-        messages:[{role:'user',content:prompt}]})});
-    const data=await res.json();
-    if(data.error) throw new Error(data.error.message);
+    let data=await tryCall(true);
+    // If web search not supported for this key, retry without it
+    if(data.error&&(data.error.type==='invalid_request_error'||String(data.error.message||'').toLowerCase().includes('tool'))){
+      container.innerHTML=`<div class="ai-loading"><div class="ai-spinner"></div>Generating suggestions…</div>`;
+      data=await tryCall(false);
+    }
+    if(data.error) throw new Error(data.error.message||JSON.stringify(data.error));
     const text=data.content.map(c=>c.text||'').join('');
-    aiNudges=JSON.parse(text.replace(/```json|```/g,'').trim());
+    const parsed=extractJsonArray(text);
+    if(!parsed||!parsed.length) throw new Error('No suggestions returned — response was: '+text.slice(0,120));
+    aiNudges=parsed;
     renderNudges(aiNudges);
     const badge=document.getElementById('ai-badge');
     if(badge){badge.textContent=aiNudges.filter(n=>n.urgent||n.type==='sale_alert').length||aiNudges.length;badge.style.display='flex';}
   }catch(e){
-    container.innerHTML=`<div class="ai-loading">Could not load suggestions. Check your connection and API key.</div>`;
+    const msg=e&&e.message?e.message:'Unknown error';
+    container.innerHTML=`<div class="ai-loading" style="padding:24px 20px;">
+      <div style="font-size:14px;font-weight:600;margin-bottom:8px;color:var(--text-primary);">Could not load suggestions</div>
+      <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:16px;word-break:break-all;">${escapeHtml(msg)}</div>
+      <button class="btn-primary" onclick="generateNudges()">Retry</button>
+    </div>`;
   }
 }
 const TYPE_COLORS={protein:{icon:'#E24B4A',iconBg:'#FCEBEB'},produce:{icon:'#1D9E75',iconBg:'#E1F5EE'},staple:{icon:'#BA7517',iconBg:'#FAEEDA'},deal:{icon:'#1D9E75',iconBg:'#E1F5EE'},budget:{icon:'#378ADD',iconBg:'#E6F1FB'},sale_alert:{icon:'#E24B4A',iconBg:'#FCEBEB'},stock_up:{icon:'#1D9E75',iconBg:'#E1F5EE'}};
