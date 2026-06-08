@@ -836,7 +836,7 @@
   <div class="modal-sheet" onclick="event.stopPropagation()">
     <div class="modal-handle"></div>
     <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px 4px;">
-      <div class="modal-title" style="padding:0;">Edit Item</div>
+      <div class="modal-title" style="padding:0;" id="hie-modal-title">Edit Item</div>
       <button class="icon-btn" onclick="closeModal('haul-item-edit-modal')"><svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
     </div>
     <div class="form-group"><label class="form-label">Item Name</label><input class="form-input" id="hie-name" type="text"></div>
@@ -884,8 +884,8 @@
     <div class="form-group"><label class="form-label">Category</label>
       <select class="form-input" id="hie-category"><option>Protein</option><option>Produce</option><option>Dairy</option><option>Pantry Staples</option><option>Snacks</option><option>Beverages</option><option>Frozen</option><option>Ready-Made</option><option>Non-Grocery</option><option>Other</option></select>
     </div>
-    <div style="padding:0 20px 8px;"><button class="btn-primary" onclick="saveHaulItemEdit()">Save Changes</button></div>
-    <div style="padding:0 20px 16px;"><button class="btn-ghost" style="width:100%;border-color:var(--red);color:var(--red);" onclick="deleteHaulItem()">Remove from Haul</button></div>
+    <div style="padding:0 20px 8px;"><button class="btn-primary" onclick="saveHaulItemEdit()" id="hie-save-btn">Save Changes</button></div>
+    <div style="padding:0 20px 16px;" id="hie-delete-row"><button class="btn-ghost" style="width:100%;border-color:var(--red);color:var(--red);" onclick="deleteHaulItem()">Remove from Haul</button></div>
   </div>
 </div>
 
@@ -1357,10 +1357,11 @@ function renderPerspective() {
       });
       if(haul.tax)itemsHtml+=`<div style="display:flex;justify-content:space-between;padding:7px 16px;border-bottom:0.5px solid var(--border);"><span style="font-size:13px;color:var(--text-tertiary);">Tax</span><span style="font-size:13px;color:var(--text-tertiary);">$${Number(haul.tax).toFixed(2)}</span></div>`;
       itemsHtml+=`<div style="display:flex;justify-content:space-between;padding:9px 16px;"><span style="font-size:13px;font-weight:700;">Total</span><span style="font-size:14px;font-weight:700;">$${haul.totalAmount.toFixed(2)}</span></div>`;
+      itemsHtml+=`<div onclick="openHaulItemAdd('${haul.id}')" style="display:flex;align-items:center;justify-content:center;gap:6px;padding:11px 16px;border-top:0.5px solid var(--border);cursor:pointer;color:var(--teal);font-size:13px;font-weight:600;-webkit-tap-highlight-color:transparent;"><svg viewBox="0 0 24 24" style="width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;"><path d="M12 5v14M5 12h14"/></svg>Add item</div>`;
     }
     const safeId=haul.id.replace(/[^a-zA-Z0-9_-]/g,'_');
     html+=`<div class="haul-group">` +
-      `<div class="haul-label"><span>Haul ${idx+1} · ${storeNames}</span><span style="cursor:pointer;color:var(--teal);font-weight:600;" onclick="openHaulEditor('${haul.id}')">Edit</span></div>` +
+      `<div class="haul-label"><span>Haul ${idx+1} · ${storeNames}</span><span style="display:flex;gap:14px;"><span style="cursor:pointer;color:var(--teal);font-weight:600;" onclick="openHaulItemAdd('${haul.id}')">+ Add item</span><span style="cursor:pointer;color:var(--teal);font-weight:600;" onclick="openHaulEditor('${haul.id}')">Edit haul</span></span></div>` +
       `<div class="haul-card" id="haul-card-${safeId}">` +
         `<div class="haul-card-header" style="cursor:pointer;" onclick="openHaulEditor('${haul.id}')">` +
           `<div><div class="haul-title">${escapeHtml(haul.name)}</div><div class="haul-date">${formatDate(haul.trips[0].date)}${haul.trips.length>1?' – '+formatDate(haul.trips[haul.trips.length-1].date):''}</div></div>` +
@@ -1459,6 +1460,11 @@ function openHaulItemEdit(haulId, itemIdx) {
   document.getElementById('hie-price-paid-display').textContent=paid>0?'$'+paid.toFixed(2):'$—';
   hieSetSale(!!it.onSale);
   hieUpdateDisplay();
+  document.getElementById('hie-modal-title').textContent='Edit Item';
+  const saveBtn2=document.getElementById('hie-save-btn');
+  if(saveBtn2)saveBtn2.textContent='Save Changes';
+  const delRow2=document.getElementById('hie-delete-row');
+  if(delRow2)delRow2.style.display='block';
   document.getElementById('haul-item-edit-modal').classList.add('open');
   setTimeout(()=>document.getElementById('hie-name').focus(),80);
 }
@@ -1485,6 +1491,24 @@ function hieUpdateDisplay() {
   document.getElementById('hie-line-total-lbl').textContent=(price*hieCount).toFixed(2);
 }
 function hieStep(delta) { hieCount=Math.max(1,hieCount+delta); hieUpdateDisplay(); }
+function openHaulItemAdd(haulId) {
+  hieState={haulId,itemIdx:-1,monthKey:perspMonth}; hieCount=1;
+  document.getElementById('hie-modal-title').textContent='Add Item';
+  const saveBtn=document.getElementById('hie-save-btn');
+  if(saveBtn)saveBtn.textContent='Add to Haul';
+  const delRow=document.getElementById('hie-delete-row');
+  if(delRow)delRow.style.display='none';
+  document.getElementById('hie-name').value='';
+  document.getElementById('hie-price').value='';
+  document.getElementById('hie-orig-price').value='';
+  document.getElementById('hie-discount').value='';
+  document.getElementById('hie-price-paid-display').textContent='$—';
+  document.getElementById('hie-category').value='Other';
+  hieSetSale(false);
+  hieUpdateDisplay();
+  document.getElementById('haul-item-edit-modal').classList.add('open');
+  setTimeout(()=>document.getElementById('hie-name').focus(),80);
+}
 function saveHaulItemEdit() {
   if(!hieState)return;
   const name=document.getElementById('hie-name').value.trim(); if(!name){showToast('Enter an item name');return;}
@@ -1493,15 +1517,23 @@ function saveHaulItemEdit() {
   const originalPrice=onSale?(parseFloat(document.getElementById('hie-orig-price').value)||null):null;
   const category=document.getElementById('hie-category').value;
   const hauls=haulsData[hieState.monthKey]||[]; const haul=hauls.find(h=>h.id===hieState.haulId);
-  if(!haul||!haul.items)return;
-  const it=haul.items[hieState.itemIdx];
-  it.name=name; it.price=price; it.count=hieCount; it.category=category; it.onSale=onSale; it.originalPrice=originalPrice;
+  if(!haul)return;
+  const isNew = hieState.itemIdx === -1;
+  if(isNew){
+    if(!haul.items) haul.items=[];
+    haul.items.push({name,price,count:hieCount,category,onSale,originalPrice,tracked:category!=='Non-Grocery'});
+    if(haul.trips&&haul.trips.length===1) haul.trips[0].items=haul.items.length;
+  } else {
+    if(!haul.items||haul.items[hieState.itemIdx]===undefined)return;
+    const it=haul.items[hieState.itemIdx];
+    it.name=name; it.price=price; it.count=hieCount; it.category=category; it.onSale=onSale; it.originalPrice=originalPrice;
+  }
   recomputeHaulTotals(haul);
   localStorage.setItem('pantry_hauls',JSON.stringify(haulsData));
   const haulId=hieState.haulId;
   closeModal('haul-item-edit-modal'); hieState=null;
   renderPerspective(); renderHome(); _reopenHaul(haulId);
-  showToast('Item updated');
+  showToast(isNew?'Item added':'Item updated');
 }
 function deleteHaulItem() {
   if(!hieState)return;
