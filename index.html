@@ -344,6 +344,17 @@
       <div class="qa-label">AI Suggestions</div><div class="qa-sub" id="qa-nudge-count">Tap to view</div>
     </button>
   </div>
+  <div id="home-sale-watch" style="display:none;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px 8px;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div style="font-size:11px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--text-tertiary);">Sale Watch</div>
+        <div id="sale-watch-badge" style="display:none;background:var(--red);color:white;font-size:9px;font-weight:700;min-width:16px;height:16px;border-radius:8px;align-items:center;justify-content:center;padding:0 4px;">0</div>
+      </div>
+      <button onclick="checkCurrentSales(false)" id="sale-check-btn" style="background:none;border:none;color:var(--teal);font-size:12px;font-weight:600;cursor:pointer;padding:4px 0;">Check now</button>
+    </div>
+    <div id="home-sale-cards" style="overflow-x:auto;-webkit-overflow-scrolling:touch;display:flex;gap:10px;padding:0 20px 12px;scrollbar-width:none;-ms-overflow-style:none;"></div>
+    <div id="sale-check-status" style="display:none;font-size:11px;color:var(--text-tertiary);padding:0 20px 8px;"></div>
+  </div>
   <div class="section-label">Scan a receipt</div>
   <div class="scan-zone" onclick="openReceiptModal()">
     <div class="scan-icon"><svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg></div>
@@ -1002,7 +1013,7 @@ function switchTab(tab) {
   document.getElementById('screen-'+tab).classList.add('active');
   document.getElementById('tab-'+tab).classList.add('active');
   currentTab = tab;
-  if(tab==='home') renderHome();
+  if(tab==='home'){renderHome();setTimeout(()=>checkCurrentSales(true),300);}
   if(tab==='plan') renderPlanList();
   if(tab==='perspective') renderPerspective();
   if(tab==='pantry') renderPantry();
@@ -1696,34 +1707,179 @@ function deletePantryItem() {
 // ════════════════════════════════════════════════════
 // AI NUDGES
 // ════════════════════════════════════════════════════
+// ── Sale pattern analysis ──────────────────────────
+function getSalePatterns() {
+  const out = [];
+  pantryItems.forEach(item => {
+    const sales = (item.priceHistory||[]).filter(e=>e.onSale);
+    if (!sales.length) return;
+    const sorted = [...sales].sort((a,b)=>a.date.localeCompare(b.date));
+    const cycles = [];
+    for (let i=1;i<sorted.length;i++) {
+      const diff = (new Date(sorted[i].date)-new Date(sorted[i-1].date))/864e5;
+      cycles.push(Math.round(diff));
+    }
+    const avgCycle = cycles.length ? Math.round(cycles.reduce((a,b)=>a+b,0)/cycles.length) : null;
+    const last = sorted[sorted.length-1];
+    const daysSince = Math.round((Date.now()-new Date(last.date))/864e5);
+    const dueIn = avgCycle!=null ? avgCycle-daysSince : null;
+    const discounts = sorted.filter(e=>e.originalPrice&&e.originalPrice>e.price)
+      .map(e=>Math.round((1-e.price/e.originalPrice)*100));
+    const avgDiscount = discounts.length ? Math.round(discounts.reduce((a,b)=>a+b,0)/discounts.length) : null;
+    out.push({name:item.name,category:item.category,store:last.store,
+      saleCount:sales.length,avgCycle,daysSinceSale:daysSince,
+      daysUntilNextSale:dueIn,avgDiscount,
+      lastSalePrice:last.price,lastOriginalPrice:last.originalPrice||null});
+  });
+  return out.sort((a,b)=>(a.daysUntilNextSale??9999)-(b.daysUntilNextSale??9999));
+}
+function buildSaleContext(patterns) {
+  if (!patterns.length) return 'No sale history yet.';
+  return patterns.map(p=>{
+    const parts = ['- '+p.name+' ('+p.store+')'];
+    parts.push('on sale '+p.saleCount+'x');
+    if (p.avgCycle) parts.push('avg cycle '+p.avgCycle+'d');
+    if (p.avgDiscount) parts.push('avg '+p.avgDiscount+'% off');
+    parts.push('last sale '+p.daysSinceSale+'d ago');
+    if (p.daysUntilNextSale!=null) {
+      if (p.daysUntilNextSale<=0) parts.push('** OVERDUE **');
+      else if (p.daysUntilNextSale<=7) parts.push('** DUE IN '+p.daysUntilNextSale+'d **');
+      else parts.push('next in ~'+p.daysUntilNextSale+'d');
+    }
+    return parts.join(' | ');
+  }).join('\n');
+}
+// ── Home Sale Watch ────────────────────────────────
+let saleCheckCache = null;
+let saleCheckTime = 0;
+function renderHomeAlerts() {
+  const wrap=document.getElementById('home-sale-watch');
+  const cardsEl=document.getElementById('home-sale-cards');
+  if (!wrap||!cardsEl) return;
+  const patterns=getSalePatterns();
+  const upcoming=patterns.filter(p=>p.daysUntilNextSale!=null&&p.daysUntilNextSale<=28).slice(0,8);
+  if (!upcoming.length&&!saleCheckCache?.length){wrap.style.display='none';return;}
+  wrap.style.display='block';
+  const cards=[];
+  upcoming.forEach(p=>{
+    const d=p.daysUntilNextSale;
+    const label=d<=0?'Due now':d<=7?'In '+d+'d':'In ~'+Math.round(d/7)+'wk';
+    const col=d<=0?'var(--red)':d<=7?'var(--amber)':'var(--text-tertiary)';
+    const bg=d<=0?'var(--red-light)':d<=7?'var(--amber-light)':'var(--white)';
+    const disc=p.avgDiscount?'~'+p.avgDiscount+'% off':'';
+    const cycle=p.avgCycle?p.avgCycle+'d cycle':'';
+    const div=document.createElement('div');
+    div.style.cssText='flex-shrink:0;width:150px;background:'+bg+';border-radius:12px;padding:11px;border:0.5px solid rgba(0,0,0,0.1);cursor:pointer;-webkit-tap-highlight-color:transparent;';
+    div.innerHTML='<div style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.07em;color:'+col+';margin-bottom:3px;">'+label+'</div>'+
+      '<div style="font-size:13px;font-weight:600;line-height:1.3;margin-bottom:2px;">'+escapeHtml(p.name)+'</div>'+
+      '<div style="font-size:11px;color:var(--text-tertiary);">'+escapeHtml(p.store)+'</div>'+
+      (disc?'<div style="font-size:11px;font-weight:600;color:'+col+';margin-top:3px;">'+disc+(cycle?'&nbsp;&middot;&nbsp;'+cycle:'')+'</div>':cycle?'<div style="font-size:11px;color:var(--text-tertiary);margin-top:3px;">'+cycle+'</div>':'');
+    div.addEventListener('click',function(){ addNudgeItem(p.name); switchTab('plan'); });
+    cards.push(div);
+  });
+  if (saleCheckCache?.length) {
+    saleCheckCache.forEach(s=>{
+      if(!s.item)return;
+      const savings=s.origPrice&&s.salePrice?'$'+(s.origPrice-s.salePrice).toFixed(2)+' off':'On sale';
+      const div=document.createElement('div');
+      div.style.cssText='flex-shrink:0;width:150px;background:var(--teal-light);border-radius:12px;padding:11px;border:0.5px solid var(--teal-mid);cursor:pointer;-webkit-tap-highlight-color:transparent;';
+      div.innerHTML='<div style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.07em;color:var(--teal-dark);margin-bottom:3px;">CONFIRMED</div>'+
+        '<div style="font-size:13px;font-weight:600;line-height:1.3;margin-bottom:2px;">'+escapeHtml(s.item)+'</div>'+
+        '<div style="font-size:11px;color:var(--teal-dark);">'+escapeHtml(s.store||'')+'</div>'+
+        '<div style="font-size:11px;font-weight:600;color:var(--teal-dark);margin-top:3px;">'+savings+(s.saleEnds?' &middot; ends '+s.saleEnds:'')+'</div>';
+      div.addEventListener('click',function(){ addNudgeItem(s.item); switchTab('plan'); });
+      cards.push(div);
+    });
+  }
+  cardsEl.innerHTML='';
+  cards.forEach(c=>cardsEl.appendChild(c));
+  const badge=document.getElementById('sale-watch-badge');
+  const total=upcoming.filter(p=>p.daysUntilNextSale<=7).length+(saleCheckCache?.length||0);
+  if(badge){badge.textContent=total;badge.style.display=total?'flex':'none';}
+}
+async function checkCurrentSales(auto) {
+  const SIX_H=6*60*60*1000;
+  if(saleCheckCache&&Date.now()-saleCheckTime<SIX_H){renderHomeAlerts();return;}
+  if(!hasApiKey()){if(!auto)showToast('Add API key in Settings');return;}
+  const btn=document.getElementById('sale-check-btn');
+  const status=document.getElementById('sale-check-status');
+  if(btn){btn.textContent='Checking…';btn.disabled=true;}
+  if(status){status.style.display='block';status.textContent='Searching store circulars…';}
+  const stores=household.stores.filter(s=>s!=='Other').slice(0,5).join(', ');
+  const items=pantryItems.slice(0,50).map(p=>p.name).join(', ');
+  const today=new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+  const msg=`Today is ${today}. Search current weekly sale circulars for: ${stores}. Find which of these items are on sale RIGHT NOW: ${items}. Check store websites, apps, circular aggregators. Note sale duration. Return ONLY JSON array: [{"item":"name","store":"store","salePrice":0.00,"origPrice":0.00,"saleEnds":"timeframe","confidence":"confirmed|likely","source":"where found"}] or [] if nothing found.`;
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:apiHeaders(),
+      body:JSON.stringify({model:'claude-sonnet-4-5-20250929',max_tokens:2000,
+        tools:[{type:'web_search_20250305',name:'web_search'}],
+        messages:[{role:'user',content:msg}]})});
+    const data=await res.json();
+    if(data.error) throw new Error(data.error.message);
+    const text=data.content.filter(c=>c.type==='text').map(c=>c.text).join('');
+    saleCheckCache=extractJsonArray(text)||[];
+    saleCheckTime=Date.now();
+    renderHomeAlerts();
+    if(status){status.style.display='block';status.textContent='Updated '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+' · '+saleCheckCache.length+' confirmed sale'+(saleCheckCache.length!==1?'s':'');}
+  }catch(e){
+    if(status){status.style.display='block';status.textContent='Could not check right now. Try again later.';}
+  }
+  if(btn){btn.textContent='Check now';btn.disabled=false;}
+}
 let aiLoaded = false;
 let aiNudges = [];
 function buildPurchaseContext() {
   return pantryItems.map(item=>{const n=item.priceHistory.length;const last=item.priceHistory[n-1];const prev=n>1?item.priceHistory[n-2]:null;const trend=prev?(last.price>prev.price?'rising':last.price<prev.price?'falling':'stable'):'first purchase';return `- ${item.name} | $${last.price.toFixed(2)} (${trend}) | stock: ${item.stockPct}% | last: ${last.date} | ${last.store} | bought ${n}x`;}).join('\n');
 }
 async function generateNudges() {
-  aiLoaded=true; const container=document.getElementById('ai-nudges-container');
-  container.innerHTML=`<div class="ai-loading"><div class="ai-spinner"></div>Thinking about your pantry...</div>`;
-  const today=new Date(); const daysLeft=new Date(today.getFullYear(),today.getMonth()+1,0).getDate()-today.getDate();
-  const prompt=`You are the AI brain of Pantry., a YNAB-style grocery tracking app.\nPANTRY:\n${buildPurchaseContext()}\nTODAY: ${today.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})}\nDays left: ${daysLeft}, Budget remaining: $${BUDGET.remaining.toFixed(2)}, Monthly budget: $${BUDGET.monthly}\nGenerate exactly 4 specific, actionable suggestions. YNAB philosophy. Return ONLY a JSON array:\n[{"type":"protein|produce|staple|deal|budget","title":"5 words max","text":"2-3 sentences.","action":"Short label","item":"item name or null","urgent":true}]`;
-  try {
-    if(!hasApiKey()){container.innerHTML=`<div class="ai-loading" style="padding:32px 20px;"><div style="font-size:15px;font-weight:600;margin-bottom:8px;color:var(--text-primary);">API key needed</div><div style="font-size:13px;color:var(--text-secondary);line-height:1.5;margin-bottom:16px;">Add your Anthropic API key in Settings to enable AI suggestions.</div><button class="btn-primary" onclick="openSettings()">Open Settings</button></div>`;return;}
-    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:apiHeaders(),body:JSON.stringify({model:'claude-sonnet-4-5-20250929',max_tokens:1000,messages:[{role:'user',content:prompt}]})});
+  aiLoaded=true;
+  const container=document.getElementById('ai-nudges-container');
+  container.innerHTML=`<div class="ai-loading"><div class="ai-spinner"></div>Checking sales and analyzing your pantry…</div>`;
+  if(!hasApiKey()){container.innerHTML=`<div class="ai-loading" style="padding:32px 20px;"><div style="font-size:15px;font-weight:600;margin-bottom:8px;">API key needed</div><div style="font-size:13px;color:var(--text-secondary);line-height:1.5;margin-bottom:16px;">Add your Anthropic API key in Settings.</div><button class="btn-primary" onclick="openSettings()">Open Settings</button></div>`;return;}
+  const today=new Date();
+  const daysLeft=new Date(today.getFullYear(),today.getMonth()+1,0).getDate()-today.getDate();
+  const patterns=getSalePatterns();
+  const stores=household.stores.filter(s=>s!=='Other').slice(0,5).join(', ');
+  const dateStr=today.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+  const prompt=`You are the AI brain of Pantry., a YNAB-style grocery tracker for the ${household.name||'Rennie Family'}.
+
+STORES THEY SHOP: ${stores}
+
+PANTRY HISTORY:
+${buildPurchaseContext()}
+
+SALE PATTERNS (** = due or overdue):
+${buildSaleContext(patterns)}
+
+TODAY: ${dateStr} | Days left: ${daysLeft} | Budget remaining: $${BUDGET.remaining.toFixed(2)} of $${BUDGET.monthly}/mo
+
+TASK: 1) Search web for current weekly sales at ${stores}. 2) Find which of this family's items are on sale THIS WEEK with prices. 3) Note sale duration (Costco Instant Savings = 4-6 wks; Publix BOGO = 1 wk; Aldi Finds = 1-2 wks). 4) Flag ** items as predicted on sale. 5) YNAB: surplus = pantry resilience not overspending.
+
+Generate 5-6 specific recommendations. Return ONLY valid JSON array, no markdown:
+[{"type":"sale_alert|stock_up|budget|produce|deal","title":"max 5 words","text":"2-3 sentences with prices and end dates.","action":"Add to list","item":"item name or null","urgent":true,"saleSource":"store/source","saleEnds":"timeframe or null"}]`;
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:apiHeaders(),
+      body:JSON.stringify({model:'claude-sonnet-4-5-20250929',max_tokens:2500,
+        tools:[{type:'web_search_20250305',name:'web_search'}],
+        messages:[{role:'user',content:prompt}]})});
     const data=await res.json();
+    if(data.error) throw new Error(data.error.message);
     const text=data.content.map(c=>c.text||'').join('');
     aiNudges=JSON.parse(text.replace(/```json|```/g,'').trim());
     renderNudges(aiNudges);
     const badge=document.getElementById('ai-badge');
-    if(badge){badge.textContent=aiNudges.filter(n=>n.urgent).length||aiNudges.length;badge.style.display='flex';}
-  } catch(e){container.innerHTML=`<div class="ai-loading">Could not load suggestions. Check your connection and try again.</div>`;}
+    if(badge){badge.textContent=aiNudges.filter(n=>n.urgent||n.type==='sale_alert').length||aiNudges.length;badge.style.display='flex';}
+  }catch(e){
+    container.innerHTML=`<div class="ai-loading">Could not load suggestions. Check your connection and API key.</div>`;
+  }
 }
-const TYPE_COLORS={protein:{icon:'#E24B4A',iconBg:'#FCEBEB'},produce:{icon:'#1D9E75',iconBg:'#E1F5EE'},staple:{icon:'#BA7517',iconBg:'#FAEEDA'},deal:{icon:'#1D9E75',iconBg:'#E1F5EE'},budget:{icon:'#378ADD',iconBg:'#E6F1FB'}};
-const TYPE_ICONS={protein:'<circle cx="12" cy="12" r="4"/><path d="M16 8l4-4M8 16l-4 4M16 16l4 4M8 8l-4-4"/>',produce:'<path d="M12 22V12M12 12C12 6.477 16.477 2 22 2c0 5.523-4.477 10-10 10zM12 12C12 6.477 7.523 2 2 2c0 5.523 4.477 10 10 10z"/>',staple:'<path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>',deal:'<path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2z"/>',budget:'<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/>'};
+const TYPE_COLORS={protein:{icon:'#E24B4A',iconBg:'#FCEBEB'},produce:{icon:'#1D9E75',iconBg:'#E1F5EE'},staple:{icon:'#BA7517',iconBg:'#FAEEDA'},deal:{icon:'#1D9E75',iconBg:'#E1F5EE'},budget:{icon:'#378ADD',iconBg:'#E6F1FB'},sale_alert:{icon:'#E24B4A',iconBg:'#FCEBEB'},stock_up:{icon:'#1D9E75',iconBg:'#E1F5EE'}};
+const TYPE_ICONS={protein:'<circle cx="12" cy="12" r="4"/><path d="M16 8l4-4M8 16l-4 4M16 16l4 4M8 8l-4-4"/>',produce:'<path d="M12 22V12M12 12C12 6.477 16.477 2 22 2c0 5.523-4.477 10-10 10zM12 12C12 6.477 7.523 2 2 2c0 5.523 4.477 10 10 10z"/>',staple:'<path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>',deal:'<path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2z"/>',budget:'<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/>',sale_alert:'<path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2z"/>',stock_up:'<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>'};
 function renderNudges(nudges) {
   const container=document.getElementById('ai-nudges-container');
   if(!nudges||!nudges.length){container.innerHTML=`<div class="empty-state"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 9a3 3 0 015.12 2.12C14 13 12 14 12 16M12 20h.01"/></svg><h3>No suggestions yet</h3><p>Add items to your pantry to get personalized suggestions.</p></div>`;return;}
   let html='<div style="padding:16px 0 0;">';
-  nudges.forEach(nudge=>{const tc=TYPE_COLORS[nudge.type]||TYPE_COLORS.budget;const icon=TYPE_ICONS[nudge.type]||TYPE_ICONS.budget;const urgentBadge=nudge.urgent?`<span class="nudge-urgent pill pill-red">Urgent</span>`:'';html+=`<div class="nudge-card" style="border-left:3px solid ${tc.icon}"><div class="nudge-card-header"><div class="nudge-type-icon" style="background:${tc.iconBg};color:${tc.icon}"><svg viewBox="0 0 24 24">${icon}</svg></div><div class="nudge-title">${nudge.title}</div>${urgentBadge}</div><div class="nudge-text">${nudge.text}</div>${nudge.item?`<button class="nudge-action" onclick="addNudgeItem('${nudge.item.replace(/'/g,"\\'")}')"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>${nudge.action||'Add to list'}</button>`:''}</div>`;});
+  nudges.forEach(nudge=>{const tc=TYPE_COLORS[nudge.type]||TYPE_COLORS.budget;const icon=TYPE_ICONS[nudge.type]||TYPE_ICONS.budget;const urgentBadge=nudge.urgent?`<span class="nudge-urgent pill pill-red">Urgent</span>`:'';const saleMeta=(nudge.saleSource||nudge.saleEnds)?'<div style="font-size:11px;color:var(--text-tertiary);margin:-4px 0 8px;">'+(nudge.saleSource?'&#128205; '+nudge.saleSource:'')+(nudge.saleSource&&nudge.saleEnds?' &middot; ':'')+( nudge.saleEnds?'Ends: '+nudge.saleEnds:'')+'</div>':'';html+=`<div class="nudge-card" style="border-left:3px solid ${tc.icon}"><div class="nudge-card-header"><div class="nudge-type-icon" style="background:${tc.iconBg};color:${tc.icon}"><svg viewBox="0 0 24 24">${icon}</svg></div><div class="nudge-title">${nudge.title}</div>${urgentBadge}</div><div class="nudge-text">${nudge.text}</div>${saleMeta}${nudge.item?`<button class="nudge-action" onclick="addNudgeItem('${nudge.item.replace(/'/g,"\\'")}')"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>${nudge.action||'Add to list'}</button>`:''}</div>`;});
   html+='</div>'; container.innerHTML=html;
 }
 function addNudgeItem(itemName) {
@@ -2432,6 +2588,7 @@ function renderHome(){
   const qac=document.getElementById('qa-list-count');if(qac)qac.textContent=shoppingList.filter(i=>!i.checked).length+' items';
   const qap=document.getElementById('qa-persp-sub');if(qap)qap.textContent=hauls.length+' haul'+(hauls.length!==1?'s':'');
   const qan=document.getElementById('qa-pantry-count');if(qan)qan.textContent=pantryItems.length+' items tracked';
+  renderHomeAlerts();
   const nextKey=nextMonthKey();const nextRow=document.getElementById('snap-next-row');
   if(nextRow){nextRow.style.display='flex';document.getElementById('snap-next-label').textContent='Next: '+monthLabelFromKey(nextKey);document.getElementById('snap-next-amt').textContent='$'+(getBudgetForMonth(nextKey)||budget).toLocaleString();}
 }
