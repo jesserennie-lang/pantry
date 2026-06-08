@@ -217,6 +217,19 @@
   .price-store { font-size: 12px; color: var(--text-tertiary); margin-top: 2px; }
   .price-val { font-size: 15px; font-weight: 600; }
   .price-delta { font-size: 11px; font-weight: 600; margin-top: 2px; text-align: right; }
+  .chat-msg { padding:11px 14px; border-radius:14px; font-size:14px; line-height:1.6; margin-bottom:8px; max-width:88%; word-break:break-word; }
+  .chat-user { background:var(--teal); color:white; margin-left:auto; border-radius:14px 14px 3px 14px; }
+  .chat-ai { background:var(--white); color:var(--text-primary); border:0.5px solid var(--border); border-radius:14px 14px 14px 3px; }
+  .chat-thinking { color:var(--text-tertiary); font-style:italic; background:var(--gray-100); border:none; }
+  .chat-input-wrap { display:flex; gap:8px; padding:10px 0 0; }
+  .chat-input { flex:1; background:var(--gray-100); border:none; border-radius:var(--radius-md); padding:12px 14px; font-size:16px; color:var(--text-primary); }
+  .chat-input:focus { outline:2px solid var(--teal); outline-offset:-1px; background:var(--white); }
+  .chat-input::placeholder { color:var(--text-tertiary); }
+  .chat-send-btn { width:46px; flex-shrink:0; background:var(--teal); border:none; border-radius:var(--radius-md); display:flex; align-items:center; justify-content:center; cursor:pointer; }
+  .chat-send-btn:active { background:var(--teal-dark); }
+  .chat-send-btn svg { width:20px; height:20px; stroke:white; fill:none; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round; }
+  .recipe-starter-pill { background:var(--gray-100); color:var(--text-secondary); border:none; border-radius:20px; padding:7px 13px; font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap; }
+  .recipe-starter-pill:active { background:var(--teal-light); color:var(--teal-dark); }
   .toast { position: fixed; bottom: calc(var(--tab-h) + var(--safe-bottom) + 16px); left: 50%; transform: translateX(-50%) translateY(12px); background: var(--gray-800); color: white; padding: 10px 18px; border-radius: 24px; font-size: 13px; font-weight: 500; opacity: 0; transition: all 0.3s ease; white-space: nowrap; pointer-events: none; z-index: 500; }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   .empty-state { padding: 48px 32px; text-align: center; }
@@ -454,14 +467,35 @@
     <div class="ai-header-title">AI Suggestions</div>
     <div class="ai-header-sub">Powered by your pantry + spending patterns</div>
     <div class="ai-chip-row">
-      <div class="ai-chip" onclick="generateNudges()">Refresh</div>
-      <div class="ai-chip" onclick="sendAiMessage('What should I buy this week?')">This week's picks</div>
-      <div class="ai-chip" onclick="sendAiMessage('How can I stretch my budget?')">Stretch budget</div>
-      <div class="ai-chip" onclick="sendAiMessage('What am I running low on?')">Running low</div>
+      <div class="ai-chip" onclick="generateNudges()">Refresh deals</div>
+      <div class="ai-chip" onclick="sendRecipeMessage('What meals can I make tonight with what I have?')">Tonight's meals</div>
+      <div class="ai-chip" onclick="sendRecipeMessage('Give me 3 budget-friendly dinners using my pantry')">Budget dinners</div>
+      <div class="ai-chip" onclick="sendRecipeMessage('What should I use up before it goes bad?')">Use it up</div>
     </div>
   </div>
   <div style="padding:16px 0 0;" id="ai-nudges-container"><div class="ai-loading"><div class="ai-spinner"></div>Analyzing your pantry...</div></div>
   <button class="refresh-btn" onclick="generateNudges()"><svg viewBox="0 0 24 24"><path d="M1 4v6h6"/><path d="M23 20v-6h-6"/><path d="M20.49 9A9 9 0 005.64 5.64L1 10M23 14l-4.64 4.36A9 9 0 013.51 15"/></svg>Get fresh suggestions</button>
+
+  <div style="padding:20px 20px 0;border-top:0.5px solid var(--border);margin-top:8px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+      <div style="font-size:18px;font-weight:700;letter-spacing:-0.3px;">Recipe Chat</div>
+      <button onclick="clearRecipeChat()" style="background:none;border:none;color:var(--text-tertiary);font-size:12px;font-weight:600;cursor:pointer;padding:4px;">Clear</button>
+    </div>
+    <div style="font-size:13px;color:var(--text-secondary);margin-bottom:12px;line-height:1.5;">I know what's in your pantry. Ask me what to cook.</div>
+    <div id="recipe-chat-msgs" style="display:flex;flex-direction:column;max-height:55vh;overflow-y:auto;padding-bottom:4px;"></div>
+    <div id="recipe-starters" style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px;">
+      <button class="recipe-starter-pill" onclick="sendRecipeMessage('What can I make with what I have right now?')">What can I make?</button>
+      <button class="recipe-starter-pill" onclick="sendRecipeMessage('Give me 3 inexpensive dinners using my pantry')">Budget dinners</button>
+      <button class="recipe-starter-pill" onclick="sendRecipeMessage('What should I use up before it goes bad?')">Use it up</button>
+      <button class="recipe-starter-pill" onclick="sendRecipeMessage('What's a quick weeknight dinner I can make?')">Quick dinner</button>
+      <button class="recipe-starter-pill" onclick="sendRecipeMessage('What can I make with chicken?')">Chicken ideas</button>
+    </div>
+    <div class="chat-input-wrap">
+      <input type="text" id="recipe-chat-input" class="chat-input" placeholder="What can I make tonight?" enterkeyhint="send" onkeydown="if(event.key==='Enter'){event.preventDefault();sendRecipeMessage();}">
+      <button class="chat-send-btn" onclick="sendRecipeMessage()" aria-label="Send"><svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
+    </div>
+  </div>
+  <div style="height:24px;"></div>
 </div>
 
 <nav class="tab-bar">
@@ -1707,6 +1741,101 @@ function deletePantryItem() {
 // ════════════════════════════════════════════════════
 // AI NUDGES
 // ════════════════════════════════════════════════════
+// ── Pantry inventory for AI context ──────────────
+function buildPantryInventory() {
+  if (!pantryItems.length) return 'Pantry is empty — scan some receipts to start tracking.';
+  const cats = {};
+  const inStock = pantryItems.filter(p => (p.stockPct||0) > 10);
+  if (!inStock.length) return 'No items currently in stock.';
+  inStock.forEach(p => {
+    if (!cats[p.category]) cats[p.category] = [];
+    const last = p.priceHistory && p.priceHistory.length ? p.priceHistory[p.priceHistory.length-1] : null;
+    const stock = p.stockPct > 70 ? 'well stocked' : p.stockPct > 35 ? 'some' : 'low';
+    cats[p.category].push(p.name + ' (' + stock + (last ? ', $'+last.price.toFixed(2) : '') + ')');
+  });
+  return Object.entries(cats).map(([cat,items]) => cat + ': ' + items.join(', ')).join('\n');
+}
+
+// ── Recipe Chat ───────────────────────────────────
+let recipeHistory = [];
+
+function getRecipeSystemCtx() {
+  return `You are a practical cooking assistant for the ${household.name||'Rennie Family'}. Your goal is to help them cook good meals using what they already have, stretching their grocery budget.
+
+CURRENT PANTRY (what they have in stock right now):
+${buildPantryInventory()}
+
+BUDGET: $${BUDGET.remaining.toFixed(2)} remaining this month of $${BUDGET.monthly} total.
+
+RULES:
+- Prioritize meals that USE items they already have
+- When suggesting additional ingredients, choose cheap staples (eggs, pasta, rice, canned goods, onions, garlic, spices)
+- Give specific recipes with ingredients and rough steps
+- Keep it practical and family-friendly
+- If they ask about a specific ingredient, build around it using what else is in the pantry
+- Mention estimated cost if you can`;
+}
+
+async function sendRecipeMessage(prefill) {
+  const input = document.getElementById('recipe-chat-input');
+  const msg = ((prefill !== undefined ? prefill : (input ? input.value : '')).trim());
+  if (!msg) { if(input) input.focus(); return; }
+  if (!hasApiKey()) { showToast('Add API key in Settings first'); return; }
+  if (input) input.value = '';
+  const starters = document.getElementById('recipe-starters');
+  if (starters) starters.style.display = 'none';
+  recipeHistory.push({role:'user', content:msg});
+  renderRecipeChat(true);
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST', headers:apiHeaders(),
+      body: JSON.stringify({
+        model:'claude-sonnet-4-5-20250929',
+        max_tokens:1500,
+        system: getRecipeSystemCtx(),
+        messages: recipeHistory
+      })
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
+    const reply = data.content.map(c=>c.text||'').join('').trim();
+    recipeHistory.push({role:'assistant', content:reply});
+  } catch(e) {
+    recipeHistory.push({role:'assistant', content:'Sorry, I hit an error: ' + (e.message||'unknown')});
+  }
+  renderRecipeChat(false);
+}
+
+function renderRecipeChat(loading) {
+  const el = document.getElementById('recipe-chat-msgs');
+  if (!el) return;
+  let html = recipeHistory.map(m => {
+    const isUser = m.role === 'user';
+    if (isUser) return `<div class="chat-msg chat-user">${escapeHtml(m.content)}</div>`;
+    const formatted = m.content
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
+      .replace(/^#{1,3} (.+)$/gm,'<strong>$1</strong>')
+      .replace(/^[-*] (.+)$/gm,'&bull; $1')
+      .replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>');
+    return `<div class="chat-msg chat-ai">${formatted}</div>`;
+  }).join('');
+  if (loading) html += '<div class="chat-msg chat-ai chat-thinking">Thinking\u2026</div>';
+  el.innerHTML = html;
+  el.scrollTop = el.scrollHeight;
+}
+
+function clearRecipeChat() {
+  recipeHistory = [];
+  const el = document.getElementById('recipe-chat-msgs');
+  if (el) el.innerHTML = '';
+  const starters = document.getElementById('recipe-starters');
+  if (starters) starters.style.display = 'flex';
+  const input = document.getElementById('recipe-chat-input');
+  if (input) input.focus();
+}
+
+
 // ── Sale pattern analysis ──────────────────────────
 function getSalePatterns() {
   const out = [];
@@ -1851,22 +1980,28 @@ async function generateNudges() {
   const patterns=getSalePatterns();
   const stores=household.stores.filter(s=>s!=='Other').slice(0,5).join(', ');
   const dateStr=today.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+  const pantryInv=buildPantryInventory();
   const prompt=`You are the AI brain of Pantry., a YNAB-style grocery tracker for the ${household.name||'Rennie Family'}.
 
 STORES: ${stores}
 
-PANTRY HISTORY:
+WHAT THEY HAVE IN STOCK RIGHT NOW:
+${pantryInv}
+
+FULL PURCHASE HISTORY (for sale pattern context):
 ${buildPurchaseContext()}
 
-SALE PATTERNS (** = due or overdue for sale based on purchase history):
+SALE PATTERNS (** = due or overdue):
 ${buildSaleContext(patterns)}
 
-TODAY: ${dateStr} | Days left in month: ${daysLeft} | Budget remaining: $${BUDGET.remaining.toFixed(2)} of $${BUDGET.monthly}/mo
+TODAY: ${dateStr} | Days left: ${daysLeft} | Budget remaining: $${BUDGET.remaining.toFixed(2)} of $${BUDGET.monthly}/mo
 
-Search the web for current weekly sale circulars at ${stores}. Find which of this family's regular items are on sale THIS WEEK. Include prices, savings, and sale end dates. Note typical durations: Costco Instant Savings run 4-6 weeks; Publix BOGO = 1 week; Aldi Finds = 1-2 weeks. Flag items marked ** as predicted on sale based on cycle. Apply YNAB philosophy: surplus = pantry resilience, not overspending.
+Search the web for current weekly sales at ${stores}. Find which items are on sale this week. Note sale durations.
 
-Return ONLY a valid JSON array, no other text:
-[{"type":"sale_alert|stock_up|budget|produce|deal","title":"max 5 words","text":"2-3 sentences with specific prices and end dates","action":"Add to list","item":"item name or null","urgent":true,"saleSource":"store or website","saleEnds":"timeframe or null"}]`;
+Also suggest 1-2 specific budget-stretching meal ideas using items from the pantry above.
+
+Return ONLY a valid JSON array, no markdown:
+[{"type":"sale_alert|stock_up|meal|budget|produce|deal","title":"max 5 words","text":"2-3 specific sentences with prices, recipes, or end dates","action":"Add to list","item":"item name or null","urgent":true,"saleSource":"store/source","saleEnds":"timeframe or null"}]`;
 
   async function tryCall(useSearch){
     const body={model:'claude-sonnet-4-5-20250929',max_tokens:2000,messages:[{role:'user',content:prompt}]};
@@ -1899,8 +2034,8 @@ Return ONLY a valid JSON array, no other text:
     </div>`;
   }
 }
-const TYPE_COLORS={protein:{icon:'#E24B4A',iconBg:'#FCEBEB'},produce:{icon:'#1D9E75',iconBg:'#E1F5EE'},staple:{icon:'#BA7517',iconBg:'#FAEEDA'},deal:{icon:'#1D9E75',iconBg:'#E1F5EE'},budget:{icon:'#378ADD',iconBg:'#E6F1FB'},sale_alert:{icon:'#E24B4A',iconBg:'#FCEBEB'},stock_up:{icon:'#1D9E75',iconBg:'#E1F5EE'}};
-const TYPE_ICONS={protein:'<circle cx="12" cy="12" r="4"/><path d="M16 8l4-4M8 16l-4 4M16 16l4 4M8 8l-4-4"/>',produce:'<path d="M12 22V12M12 12C12 6.477 16.477 2 22 2c0 5.523-4.477 10-10 10zM12 12C12 6.477 7.523 2 2 2c0 5.523 4.477 10 10 10z"/>',staple:'<path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>',deal:'<path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2z"/>',budget:'<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/>',sale_alert:'<path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2z"/>',stock_up:'<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>'};
+const TYPE_COLORS={protein:{icon:'#E24B4A',iconBg:'#FCEBEB'},produce:{icon:'#1D9E75',iconBg:'#E1F5EE'},staple:{icon:'#BA7517',iconBg:'#FAEEDA'},deal:{icon:'#1D9E75',iconBg:'#E1F5EE'},budget:{icon:'#378ADD',iconBg:'#E6F1FB'},sale_alert:{icon:'#E24B4A',iconBg:'#FCEBEB'},stock_up:{icon:'#1D9E75',iconBg:'#E1F5EE'},meal:{icon:'#BA7517',iconBg:'#FAEEDA'}};
+const TYPE_ICONS={protein:'<circle cx="12" cy="12" r="4"/><path d="M16 8l4-4M8 16l-4 4M16 16l4 4M8 8l-4-4"/>',produce:'<path d="M12 22V12M12 12C12 6.477 16.477 2 22 2c0 5.523-4.477 10-10 10zM12 12C12 6.477 7.523 2 2 2c0 5.523 4.477 10 10 10z"/>',staple:'<path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>',deal:'<path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2z"/>',budget:'<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/>',sale_alert:'<path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2z"/>',stock_up:'<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>',meal:'<path d="M18 8h1a4 4 0 010 8h-1"/><path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/>'};
 function renderNudges(nudges) {
   const container=document.getElementById('ai-nudges-container');
   if(!nudges||!nudges.length){container.innerHTML=`<div class="empty-state"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 9a3 3 0 015.12 2.12C14 13 12 14 12 16M12 20h.01"/></svg><h3>No suggestions yet</h3><p>Add items to your pantry to get personalized suggestions.</p></div>`;return;}
@@ -1915,7 +2050,7 @@ function addNudgeItem(itemName) {
   shoppingList.push({id:Date.now(),name:itemName,category:pi?.category||'Other',lastPrice:pi?.priceHistory?.[pi.priceHistory.length-1]?.price||null,store:pi?.priceHistory?.[pi.priceHistory.length-1]?.store||'Costco',onSale:false,checked:false,qty:1});
   saveList(); showToast(itemName+' added to list!');
 }
-function sendAiMessage(msg) { generateNudges(); }
+function sendAiMessage(msg) { if(msg){sendRecipeMessage(msg);setTimeout(()=>{const s=document.getElementById('screen-ai');if(s)s.scrollTop=s.scrollHeight;},300);}else{generateNudges();} }
 
 // ════════════════════════════════════════════════════
 // LIST IMPORT FROM PHOTO
