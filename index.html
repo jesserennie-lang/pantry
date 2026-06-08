@@ -724,6 +724,31 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="manage-stores-modal" onclick="closeModal('manage-stores-modal')">
+  <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:88vh;">
+    <div class="modal-handle"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px 4px;">
+      <div class="modal-title" style="padding:0;">Your Stores</div>
+      <button class="icon-btn" onclick="closeModal('manage-stores-modal')"><svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div style="padding:0 20px 8px;">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-tertiary);margin-bottom:8px;">Your stores</div>
+      <div id="stores-current" style="display:flex;flex-wrap:wrap;"></div>
+    </div>
+    <div style="padding:0 20px 8px;">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-tertiary);margin-bottom:8px;">Tap to add</div>
+      <div id="stores-available" style="display:flex;flex-wrap:wrap;max-height:160px;overflow-y:auto;"></div>
+    </div>
+    <div class="form-group" style="padding:12px 20px 0;">
+      <label class="form-label">Add a custom store</label>
+      <div style="display:flex;gap:8px;">
+        <input class="form-input" id="new-store-input" type="text" placeholder="e.g. Trader Joe's" autocorrect="off" style="flex:1;" onkeydown="if(event.key==='Enter'){event.preventDefault();addStoreCustom();}">
+        <button class="btn-primary" onclick="addStoreCustom()" style="width:auto;padding:12px 16px;flex-shrink:0;">Add</button>
+      </div>
+    </div>
+    <div style="padding:12px 20px 16px;"><button class="btn-primary" onclick="closeModal('manage-stores-modal')">Done</button></div>
+  </div>
+</div>
 <div class="recon-modal" id="recon-modal">
   <div class="recon-header">
     <div style="display:flex;align-items:center;justify-content:space-between;">
@@ -923,6 +948,7 @@ function keyDiagnostic() {
 // DATA
 // ════════════════════════════════════════════════════
 const STORE_PALETTE = ['#E24B4A','#1D9E75','#378ADD','#FAC775','#9F77DD','#5DCAA5','#D85A30','#85B7EB'];
+const COMMON_STORES = ["Target","Aldi","The Fresh Market","Winn-Dixie","Detwiler's Farm Market","Trader Joe's","Whole Foods","Sam's Club","BJ's Wholesale","Sprouts","Harris Teeter","Kroger","Safeway","Meijer","Lidl","Dollar General","CVS","Walgreens","Publix","Walmart","Costco","Amazon Fresh"];
 const DEFAULT_STORE_DEFS = { costco:{name:'Costco',color:'#E24B4A'}, detweilers:{name:'Detweilers',color:'#1D9E75'}, publix:{name:'Publix',color:'#378ADD'}, walmart:{name:'Walmart',color:'#FAC775'}, aldi:{name:'Aldi',color:'#9F77DD'}, other:{name:'Other',color:'#888780'} };
 let household = JSON.parse(localStorage.getItem('pantry_household') || 'null') || { name:'Rennie Family', admin:'Jesse', members:['Lauren'], stores:['Costco','Detweilers','Publix','Walmart','Aldi'] };
 function saveHousehold() { localStorage.setItem('pantry_household', JSON.stringify(household)); }
@@ -934,13 +960,20 @@ function buildStores() {
   return map;
 }
 let STORES = buildStores();
+function storeDropdownOpts(selected) {
+  return household.stores.concat(['Other']).map(s=>
+    `<option${s===selected?' selected':''}>${s}</option>`
+  ).join('') + '<option value="__manage__">+ Manage stores…</option>';
+}
 function refreshStoreDropdowns() {
   STORES = buildStores();
-  const opts = household.stores.concat(['Other']).map(s=>`<option>${s}</option>`).join('');
-  ['new-item-store','haul-store','edit-item-store'].forEach(id => {
+  ['new-item-store','haul-store','edit-item-store','receipt-store'].forEach(id => {
     const el = document.getElementById(id);
-    if (el) el.innerHTML = opts;
+    if (!el) return;
+    const cur = el.value;
+    el.innerHTML = storeDropdownOpts(cur);
   });
+  updateSettingsUI();
 }
 const CATEGORY_COLORS = {'Protein':'#E24B4A','Produce':'#1D9E75','Dairy':'#378ADD','Pantry Staples':'#BA7517','Snacks':'#9F77DD','Beverages':'#5DCAA5','Frozen':'#85B7EB','Ready-Made':'#D8742E','Non-Grocery':'#7A7A75','Other':'#888780'};
 const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -1414,8 +1447,7 @@ function openHaulEditor(id) {
   renderHaulTrips(); document.getElementById('haul-edit-modal').classList.add('open');
 }
 function renderHaulTrips() {
-  const storeOpts=household.stores.concat(['Other']);
-  const html=editingHaul.trips.map((t,i)=>`<div style="border:0.5px solid var(--border);border-radius:var(--radius-md);padding:12px;margin:0 20px 10px;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><span style="font-size:12px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:var(--text-tertiary);">Trip ${i+1}</span>${editingHaul.trips.length>1?`<span onclick="heRemoveTrip(${i})" style="cursor:pointer;color:var(--red);font-size:12px;font-weight:600;">Remove</span>`:''}</div><label class="form-label">Store</label><select class="form-input" style="margin-bottom:10px;" onchange="heSet(${i},'store',this.value)">${storeOpts.map(s=>`<option ${s===t.store?'selected':''}>${escapeHtml(s)}</option>`).join('')}</select><label class="form-label">Date</label><input class="form-input" type="date" value="${t.date}" style="margin-bottom:10px;" onchange="heSet(${i},'date',this.value)"><div style="display:flex;gap:10px;"><div style="flex:1;"><label class="form-label">Amount ($)</label><input class="form-input" type="number" step="0.01" inputmode="decimal" value="${t.amount}" onchange="heSet(${i},'amount',this.value)"></div><div style="flex:1;"><label class="form-label"># Items</label><input class="form-input" type="number" step="1" inputmode="numeric" value="${t.items}" onchange="heSet(${i},'items',this.value)"></div></div></div>`).join('');
+  const html=editingHaul.trips.map((t,i)=>`<div style="border:0.5px solid var(--border);border-radius:var(--radius-md);padding:12px;margin:0 20px 10px;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><span style="font-size:12px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:var(--text-tertiary);">Trip ${i+1}</span>${editingHaul.trips.length>1?`<span onclick="heRemoveTrip(${i})" style="cursor:pointer;color:var(--red);font-size:12px;font-weight:600;">Remove</span>`:''}</div><label class="form-label">Store</label><select class="form-input" style="margin-bottom:10px;" onchange="heSet(${i},'store',this.value)">${storeDropdownOpts(t.store)}</select><label class="form-label">Date</label><input class="form-input" type="date" value="${t.date}" style="margin-bottom:10px;" onchange="heSet(${i},'date',this.value)"><div style="display:flex;gap:10px;"><div style="flex:1;"><label class="form-label">Amount ($)</label><input class="form-input" type="number" step="0.01" inputmode="decimal" value="${t.amount}" onchange="heSet(${i},'amount',this.value)"></div><div style="flex:1;"><label class="form-label"># Items</label><input class="form-input" type="number" step="1" inputmode="numeric" value="${t.items}" onchange="heSet(${i},'items',this.value)"></div></div></div>`).join('');
   document.getElementById('he-trips').innerHTML=html;
 }
 function heSet(i,field,value) { const t=editingHaul.trips[i]; if(field==='amount')t.amount=parseFloat(value)||0; else if(field==='items')t.items=parseInt(value,10)||0; else if(field==='store'){t.store=value;t.storeKey=storeKey(value);} else t[field]=value; }
@@ -1788,7 +1820,7 @@ function openReceiptModal(){
   document.getElementById('seg-current').textContent=MONTH_NAMES[n.getMonth()];
   document.getElementById('seg-next').textContent=MONTH_NAMES[(n.getMonth()+1)%12];
   const sel=document.getElementById('receipt-store');
-  sel.innerHTML=household.stores.concat(['Other']).map(s=>`<option>${s}</option>`).join('');
+  sel.innerHTML=storeDropdownOpts(sel.value||household.stores[0]);
   document.getElementById('receipt-processing').style.display='none';
   document.getElementById('receipt-file-input').value='';
   showReceiptButtons(true);
@@ -2258,11 +2290,52 @@ function manageFamily(){
   household.members=input.split(',').map(s=>s.trim()).filter(Boolean);
   saveHousehold(); updateSettingsUI(); showToast('Family updated');
 }
-function manageStores(){
-  const stores=(household.stores||[]).slice();
-  const input=prompt('Stores (comma-separated):',stores.join(', '));if(input===null)return;
-  household.stores=input.split(',').map(s=>s.trim()).filter(Boolean);
-  saveHousehold(); refreshStoreDropdowns(); updateSettingsUI(); showToast('Stores updated');
+function manageStores(){ closeModal('settings-modal'); openManageStores(); }
+function openManageStores(){
+  renderManageStoresUI();
+  document.getElementById('manage-stores-modal').classList.add('open');
+  setTimeout(()=>{const el=document.getElementById('new-store-input');if(el)el.focus();},80);
+}
+function renderManageStoresUI(){
+  const cur=document.getElementById('stores-current');
+  if(cur){
+    cur.innerHTML=household.stores.map((s,i)=>
+      '<div style="display:inline-flex;align-items:center;gap:5px;background:var(--teal-light);color:var(--teal-dark);border-radius:20px;padding:5px 6px 5px 12px;margin:0 6px 6px 0;font-size:13px;font-weight:600;">'+
+      escapeHtml(s)+
+      '<button data-idx="'+i+'" onclick="removeStoreByIdx(Number(this.dataset.idx))" style="background:rgba(0,0,0,0.12);border:none;border-radius:50%;width:18px;height:18px;cursor:pointer;color:var(--teal-dark);font-size:13px;line-height:1;display:flex;align-items:center;justify-content:center;">×</button></div>'
+    ).join('')||'<div style="font-size:13px;color:var(--text-tertiary);">No stores yet</div>';
+  }
+  const avail=document.getElementById('stores-available');
+  if(avail){
+    const added=new Set(household.stores.map(s=>s.toLowerCase()));
+    const show=COMMON_STORES.filter(s=>!added.has(s.toLowerCase()));
+    avail.innerHTML=show.map(s=>
+      '<div data-store="'+escapeHtml(s)+'" onclick="addStoreToHousehold(this.dataset.store)" style="display:inline-flex;align-items:center;background:var(--gray-100);color:var(--text-secondary);border-radius:20px;padding:6px 12px;margin:0 6px 6px 0;font-size:13px;font-weight:600;cursor:pointer;">+ '+escapeHtml(s)+'</div>'
+    ).join('')||'<div style="font-size:13px;color:var(--text-tertiary);">All common stores added!</div>';
+  }
+}
+function addStoreToHousehold(name,el){
+  name=(name||'').trim();
+  if(!name||household.stores.some(s=>s.toLowerCase()===name.toLowerCase())){showToast('Already added');return;}
+  household.stores.push(name);
+  saveHousehold(); refreshStoreDropdowns(); renderManageStoresUI();
+  showToast(name+' added');
+}
+function removeStoreByIdx(idx){
+  if(idx<0||idx>=household.stores.length)return;
+  const name=household.stores[idx];
+  household.stores.splice(idx,1);
+  saveHousehold(); refreshStoreDropdowns(); renderManageStoresUI();
+  showToast(name+' removed');
+}
+function removeStoreFromHousehold(name){
+  const idx=household.stores.indexOf(name);
+  if(idx!==-1) removeStoreByIdx(idx);
+}
+function addStoreCustom(){
+  const el=document.getElementById('new-store-input');
+  const name=(el?el.value:'').trim(); if(!name)return;
+  addStoreToHousehold(name); if(el){el.value='';el.focus();}
 }
 function resetAllData(){
   if(!confirm('Delete ALL data? This cannot be undone.'))return;
@@ -2589,7 +2662,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Receipt store dropdown population
   const recSel=document.getElementById('receipt-store');
-  if(recSel)recSel.innerHTML=household.stores.concat(['Other']).map(s=>`<option>${s}</option>`).join('');
+  if(recSel)recSel.innerHTML=storeDropdownOpts(household.stores[0]);
 
   // Web search toggle initial state
   const on=webSearchEnabled();
@@ -2600,6 +2673,13 @@ document.addEventListener('DOMContentLoaded', () => {
   // Quick-add: submit on Enter
   const qa=document.getElementById('quick-add-input');
   if(qa)qa.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();quickAddItem();}});
+  // Any store dropdown: intercept "Manage stores..." option
+  document.addEventListener('change',function(e){
+    if(e.target.tagName==='SELECT'&&e.target.value==='__manage__'){
+      e.target.value=household.stores[0]||'Other';
+      openManageStores();
+    }
+  });
 });
 </script>
 </body>
