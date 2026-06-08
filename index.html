@@ -369,10 +369,13 @@
     <div style="display:flex;align-items:center;justify-content:space-between;">
       <div><div style="font-size:22px;font-weight:700;letter-spacing:-0.4px;">Shopping List</div><div style="font-size:12px;color:var(--text-tertiary);margin-top:2px;" id="plan-subtitle">Your shopping list</div></div>
       <div style="display:flex;gap:8px;align-items:center;">
+        <button class="icon-btn" onclick="toggleSelectMode()" title="Select multiple" id="plan-select-btn">
+          <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+        </button>
         <button class="icon-btn" onclick="clearAllItems()" title="Clear list" id="plan-clear-btn" style="display:none;">
           <svg viewBox="0 0 24 24"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
         </button>
-        <button class="icon-btn" onclick="openAddItem()"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+        <button class="icon-btn" onclick="openAddItem()" id="plan-add-btn"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
       </div>
     </div>
     <div class="plan-progress-wrap">
@@ -383,6 +386,13 @@
   <div class="quick-add-bar">
     <input type="text" id="quick-add-input" class="quick-add-input" placeholder="Add an item on the fly…" autocomplete="off" enterkeyhint="done" onkeydown="if(event.key==='Enter'){event.preventDefault();quickAddItem();}">
     <button class="quick-add-btn" onclick="quickAddItem()" aria-label="Add item"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+  </div>
+  <div id="bulk-action-bar" style="display:none;position:sticky;top:0;z-index:20;align-items:center;gap:8px;padding:10px 12px;background:var(--teal);">
+    <button onclick="bulkSelectAll()" id="bulk-selectall-btn" style="background:rgba(255,255,255,0.22);color:white;border:none;border-radius:8px;padding:8px 12px;font-size:13px;font-weight:600;cursor:pointer;">All</button>
+    <span id="bulk-count" style="font-size:14px;font-weight:700;color:white;flex:1;text-align:center;">0 selected</span>
+    <button onclick="openBulkEdit()" style="background:white;color:var(--teal-dark);border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;">Edit</button>
+    <button onclick="bulkDelete()" style="background:rgba(255,255,255,0.22);color:white;border:none;border-radius:8px;padding:8px 12px;font-size:13px;font-weight:600;cursor:pointer;">Delete</button>
+    <button onclick="toggleSelectMode()" style="background:none;border:none;color:white;font-size:13px;font-weight:600;cursor:pointer;padding:8px 6px;">Done</button>
   </div>
   <div id="plan-list-container"></div>
   <div style="padding:16px 20px 8px;"><button class="btn-primary" onclick="openAddItem()"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Add Item</button></div>
@@ -793,6 +803,34 @@
   </div>
 </div>
 
+<!-- Bulk edit modal -->
+<div class="modal-overlay" id="bulk-edit-modal" onclick="closeModal('bulk-edit-modal')" style="z-index:460;">
+  <div class="modal-sheet" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px 4px;">
+      <div class="modal-title" style="padding:0;">Edit <span id="bulk-edit-count">0</span> items</div>
+      <button class="icon-btn" onclick="closeModal('bulk-edit-modal')"><svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div style="padding:0 20px 12px;"><p style="font-size:13px;color:var(--text-secondary);line-height:1.5;">Only the fields you set will change. Leave a field on "unchanged" to keep each item's current value.</p></div>
+    <div class="form-group"><label class="form-label">Store</label>
+      <select class="form-input" id="bulk-store"><option value="">— Leave unchanged —</option></select>
+    </div>
+    <div class="form-group"><label class="form-label">Category</label>
+      <select class="form-input" id="bulk-category">
+        <option value="">— Leave unchanged —</option>
+        <option>Protein</option><option>Produce</option><option>Dairy</option><option>Pantry Staples</option><option>Snacks</option><option>Beverages</option><option>Frozen</option><option>Ready-Made</option><option>Non-Grocery</option><option>Other</option>
+      </select>
+    </div>
+    <div class="form-group"><label class="form-label">On Sale?</label>
+      <select class="form-input" id="bulk-sale"><option value="">— Leave unchanged —</option><option value="yes">Mark all on sale</option><option value="no">Mark all not on sale</option></select>
+    </div>
+    <div class="form-group"><label class="form-label">Price each (optional)</label>
+      <input class="form-input" id="bulk-price" type="number" step="0.01" inputmode="decimal" placeholder="Leave blank to keep current">
+    </div>
+    <div style="padding:0 20px 16px;"><button class="btn-primary" onclick="applyBulkEdit()">Apply to Selected</button></div>
+  </div>
+</div>
+
 <!-- Haul item edit modal -->
 <div class="modal-overlay" id="haul-item-edit-modal" onclick="closeModal('haul-item-edit-modal')" style="z-index:450;">
   <div class="modal-sheet" onclick="event.stopPropagation()">
@@ -803,6 +841,34 @@
     </div>
     <div class="form-group"><label class="form-label">Item Name</label><input class="form-input" id="hie-name" type="text"></div>
     <div class="form-group">
+      <label class="form-label">On Sale?</label>
+      <div style="display:flex;align-items:center;gap:10px;background:var(--gray-50);border-radius:var(--radius-md);padding:12px 14px;">
+        <label style="position:relative;display:inline-block;width:46px;height:26px;cursor:pointer;flex-shrink:0;">
+          <input type="checkbox" id="hie-sale" style="opacity:0;width:0;height:0;" onchange="hieToggleSale(this.checked)">
+          <span id="hie-sale-track" style="position:absolute;inset:0;background:var(--gray-200);border-radius:13px;transition:0.2s;"></span>
+          <span id="hie-sale-thumb" style="position:absolute;left:2px;top:2px;width:22px;height:22px;background:white;border-radius:50%;transition:0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.2);"></span>
+        </label>
+        <span style="font-size:13px;color:var(--text-secondary);flex:1;">This item was on sale / discounted</span>
+      </div>
+    </div>
+    <div id="hie-sale-fields" style="display:none;">
+      <div style="margin:0 20px 12px;background:var(--amber-light);border-radius:var(--radius-md);padding:12px 14px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--amber);">Original Price</label>
+          <div style="display:flex;align-items:center;gap:6px;"><span style="font-size:13px;color:var(--text-secondary);">$</span><input class="form-input" id="hie-orig-price" type="number" step="0.01" inputmode="decimal" placeholder="0.00" style="width:90px;text-align:right;padding:7px 10px;" oninput="calcHieSale()"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--amber);">Discount ($ off)</label>
+          <div style="display:flex;align-items:center;gap:6px;"><span style="font-size:13px;color:var(--text-secondary);">−$</span><input class="form-input" id="hie-discount" type="number" step="0.01" inputmode="decimal" placeholder="0.00" style="width:90px;text-align:right;padding:7px 10px;" oninput="calcHieSale()"></div>
+        </div>
+        <div style="height:0.5px;background:rgba(186,117,23,0.25);margin:0 0 10px;"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <label style="font-size:12px;font-weight:700;color:#7a4e0c;">Price Paid (per unit)</label>
+          <div style="font-size:18px;font-weight:700;color:var(--amber);" id="hie-price-paid-display">$—</div>
+        </div>
+      </div>
+    </div>
+    <div class="form-group" id="hie-normal-price-wrap">
       <label class="form-label">Unit Price ($)</label>
       <input class="form-input" id="hie-price" type="number" step="0.01" inputmode="decimal" placeholder="0.00" oninput="hieUpdateDisplay()">
     </div>
@@ -817,9 +883,6 @@
     </div>
     <div class="form-group"><label class="form-label">Category</label>
       <select class="form-input" id="hie-category"><option>Protein</option><option>Produce</option><option>Dairy</option><option>Pantry Staples</option><option>Snacks</option><option>Beverages</option><option>Frozen</option><option>Ready-Made</option><option>Non-Grocery</option><option>Other</option></select>
-    </div>
-    <div class="form-group"><label class="form-label">On Sale?</label>
-      <select class="form-input" id="hie-sale"><option value="no">No</option><option value="yes">Yes — on sale</option></select>
     </div>
     <div style="padding:0 20px 8px;"><button class="btn-primary" onclick="saveHaulItemEdit()">Save Changes</button></div>
     <div style="padding:0 20px 16px;"><button class="btn-ghost" style="width:100%;border-color:var(--red);color:var(--red);" onclick="deleteHaulItem()">Remove from Haul</button></div>
@@ -956,6 +1019,17 @@ function renderListItem(item) {
   const salePill    = item.onSale       ? `<span class="pill pill-teal" style="padding:1px 7px;font-size:10px;">Sale</span>` : '';
   const inStorePill = item.addedInStore ? `<span class="pill pill-instore">In-store</span>` : '';
   const price = item.lastPrice ? `$${item.lastPrice.toFixed(2)}` : '–';
+  if (selectMode) {
+    const sel = selectedIds.has(item.id);
+    return `<div class="list-item" onclick="toggleSelectItem(${item.id})" data-id="${item.id}" style="${sel?'background:var(--teal-light);':''}">
+      <div class="check-circle ${sel?'done':''}"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div class="item-info">
+        <div class="item-name">${escapeHtml(item.name)}</div>
+        <div class="item-meta">${escapeHtml(item.store)} ${salePill}${inStorePill}</div>
+      </div>
+      <div class="item-price-col"><div class="item-price">${price}</div></div>
+    </div>`;
+  }
   return `<div class="swipe-wrap" id="swipe-wrap-${item.id}">
     <div class="swipe-action-edit"   id="swipe-edit-${item.id}" onclick="openEditItem(${item.id})">Edit</div>
     <div class="swipe-action-delete" id="swipe-del-${item.id}"  onclick="deleteItem(${item.id})">Delete</div>
@@ -973,6 +1047,78 @@ function renderListItem(item) {
 function handleListItemTap(e,id) { const el=document.getElementById('swipe-item-'+id); if(el&&Math.abs(el._swipeX||0)>5)return; toggleItem(id); }
 function toggleItem(id) { const item=shoppingList.find(i=>i.id===id); if(item){item.checked=!item.checked;saveList();renderPlanList();} }
 function saveList() { localStorage.setItem('pantry_list',JSON.stringify(shoppingList)); }
+
+// ── Bulk select / edit ──
+let selectMode = false;
+let selectedIds = new Set();
+function toggleSelectMode() {
+  selectMode = !selectMode;
+  if (!selectMode) selectedIds.clear();
+  const qa = document.querySelector('.quick-add-bar');
+  const bar = document.getElementById('bulk-action-bar');
+  const selBtn = document.getElementById('plan-select-btn');
+  const addBtn = document.getElementById('plan-add-btn');
+  if (qa) qa.style.display = selectMode ? 'none' : 'flex';
+  if (bar) bar.style.display = selectMode ? 'flex' : 'none';
+  if (selBtn) selBtn.style.color = selectMode ? 'var(--teal)' : '';
+  if (addBtn) addBtn.style.display = selectMode ? 'none' : 'flex';
+  updateBulkBar();
+  renderPlanList();
+}
+function toggleSelectItem(id) {
+  if (selectedIds.has(id)) selectedIds.delete(id); else selectedIds.add(id);
+  updateBulkBar(); renderPlanList();
+}
+function bulkSelectAll() {
+  const allSel = shoppingList.length>0 && shoppingList.every(i=>selectedIds.has(i.id));
+  if (allSel) selectedIds.clear(); else shoppingList.forEach(i=>selectedIds.add(i.id));
+  updateBulkBar(); renderPlanList();
+}
+function updateBulkBar() {
+  const cnt = document.getElementById('bulk-count');
+  if (cnt) cnt.textContent = selectedIds.size + ' selected';
+  const allBtn = document.getElementById('bulk-selectall-btn');
+  if (allBtn) allBtn.textContent = (shoppingList.length>0 && shoppingList.every(i=>selectedIds.has(i.id))) ? 'None' : 'All';
+}
+function openBulkEdit() {
+  if (selectedIds.size === 0) { showToast('Select some items first'); return; }
+  document.getElementById('bulk-edit-count').textContent = selectedIds.size;
+  const opts = '<option value="">— Leave unchanged —</option>' + household.stores.concat(['Other']).map(s=>'<option>'+s+'</option>').join('');
+  document.getElementById('bulk-store').innerHTML = opts;
+  document.getElementById('bulk-store').value = '';
+  document.getElementById('bulk-category').value = '';
+  document.getElementById('bulk-sale').value = '';
+  document.getElementById('bulk-price').value = '';
+  document.getElementById('bulk-edit-modal').classList.add('open');
+}
+function applyBulkEdit() {
+  const store = document.getElementById('bulk-store').value;
+  const cat   = document.getElementById('bulk-category').value;
+  const sale  = document.getElementById('bulk-sale').value;
+  const priceStr = document.getElementById('bulk-price').value.trim();
+  const price = priceStr ? parseFloat(priceStr) : null;
+  let n = 0;
+  shoppingList.forEach(it => {
+    if (!selectedIds.has(it.id)) return;
+    if (store) it.store = store;
+    if (cat) it.category = cat;
+    if (sale === 'yes') it.onSale = true;
+    if (sale === 'no')  it.onSale = false;
+    if (price !== null && !isNaN(price)) it.lastPrice = price;
+    n++;
+  });
+  saveList(); closeModal('bulk-edit-modal');
+  showToast(n + ' item' + (n!==1?'s':'') + ' updated');
+  renderPlanList();
+}
+function bulkDelete() {
+  if (selectedIds.size === 0) { showToast('Select some items first'); return; }
+  const n = selectedIds.size;
+  if (!confirm('Delete ' + n + ' selected item' + (n!==1?'s':'') + '?')) return;
+  shoppingList = shoppingList.filter(i => !selectedIds.has(i.id));
+  selectedIds.clear(); saveList(); updateBulkBar(); renderPlanList();
+  showToast(n + ' deleted');
+}
 
 // ════════════════════════════════════════════════════
 // SWIPE — bidirectional (right=edit, left=delete)
@@ -1179,9 +1325,15 @@ function renderPerspective() {
       displayItems.forEach((it,ii)=>{
         const cc=CATEGORY_COLORS[it.category]||'#888780';
         const cnt=it.count||1;
-        const lineTotal=(Number(it.price)||0)*cnt;
+        const unit=Number(it.price)||0;
+        const lineTotal=unit*cnt;
         const saleTag=it.onSale?`<span style="font-size:10px;color:var(--amber);font-weight:700;margin-left:4px;">SALE</span>`:'';
         const countTag=cnt>1?`<span style="font-size:10px;color:var(--text-tertiary);margin-left:4px;">×${cnt}</span>`:'';
+        // Original price struck through when on sale (Costco style)
+        const origUnit=Number(it.originalPrice)||0;
+        const priceCol = (it.onSale && origUnit>unit)
+          ? `<div style="text-align:right;padding-left:10px;flex-shrink:0;"><div style="font-size:13px;font-weight:600;color:var(--amber);">$${lineTotal.toFixed(2)}</div><div style="font-size:10px;color:var(--text-tertiary);text-decoration:line-through;">$${(origUnit*cnt).toFixed(2)}</div></div>`
+          : `<span style="font-size:13px;font-weight:600;flex-shrink:0;padding-left:10px;">$${lineTotal.toFixed(2)}</span>`;
         if (editable) {
           itemsHtml+=
             `<div class="swipe-wrap" id="sw-hi-${hSafeId}-${ii}">` +
@@ -1192,7 +1344,7 @@ function renderPerspective() {
             `<div style="width:8px;height:8px;border-radius:50%;background:${cc};flex-shrink:0;"></div>` +
             `<span style="font-size:13px;">${escapeHtml(it.name)}${saleTag}${countTag}</span>` +
             `</div>` +
-            `<span style="font-size:13px;font-weight:600;padding-left:10px;">$${lineTotal.toFixed(2)}</span>` +
+            priceCol +
             `</div></div>`;
         } else {
           itemsHtml+=
@@ -1200,7 +1352,7 @@ function renderPerspective() {
             `<div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0;">` +
             `<div style="width:8px;height:8px;border-radius:50%;background:${cc};flex-shrink:0;"></div>` +
             `<span style="font-size:13px;">${escapeHtml(it.name)}${saleTag}${countTag}</span>` +
-            `</div><span style="font-size:13px;font-weight:600;flex-shrink:0;padding-left:10px;">$${lineTotal.toFixed(2)}</span></div>`;
+            `</div>` + priceCol + `</div>`;
         }
       });
       if(haul.tax)itemsHtml+=`<div style="display:flex;justify-content:space-between;padding:7px 16px;border-bottom:0.5px solid var(--border);"><span style="font-size:13px;color:var(--text-tertiary);">Tax</span><span style="font-size:13px;color:var(--text-tertiary);">$${Number(haul.tax).toFixed(2)}</span></div>`;
@@ -1297,12 +1449,34 @@ function openHaulItemEdit(haulId, itemIdx) {
   const it=haul.items[itemIdx];
   hieState={haulId,itemIdx,monthKey:perspMonth}; hieCount=it.count||1;
   document.getElementById('hie-name').value=it.name||'';
-  document.getElementById('hie-price').value=it.price!=null?Number(it.price).toFixed(2):'';
   document.getElementById('hie-category').value=it.category||'Other';
-  document.getElementById('hie-sale').value=it.onSale?'yes':'no';
+  const paid=Number(it.price)||0;
+  const orig=Number(it.originalPrice)||0;
+  const disc=orig>0?Math.max(0,parseFloat((orig-paid).toFixed(2))):0;
+  document.getElementById('hie-price').value=paid>0?paid.toFixed(2):'';
+  document.getElementById('hie-orig-price').value=orig>0?orig.toFixed(2):'';
+  document.getElementById('hie-discount').value=disc>0?disc.toFixed(2):'';
+  document.getElementById('hie-price-paid-display').textContent=paid>0?'$'+paid.toFixed(2):'$—';
+  hieSetSale(!!it.onSale);
   hieUpdateDisplay();
   document.getElementById('haul-item-edit-modal').classList.add('open');
   setTimeout(()=>document.getElementById('hie-name').focus(),80);
+}
+function hieSetSale(on){
+  document.getElementById('hie-sale').checked=on;
+  document.getElementById('hie-sale-track').style.background=on?'var(--teal)':'var(--gray-200)';
+  document.getElementById('hie-sale-thumb').style.left=on?'22px':'2px';
+  document.getElementById('hie-sale-fields').style.display=on?'block':'none';
+  document.getElementById('hie-normal-price-wrap').style.display=on?'none':'block';
+}
+function hieToggleSale(on){ hieSetSale(on); if(on) calcHieSale(); }
+function calcHieSale(){
+  const orig=parseFloat(document.getElementById('hie-orig-price').value)||0;
+  const disc=parseFloat(document.getElementById('hie-discount').value)||0;
+  const paid=Math.max(0,parseFloat((orig-disc).toFixed(2)));
+  document.getElementById('hie-price-paid-display').textContent=paid>0?'$'+paid.toFixed(2):'$—';
+  document.getElementById('hie-price').value=paid>0?paid.toFixed(2):'';
+  hieUpdateDisplay();
 }
 function hieUpdateDisplay() {
   const price=parseFloat(document.getElementById('hie-price').value)||0;
@@ -1314,13 +1488,14 @@ function hieStep(delta) { hieCount=Math.max(1,hieCount+delta); hieUpdateDisplay(
 function saveHaulItemEdit() {
   if(!hieState)return;
   const name=document.getElementById('hie-name').value.trim(); if(!name){showToast('Enter an item name');return;}
+  const onSale=document.getElementById('hie-sale').checked;
   const price=parseFloat(document.getElementById('hie-price').value)||0;
+  const originalPrice=onSale?(parseFloat(document.getElementById('hie-orig-price').value)||null):null;
   const category=document.getElementById('hie-category').value;
-  const onSale=document.getElementById('hie-sale').value==='yes';
   const hauls=haulsData[hieState.monthKey]||[]; const haul=hauls.find(h=>h.id===hieState.haulId);
   if(!haul||!haul.items)return;
   const it=haul.items[hieState.itemIdx];
-  it.name=name; it.price=price; it.count=hieCount; it.category=category; it.onSale=onSale;
+  it.name=name; it.price=price; it.count=hieCount; it.category=category; it.onSale=onSale; it.originalPrice=originalPrice;
   recomputeHaulTotals(haul);
   localStorage.setItem('pantry_hauls',JSON.stringify(haulsData));
   const haulId=hieState.haulId;
@@ -1857,7 +2032,7 @@ function logReceiptAsHaul(items,monthKey,store,tax,receiptPrinted){
     id:'haul-'+Date.now(),name:store+' receipt',
     totalAmount:budgetTotal,groceryTotal:Math.round(grocTotal*100)/100,
     nonGroceryTotal:Math.round(nonTotal*100)/100,receiptTotal:printed,tax:taxAmt,
-    items:items.map(it=>({name:it.name,price:Number(it.price)||0,count:it.count||1,category:it.category||'Other',onSale:!!it.onSale,tracked:it.tracked!==false})),
+    items:items.map(it=>({name:it.name,price:Number(it.price)||0,count:it.count||1,category:it.category||'Other',onSale:!!it.onSale,originalPrice:it.originalPrice?Number(it.originalPrice):null,tracked:it.tracked!==false})),
     trips:[{store,storeKey:sKey,date:today,amount:budgetTotal,items:items.length}]
   });
   localStorage.setItem('pantry_hauls',JSON.stringify(haulsData));
