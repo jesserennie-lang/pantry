@@ -114,6 +114,9 @@
   .quick-add-btn:active { background: var(--teal-dark); }
   .quick-add-btn svg { width: 20px; height: 20px; stroke: white; fill: none; stroke-width: 2.75; stroke-linecap: round; }
   .pill-instore { background: var(--amber-light); color: var(--amber); padding: 1px 7px; font-size: 10px; }
+  .pill-watch { background: var(--gray-100); color: var(--text-secondary); padding: 1px 7px; font-size: 10px; }
+  .pill-drop { background: var(--teal); color: white; padding: 1px 7px; font-size: 10px; font-weight: 700; }
+  .list-item.watching { opacity: 0.62; }
   .swipe-wrap { position: relative; overflow: hidden; border-bottom: 0.5px solid var(--border); }
   .swipe-wrap .list-item { border-bottom: none; position: relative; z-index: 1; will-change: transform; background: var(--white); user-select: none; -webkit-user-select: none; }
   .swipe-action-delete { position: absolute; right: 0; top: 5px; bottom: 5px; width: 0; min-width: 0; background: var(--red); display: flex; align-items: center; justify-content: center; color: white; font-size: 15px; font-weight: 700; cursor: pointer; user-select: none; border-radius: 10px 6px 6px 10px; overflow: hidden; white-space: nowrap; }
@@ -560,6 +563,7 @@
     <div class="form-group"><label class="form-label">Category</label><select class="form-input" id="new-item-category"><option>Protein</option><option>Produce</option><option>Dairy</option><option>Pantry Staples</option><option>Snacks</option><option>Beverages</option><option>Frozen</option><option>Ready-Made</option><option>Non-Grocery</option><option>Other</option></select></div>
     <div class="form-group"><label class="form-label">Last Price (optional)</label><input class="form-input" id="new-item-price" placeholder="$0.00" type="number" step="0.01"></div>
     <div class="form-group"><label class="form-label">Store</label><select class="form-input" id="new-item-store"></select></div>
+    <div class="form-group"><label class="form-label">Watch for a sale?</label><select class="form-input" id="new-item-watch"><option value="no">No — buy on next trip</option><option value="yes">Yes — only if it goes on sale</option></select></div>
     <div style="padding:0 20px 16px;"><button class="btn-primary" onclick="addItemToList()">Add to List</button></div>
   </div>
 </div>
@@ -576,6 +580,7 @@
     <div class="form-group"><label class="form-label">Price</label><input class="form-input" id="edit-item-price" type="number" step="0.01" inputmode="decimal"></div>
     <div class="form-group"><label class="form-label">Store</label><select class="form-input" id="edit-item-store"></select></div>
     <div class="form-group"><label class="form-label">On Sale?</label><select class="form-input" id="edit-item-sale"><option value="no">No</option><option value="yes">Yes — on sale</option></select></div>
+    <div class="form-group"><label class="form-label">Watch for a sale?</label><select class="form-input" id="edit-item-watch"><option value="no">No — buy on next trip</option><option value="yes">Yes — only if it goes on sale</option></select></div>
     <div style="padding:0 20px 8px;"><button class="btn-primary" onclick="saveEditItem()">Save Changes</button></div>
     <div style="padding:0 20px 16px;"><button class="btn-ghost" style="width:100%;border-color:var(--red);color:var(--red);" onclick="deleteItemFromModal()">Delete Item</button></div>
   </div>
@@ -1027,17 +1032,19 @@ function switchTab(tab){document.querySelectorAll('.screen').forEach(s=>s.classL
 function clearAllItems(){if(shoppingList.length===0)return;if(!confirm(`Clear all ${shoppingList.length} item${shoppingList.length>1?'s':''} from your list?`))return;shoppingList=[];saveList();renderPlanList();showToast('List cleared');}
 function renderPlanList(){
   const container=document.getElementById('plan-list-container');
-  const checked=shoppingList.filter(i=>i.checked).length;
-  const estTotal=shoppingList.reduce((s,i)=>s+(i.lastPrice||0),0);
-  const total=shoppingList.length;
+  const actionable=shoppingList.filter(i=>!i.watching);
+  const checked=actionable.filter(i=>i.checked).length;
+  const estTotal=actionable.reduce((s,i)=>s+(i.lastPrice||0),0);
+  const total=actionable.length;
   const clearBtn=document.getElementById('plan-clear-btn');
   if(clearBtn)clearBtn.style.display=total>0?'flex':'none';
   document.getElementById('plan-progress-fill').style.width=total?Math.round((checked/total)*100)+'%':'0%';
   document.getElementById('plan-checked-lbl').innerHTML=`<strong>${checked}</strong> of ${total} checked`;
   document.getElementById('plan-est-total').innerHTML=`Est. <strong>$${estTotal.toFixed(2)}</strong>`;
-  const inStoreCount=shoppingList.filter(i=>i.addedInStore).length;
+  const inStoreCount=shoppingList.filter(i=>i.addedInStore&&!i.watching).length;
+  const watchCount=shoppingList.filter(i=>i.watching).length;
   const planSub=document.getElementById('plan-subtitle');
-  if(planSub)planSub.textContent=inStoreCount?inStoreCount+' added in-store · plan these next time':'Your shopping list';
+  if(planSub)planSub.textContent=watchCount?(watchCount+' watching for a sale'+(inStoreCount?' · '+inStoreCount+' in-store':'')):(inStoreCount?inStoreCount+' added in-store · plan these next time':'Your shopping list');
   const unchecked=shoppingList.filter(i=>!i.checked);
   const checked2=shoppingList.filter(i=>i.checked);
   const byCategory={};
@@ -1056,22 +1063,25 @@ function renderPlanList(){
 }
 function renderListItem(item){
   const salePill=item.onSale?`<span class="pill pill-teal" style="padding:1px 7px;font-size:10px;">Sale</span>`:'';
-  const inStorePill=item.addedInStore?`<span class="pill pill-instore">In-store</span>`:'';
-  const price=item.lastPrice?`$${item.lastPrice.toFixed(2)}`:'–';
+  const inStorePill=item.addedInStore&&!item.watching?`<span class="pill pill-instore">In-store</span>`:'';
+  const watchPill=item.watching?`<span class="pill pill-watch">👀 Watching</span>`:'';
+  const dropPill=item.justDropped?`<span class="pill pill-drop">Just dropped</span>`:'';
+  const priceFull=item.lastPrice?`$${item.lastPrice.toFixed(2)}`:'–';
+  const price=item.watching?'<span style="font-size:11px;color:var(--text-tertiary);font-weight:500;">on sale only</span>':priceFull;
   if(selectMode){
     const sel=selectedIds.has(item.id);
     return `<div class="list-item" onclick="toggleSelectItem(${item.id})" data-id="${item.id}" style="${sel?'background:var(--teal-light);':''}">
       <div class="check-circle ${sel?'done':''}"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
-      <div class="item-info"><div class="item-name">${escapeHtml(item.name)}</div><div class="item-meta">${escapeHtml(item.store)} ${salePill}${inStorePill}</div></div>
-      <div class="item-price-col"><div class="item-price">${price}</div></div>
+      <div class="item-info"><div class="item-name">${escapeHtml(item.name)}</div><div class="item-meta">${escapeHtml(item.store)} ${salePill}${inStorePill}${watchPill}</div></div>
+      <div class="item-price-col"><div class="item-price">${priceFull}</div></div>
     </div>`;
   }
   return `<div class="swipe-wrap" id="swipe-wrap-${item.id}">
     <div class="swipe-action-edit" id="swipe-edit-${item.id}" onclick="openEditItem(${item.id})">Edit</div>
     <div class="swipe-action-delete" id="swipe-del-${item.id}" onclick="deleteItem(${item.id})">Delete</div>
-    <div class="list-item ${item.checked?'checked':''}" id="swipe-item-${item.id}" onclick="handleListItemTap(event,${item.id})" data-id="${item.id}">
+    <div class="list-item ${item.checked?'checked':''}${item.watching?' watching':''}" id="swipe-item-${item.id}" onclick="handleListItemTap(event,${item.id})" data-id="${item.id}">
       <div class="check-circle ${item.checked?'done':''}"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
-      <div class="item-info"><div class="item-name">${escapeHtml(item.name)}</div><div class="item-meta">${escapeHtml(item.store)} ${salePill}${inStorePill}</div></div>
+      <div class="item-info"><div class="item-name">${escapeHtml(item.name)}</div><div class="item-meta">${escapeHtml(item.store)} ${salePill}${inStorePill}${watchPill}${dropPill}</div></div>
       <div class="item-price-col"><div class="item-price">${price}</div></div>
     </div>
   </div>`;
@@ -1197,11 +1207,13 @@ function addItemToList(){
   const price=parseFloat(document.getElementById('new-item-price').value)||null;
   const category=document.getElementById('new-item-category').value;
   const store=document.getElementById('new-item-store').value;
+  const watching=document.getElementById('new-item-watch').value==='yes';
   const id=Date.now();
-  shoppingList.push({id,name,category,lastPrice:price,store,onSale:false,checked:false,qty:1,addedInStore:false});
+  shoppingList.push({id,name,category,lastPrice:price,store,onSale:false,checked:false,qty:1,addedInStore:false,watching});
   saveList();closeModal('add-item-modal');
   document.getElementById('new-item-name').value='';document.getElementById('new-item-price').value='';
-  renderPlanList();showToast('Added to list');
+  const watchEl=document.getElementById('new-item-watch');if(watchEl)watchEl.value='no';
+  renderPlanList();showToast(watching?'Watching for a sale 👀':'Added to list');
 }
 function quickAddItem(){
   const input=document.getElementById('quick-add-input');
@@ -1223,6 +1235,7 @@ function openEditItem(id){
   document.getElementById('edit-item-price').value=item.lastPrice!=null?item.lastPrice.toFixed(2):'';
   document.getElementById('edit-item-store').value=item.store||(household.stores[0]||'Other');
   document.getElementById('edit-item-sale').value=item.onSale?'yes':'no';
+  document.getElementById('edit-item-watch').value=item.watching?'yes':'no';
   document.getElementById('edit-item-modal').classList.add('open');
   setTimeout(()=>document.getElementById('edit-item-name').focus(),80);
 }
@@ -1236,7 +1249,10 @@ function saveEditItem(){
   item.lastPrice=parseFloat(document.getElementById('edit-item-price').value)||null;
   item.store=document.getElementById('edit-item-store').value;
   item.onSale=document.getElementById('edit-item-sale').value==='yes';
-  saveList();closeModal('edit-item-modal');editingItemId=null;renderPlanList();showToast('Item updated');
+  const wasWatching=!!item.watching;
+  item.watching=document.getElementById('edit-item-watch').value==='yes';
+  if(item.watching)item.justDropped=false;
+  saveList();closeModal('edit-item-modal');editingItemId=null;renderPlanList();showToast(item.watching&&!wasWatching?'Watching for a sale 👀':'Item updated');
 }
 
 // ════════ GLOBAL MONTH ENGINE (new) ════════
@@ -1752,11 +1768,39 @@ async function checkCurrentSales(auto){
     saleCheckCache=extractJsonArray(text)||[];
     saleCheckTime=Date.now();
     renderHomeAlerts();
+    promoteWatchedFromSales(saleCheckCache);
     if(status){status.style.display='block';status.textContent='Updated '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+' · '+saleCheckCache.length+' sale'+(saleCheckCache.length!==1?'s':'');}
   }catch(e){
     if(status){status.style.display='block';status.textContent='Check failed: '+(e&&e.message?e.message.slice(0,60):'unknown');}
   }
   if(btn){btn.textContent='Check now';btn.disabled=false;}
+}
+function promoteWatchedFromSales(sales){
+  if(!Array.isArray(sales)||!sales.length)return;
+  const watched=shoppingList.filter(i=>i.watching);
+  if(!watched.length)return;
+  const promoted=[];
+  sales.forEach(s=>{
+    if(!s||!s.item)return;
+    const sn=String(s.item).toLowerCase();
+    const words=sn.split(' ').filter(w=>w.length>3);
+    watched.forEach(it=>{
+      if(!it.watching)return;
+      const inLower=it.name.toLowerCase();
+      const match=inLower===sn||inLower.includes(sn)||sn.includes(inLower)||words.some(w=>inLower.includes(w));
+      if(match){
+        it.watching=false;it.checked=false;it.justDropped=true;it.onSale=true;
+        if(s.salePrice)it.lastPrice=Number(s.salePrice)||it.lastPrice;
+        if(s.store)it.store=s.store;
+        promoted.push(it.name);
+      }
+    });
+  });
+  if(promoted.length){
+    saveList();
+    if(currentTab==='plan')renderPlanList();
+    showToast(promoted.length===1?(promoted[0]+' is on sale — added to your list'):(promoted.length+' watched items are on sale now'));
+  }
 }
 let aiLoaded=false;
 let aiNudges=[];
@@ -2463,7 +2507,7 @@ function renderHome(){
   document.getElementById('snap-target').textContent='$'+budget.toLocaleString();
   document.getElementById('snap-spent').textContent='$'+spent.toFixed(2);
   document.getElementById('snap-remaining').textContent='$'+Math.max(0,remaining).toFixed(2);
-  const qac=document.getElementById('qa-list-count');if(qac)qac.textContent=shoppingList.filter(i=>!i.checked).length+' items';
+  const qac=document.getElementById('qa-list-count');if(qac)qac.textContent=shoppingList.filter(i=>!i.checked&&!i.watching).length+' items';
   const qap=document.getElementById('qa-persp-sub');if(qap)qap.textContent=hauls.length+' haul'+(hauls.length!==1?'s':'');
   const qan=document.getElementById('qa-pantry-count');if(qan)qan.textContent=pantryItems.length+' items tracked';
   if(isCurrent){renderHomeAlerts();}else{const sw=document.getElementById('home-sale-watch');if(sw)sw.style.display='none';}
