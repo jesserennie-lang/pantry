@@ -1828,6 +1828,94 @@ function applyReconMatch(listIdx){if(reconEditIdx===null)return;reconState.items
 
 // ════════ DATA SAFETY ════════
 function purgeLegacySeedData(){}
+
+// ---- IndexedDB mirror (a second, independent store) ----
+// localStorage and IndexedDB are cleared together in a full wipe, but IndexedDB
+// survives some cases localStorage doesn't, so mirroring doubles the odds of recovery.
+let _idb=null;
+function idbOpen(){
+  return new Promise((resolve,reject)=>{
+    if(_idb)return resolve(_idb);
+    if(!window.indexedDB)return reject(new Error('no idb'));
+    const req=indexedDB.open('pantry_db',1);
+    req.onupgradeneeded=()=>{const db=req.result;if(!db.objectStoreNames.contains('kv'))db.createObjectStore('kv');};
+    req.onsuccess=()=>{_idb=req.result;resolve(_idb);};
+    req.onerror=()=>reject(req.error||new Error('idb open failed'));
+  });
+}
+function idbSaveSnapshot(){
+  idbOpen().then(db=>{
+    try{
+      const snap={pantry_items:pantryItems,pantry_hauls:haulsData,pantry_list:shoppingList,pantry_budgets:budgetByMonth,pantry_household:household,ts:new Date().toISOString()};
+      const tx=db.transaction('kv','readwrite');tx.objectStore('kv').put(snap,'snapshot');
+    }catch(e){}
+  }).catch(()=>{});
+}
+function idbLoadSnapshot(){
+  return idbOpen().then(db=>new Promise((resolve)=>{
+    try{const tx=db.transaction('kv','readonly');const r=tx.objectStore('kv').get('snapshot');r.onsuccess=()=>resolve(r.result||null);r.onerror=()=>resolve(null);}
+    catch(e){resolve(null);}
+  })).catch(()=>null);
+}
+// If localStorage came back empty but IndexedDB still has data, restore from it.
+async function idbRescue(){
+  try{
+    const localEmpty=pantryItems.length===0&&Object.keys(haulsData).length===0&&shoppingList.length===0;
+    if(!localEmpty)return;
+    const snap=await idbLoadSnapshot();
+    if(!snap)return;
+    const hasData=(Array.isArray(snap.pantry_items)&&snap.pantry_items.length>0)||(snap.pantry_hauls&&Object.keys(snap.pantry_hauls).length>0)||(Array.isArray(snap.pantry_list)&&snap.pantry_list.length>0);
+    if(!hasData)return;
+    if(Array.isArray(snap.pantry_items)){pantryItems=snap.pantry_items;localStorage.setItem('pantry_items',JSON.stringify(pantryItems));}
+    if(snap.pantry_hauls&&typeof snap.pantry_hauls==='object'){haulsData=snap.pantry_hauls;localStorage.setItem('pantry_hauls',JSON.stringify(haulsData));}
+    if(Array.isArray(snap.pantry_list)){shoppingList=snap.pantry_list;localStorage.setItem('pantry_list',JSON.stringify(shoppingList));}
+    if(snap.pantry_budgets&&typeof snap.pantry_budgets==='object'){budgetByMonth=snap.pantry_budgets;saveBudgets();}
+    if(snap.pantry_household&&typeof snap.pantry_household==='object'){household=snap.pantry_household;saveHousehold();}
+    renderHome();renderPlanList();renderPerspective();renderPantry();updatePantryScanPrompt();
+    showToast('Recovered your data');
+  }catch(e){}
+}
+
+// ---- Persistence detector ----
+// Drops a marker. If a marker existed last session but data is gone now, storage is being cleared.
+function checkStoragePersistence(){
+  try{
+    const hadMarker=localStorage.getItem('pantry_persist_marker');
+    const hadData=localStorage.getItem('pantry_seen_data')==='1';
+    // Record that we've now seen real data (so future loads can detect a wipe)
+    const hasDataNow=pantryItems.length>0||Object.keys(haulsData).length>0||shoppingList.length>0;
+    if(hasDataNow)localStorage.setItem('pantry_seen_data','1');
+    localStorage.setItem('pantry_persist_marker','1');
+    // If we previously saw data AND set a marker, but this session opened with NOTHING
+    // and IDB rescue also found nothing, storage was wiped between sessions.
+    if(hadMarker&&hadData&&!hasDataNow){
+      // Confirm IDB is also empty before alarming (rescue runs separately; give it a beat)
+      setTimeout(()=>{
+        const stillEmpty=pantryItems.length===0&&Object.keys(haulsData).length===0&&shoppingList.length===0;
+        if(stillEmpty)showStorageWarning();
+      },1200);
+    }
+  }catch(e){}
+}
+let _storageWarnShown=false;
+function showStorageWarning(){
+  if(_storageWarnShown||document.getElementById('storage-warning'))return;
+  _storageWarnShown=true;
+  const b=document.createElement('div');
+  b.id='storage-warning';
+  b.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:var(--amber);color:#3a2a08;padding:16px 18px calc(16px + env(safe-area-inset-top,0px));padding-top:max(16px,env(safe-area-inset-top,0px));z-index:600;display:flex;flex-direction:column;gap:10px;box-shadow:0 2px 12px rgba(0,0,0,0.18);';
+  const title=document.createElement('div');title.style.cssText='font-size:15px;font-weight:800;';title.textContent='Safari cleared your saved data';
+  const sub=document.createElement('div');sub.style.cssText='font-size:13px;line-height:1.5;opacity:0.92;';
+  sub.innerHTML='This happens with Private Browsing tabs, or when the app runs as a plain Safari tab. To keep data permanently:<br>1) Open this in a <b>normal</b> (non-private) tab, then<br>2) Tap Share &rarr; <b>Add to Home Screen</b> and open it from there.';
+  const row=document.createElement('div');row.style.cssText='display:flex;gap:8px;align-items:center;';
+  const imp=document.createElement('label');imp.setAttribute('for','sw-import-file');imp.style.cssText='background:#3a2a08;color:white;border-radius:8px;padding:10px 14px;font-size:13px;font-weight:700;cursor:pointer;flex:1;text-align:center;';imp.textContent='Restore from a backup file';
+  const fi=document.createElement('input');fi.type='file';fi.id='sw-import-file';fi.accept='*/*';fi.style.cssText='position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;';fi.addEventListener('change',function(){if(fi.files&&fi.files[0])importData(fi);});
+  const x=document.createElement('button');x.textContent='Dismiss';x.style.cssText='background:none;border:none;color:#3a2a08;font-size:13px;font-weight:600;cursor:pointer;padding:10px 6px;flex-shrink:0;';x.addEventListener('click',function(){b.remove();});
+  row.appendChild(imp);row.appendChild(x);
+  b.appendChild(title);b.appendChild(sub);b.appendChild(fi);b.appendChild(row);
+  document.body.appendChild(b);
+}
+
 let _lastBackupTime=0;
 function autoBackup(force){
   // Throttle: at most once every 20s unless forced, so change-triggered + interval + lifecycle calls don't thrash storage
@@ -1835,6 +1923,7 @@ function autoBackup(force){
   if(!force&&now-_lastBackupTime<20000)return;
   _lastBackupTime=now;
   try{localStorage.setItem('pantry_bak_items',JSON.stringify(pantryItems));localStorage.setItem('pantry_bak_hauls',JSON.stringify(haulsData));localStorage.setItem('pantry_bak_list',JSON.stringify(shoppingList));localStorage.setItem('pantry_bak_budgets',JSON.stringify(budgetByMonth));localStorage.setItem('pantry_bak_household',JSON.stringify(household));localStorage.setItem('pantry_bak_ts',new Date().toISOString());}catch(e){}
+  idbSaveSnapshot();
 }
 // Off-device reminder: in-app backups don't survive Safari clearing storage; a file export does.
 // If it's been >14 days since the last file export (and there's real data), show a small dismissible nudge.
@@ -1899,6 +1988,8 @@ function autoRestore(){
 document.addEventListener('DOMContentLoaded',()=>{
   if(window.location.search.includes('recover')){showRecoveryMode();return;}
   autoRestore();
+  // If localStorage came back empty, try recovering from the IndexedDB mirror (async)
+  idbRescue();
   autoBackup(true);
   // Periodic snapshot every 5 minutes — recovers from a bad in-app save/crash
   setInterval(()=>autoBackup(true),5*60*1000);
@@ -1906,6 +1997,8 @@ document.addEventListener('DOMContentLoaded',()=>{
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')autoBackup(true);});
   window.addEventListener('pagehide',()=>autoBackup(true));
   if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});
+  // Detect if Safari cleared storage between sessions and warn with real guidance
+  checkStoragePersistence();
   // Restore banner disabled per user request
   // if(pantryItems.length===0&&Object.keys(haulsData).length===0&&isOnboarded())showRestoreBanner();
   refreshStoreDropdowns();
