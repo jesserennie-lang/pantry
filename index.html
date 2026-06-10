@@ -20,6 +20,20 @@
     --tab-h: 64px; --safe-bottom: env(safe-area-inset-bottom, 0px);
     font-family: -apple-system, 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
   }
+  /* ── Night mode: re-maps the same variables, so the whole app adapts ── */
+  body.dark {
+    --teal: #2BB686; --teal-dark: #1E8D67; --teal-light: #16332B; --teal-mid: #2F6B57;
+    --amber: #E0A24B; --amber-light: #3A2E18; --amber-mid: #7A5A28;
+    --red: #F4716F; --red-light: #3A1F1F; --blue: #5AA3EE; --blue-light: #1B2A3A;
+    --gray-50: #15161A; --gray-100: #22242A; --gray-200: #3A3D45;
+    --gray-400: #8A8D96; --gray-600: #B6B9C0; --gray-800: #ECEDF0; --white: #1C1E23;
+    --text-primary: #ECEDF0; --text-secondary: #B6B9C0; --text-tertiary: #8A8D96;
+    --border: rgba(255,255,255,0.10); --border-strong: rgba(255,255,255,0.20);
+  }
+  body.dark .home-header { background: #134734; }
+  body.dark .ai-header { background: linear-gradient(135deg, #0C3A2C 0%, #15694E 60%, #1E8D67 100%); }
+  body.dark select.form-input { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238A8D96' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); }
+  body.dark .toast { background: #2E3138; }
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   body { background: var(--gray-50); color: var(--text-primary); min-height: 100vh; max-width: 430px; margin: 0 auto; position: relative; overflow: hidden; }
   .screen { position: absolute; inset: 0; bottom: calc(var(--tab-h) + var(--safe-bottom)); overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; opacity: 0; pointer-events: none; transition: opacity 0.18s ease; }
@@ -875,6 +889,13 @@
     <div class="settings-row" onclick="manageStores()"><div class="settings-row-icon"><svg viewBox="0 0 24 24"><path d="M3 9l1-5h16l1 5M3 9h18v11a1 1 0 01-1 1H4a1 1 0 01-1-1V9z"/></svg></div><div class="settings-row-label"><div class="t">Stores</div><div class="s" id="set-stores-sub">—</div></div><div class="settings-row-chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></div>
     <div class="settings-row" onclick="closeModal('settings-modal');openEditBudget();"><div class="settings-row-icon"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg></div><div class="settings-row-label"><div class="t">Monthly budget</div><div class="s" id="set-budget-sub">—</div></div><div class="settings-row-chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></div>
     <div class="settings-section-title">App</div>
+    <div class="settings-row" style="cursor:default;"><div class="settings-row-icon" style="background:var(--gray-100);"><svg viewBox="0 0 24 24" style="stroke:var(--text-secondary);"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg></div><div class="settings-row-label"><div class="t">Night mode</div><div class="s" id="set-dark-sub">Easier on the eyes in low light</div></div>
+      <label style="position:relative;display:inline-block;width:46px;height:26px;cursor:pointer;flex-shrink:0;">
+        <input type="checkbox" id="dark-toggle" style="opacity:0;width:0;height:0;" onchange="setDarkMode(this.checked)">
+        <span id="dark-track" style="position:absolute;inset:0;background:var(--gray-200);border-radius:13px;transition:background 0.2s;"></span>
+        <span id="dark-thumb" style="position:absolute;left:2px;top:2px;width:22px;height:22px;background:white;border-radius:50%;transition:left 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.2);"></span>
+      </label>
+    </div>
     <div class="settings-row" onclick="editApiKey()"><div class="settings-row-icon" style="background:var(--teal-light);"><svg viewBox="0 0 24 24" style="stroke:var(--teal);"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg></div><div class="settings-row-label"><div class="t">Anthropic API key</div><div class="s" id="set-api-key-sub">Not set</div></div><div class="settings-row-chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></div>
     <div class="settings-row" onclick="testConnection()"><div class="settings-row-icon" style="background:var(--blue-light);"><svg viewBox="0 0 24 24" style="stroke:var(--blue);"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div><div class="settings-row-label"><div class="t">Test connection</div><div class="s" id="set-test-sub">Check that the API key works</div></div><div class="settings-row-chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></div>
     <div class="settings-row" onclick="closeModal('settings-modal');startOnboarding(true);"><div class="settings-row-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3M12 17h.01"/></svg></div><div class="settings-row-label"><div class="t">Replay setup guide</div><div class="s">Walk through the tour again</div></div><div class="settings-row-chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></div>
@@ -1751,8 +1772,25 @@ function renderInviteTags(){const tags=document.getElementById('ob-invite-tags')
 // ════════ SETTINGS ════════
 let greetTaps=0;let greetLast=0;
 function greetingTap(){const now=Date.now();if(now-greetLast>1500)greetTaps=0;greetTaps++;greetLast=now;if(greetTaps>=5){greetTaps=0;openSettings();showToast('Admin mode 🔓');}}
+// ════════ NIGHT MODE ════════
+function darkEnabled(){return localStorage.getItem('pantry_dark')==='on';}
+function applyDarkMode(on){
+  document.body.classList.toggle('dark',on);
+  const toggle=document.getElementById('dark-toggle');const track=document.getElementById('dark-track');const thumb=document.getElementById('dark-thumb');
+  if(toggle)toggle.checked=on;
+  if(track)track.style.background=on?'var(--teal)':'var(--gray-200)';
+  if(thumb)thumb.style.left=on?'22px':'2px';
+  // Match iOS status bar / theme colour to the active background
+  const meta=document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+  if(meta)meta.setAttribute('content',on?'black-translucent':'default');
+  let tc=document.querySelector('meta[name="theme-color"]');
+  if(!tc){tc=document.createElement('meta');tc.name='theme-color';document.head.appendChild(tc);}
+  tc.setAttribute('content',on?'#134734':'#1D9E75');
+}
+function setDarkMode(on){localStorage.setItem('pantry_dark',on?'on':'off');applyDarkMode(on);}
+
 function openSettings(){updateSettingsUI();document.getElementById('settings-modal').classList.add('open');}
-function updateSettingsUI(){const nameEl=document.getElementById('set-household-name');const subEl=document.getElementById('set-household-sub');const famEl=document.getElementById('set-family-sub');const storesEl=document.getElementById('set-stores-sub');const budgetEl=document.getElementById('set-budget-sub');const apiEl=document.getElementById('set-api-key-sub');if(nameEl)nameEl.textContent=household.name||'My Household';if(subEl)subEl.textContent='Admin: '+(household.admin||'—');if(famEl)famEl.textContent=(household.members||[]).length?household.members.join(', '):'No members yet';if(storesEl)storesEl.textContent=(household.stores||[]).slice(0,4).join(', ')||'None set';if(budgetEl)budgetEl.textContent='$'+(getBudgetForMonth(currentMonthKey())||DEFAULT_BUDGET).toLocaleString()+' / month';if(apiEl)apiEl.textContent=getApiKey()?'Key saved (sk-ant-***)':'Not set';const backupSub=document.getElementById('set-backup-sub');if(backupSub){const bk=localStorage.getItem('pantry_last_backup');backupSub.textContent=bk?'Last backup: '+new Date(bk).toLocaleDateString():'No backup yet';}}
+function updateSettingsUI(){const nameEl=document.getElementById('set-household-name');const subEl=document.getElementById('set-household-sub');const famEl=document.getElementById('set-family-sub');const storesEl=document.getElementById('set-stores-sub');const budgetEl=document.getElementById('set-budget-sub');const apiEl=document.getElementById('set-api-key-sub');if(nameEl)nameEl.textContent=household.name||'My Household';if(subEl)subEl.textContent='Admin: '+(household.admin||'—');if(famEl)famEl.textContent=(household.members||[]).length?household.members.join(', '):'No members yet';if(storesEl)storesEl.textContent=(household.stores||[]).slice(0,4).join(', ')||'None set';if(budgetEl)budgetEl.textContent='$'+(getBudgetForMonth(currentMonthKey())||DEFAULT_BUDGET).toLocaleString()+' / month';if(apiEl)apiEl.textContent=getApiKey()?'Key saved (sk-ant-***)':'Not set';const backupSub=document.getElementById('set-backup-sub');if(backupSub){const bk=localStorage.getItem('pantry_last_backup');backupSub.textContent=bk?'Last backup: '+new Date(bk).toLocaleDateString():'No backup yet';}applyDarkMode(darkEnabled());}
 function editApiKey(){closeModal('settings-modal');document.getElementById('api-key-input').value=getApiKey()||'';document.getElementById('api-key-modal').classList.add('open');setTimeout(()=>document.getElementById('api-key-input').focus(),120);}
 function saveApiKey(){const key=(document.getElementById('api-key-input').value||'').trim().replace(/[^A-Za-z0-9_-]/g,'');if(!key){showToast('Key cannot be empty');return;}setApiKey(key);closeModal('api-key-modal');updateSettingsUI();showToast('API key saved');}
 async function testConnection(){const status=document.getElementById('set-test-sub');if(status)status.textContent='Testing…';if(!hasApiKey()){if(status)status.textContent='No key set';showToast('Add an API key first');return;}try{const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:apiHeaders(),body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:30,messages:[{role:'user',content:'Reply with one word: working'}]})});const data=await res.json();if(data.error){const e=data.error.message||data.error.type||JSON.stringify(data.error);if(status)status.textContent='Error: '+e;showToast('Connection error: '+e.slice(0,50));}else{const reply=(data.content||[]).map(c=>c.text||'').join('').trim();if(status)status.textContent='Connected ✓ ('+reply+')';showToast('Connected!');}}catch(e){if(status)status.textContent='Network error';showToast('Network error. Check your connection.');}}
@@ -1987,6 +2025,7 @@ function autoRestore(){
 // ════════ INIT ════════
 document.addEventListener('DOMContentLoaded',()=>{
   if(window.location.search.includes('recover')){showRecoveryMode();return;}
+  applyDarkMode(darkEnabled());
   autoRestore();
   // If localStorage came back empty, try recovering from the IndexedDB mirror (async)
   idbRescue();
